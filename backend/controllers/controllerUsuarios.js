@@ -91,7 +91,7 @@ function listarUsuariosSeguimientos(id = undefined) {
 
 function mostrarDatosTerapeuta(id = undefined) {
   // return obtenerDatos(env_().SH_REGISTRO_SESIONES_SEGUIMIENTO);
-  return JSON.stringify(_read(obtenerSheet(env_().SH_CREDENTIALS), id));
+  return JSON.stringify(_read(obtenerSheet(env_().SH_CREDENTIALS_ADMIN), id));
 }
 
 function actualizarUsuario(id, datos) {
@@ -157,7 +157,7 @@ function waitForDataRetrieval(conditionFunction, maxAttempts, delay) {
 function verificarCredenciales(usuario, contraseña) {
   console.log("Verificando credenciales...");
   try {
-    const sheetCredenciales = obtenerSheet(env_().SH_CREDENTIALS);
+    const sheetCredenciales = obtenerSheet(env_().SH_CREDENTIALS_ADMIN);
     if (!sheetCredenciales) {
       console.error("No se pudo obtener la hoja de cálculo de credenciales.");
       return { success: false, error: "noSheet" };
