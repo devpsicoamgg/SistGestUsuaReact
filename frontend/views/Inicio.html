@@ -1,0 +1,121 @@
+//<script type="text/jsx">
+function Inicio({ setIsAuthenticated }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(false);
+  const history = useHistory();
+
+  useEffect(() => {
+    const savedUsername = localStorage.getItem('username');
+    const savedSessionToken = localStorage.getItem('sessionToken');
+    if (savedUsername && savedSessionToken) {
+      google.script.run
+        .withSuccessHandler((isAuthenticated) => {
+          if (isAuthenticated) {
+            setIsAuthenticated(true);
+            history.push('/welcome');
+          } else {
+            localStorage.removeItem('username');
+            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('sessionToken');
+            setIsAuthenticated(false);
+          }
+        })
+        .checkAuth(savedSessionToken);
+    }
+  }, [setIsAuthenticated, history]);
+  
+
+  const handleUsernameChange = (event) => {
+    setUsername(event.target.value);
+  };
+
+  const handlePasswordChange = (event) => {
+    setPassword(event.target.value);
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (username === "" || password === "") {
+      setError(true);
+      return;
+    }
+  
+    notificacionObteniendoDatos("Obteniendo datos de inicio de sesión...");
+  
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (response.success) {
+          console.log("Inicio de sesión exitoso. Token de sesión:", response.sessionToken);
+          localStorage.setItem('username', username);
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('sessionToken', response.sessionToken); 
+          setIsAuthenticated(true);
+          setTimeout(() => {
+            history.push('/welcome');
+          }, 2000);
+        } else {
+          setError(true);
+          switch (response.error) {
+            case "wrongPassword":
+              notificacionError("Error al iniciar sesión", "La contraseña es incorrecta. Por favor, intenta de nuevo.");
+              break;
+            case "wrongUsername":
+              notificacionError("Error al iniciar sesión", "El nombre de usuario es incorrecto. Por favor, intenta de nuevo.");
+              break;
+            case "noSheet":
+            case "noData":
+              notificacionError("Error al iniciar sesión", "Error en el sistema. Por favor, contacta al administrador.");
+              break;
+            default:
+              notificacionError("Error interno del servidor", "Por favor, verifica usuario y contraseña e intenta de nuevo.");
+              break;
+          }
+        }
+      })
+      .withFailureHandler((error) => {
+        console.error("Error al iniciar sesión:", error);
+        setError(true);
+        notificacionError("Error al iniciar sesión", "Por favor, verifica tus credenciales e intenta de nuevo.");
+      })
+      .verificarCredenciales(username, password);
+  };
+  
+  
+  
+  
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '1rem', backgroundImage: 'url("https://res.cloudinary.com/dt1aacjqj/image/upload/v1716766791/fondo1_jgbisn.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
+        <div style={{ maxWidth: '300px', width: '100%', backgroundColor: 'rgba(224, 224, 224, 0.8)', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', padding: '2rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>Iniciar Sesión</h2>
+          <form style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }} onSubmit={handleSubmit}>
+            <div style={{ marginBottom: '1rem', width: '100%' }}>
+              <Input
+                placeholder="Usuario"
+                style={{ width: '100%' }}
+                value={username}
+                onChange={handleUsernameChange}
+              />
+            </div>
+            <div style={{ marginBottom: '1rem', width: '100%' }}>
+              <Input.Password
+                placeholder="Contraseña"
+                style={{ width: '100%' }}
+                value={password}
+                onChange={handlePasswordChange}
+              />
+            </div>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" style={{ width: '100%' }}>Iniciar Sesión</Button>
+            </Form.Item>
+          </form>
+          {error && <p>Todos los campos son obligatorios</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+  //</script>

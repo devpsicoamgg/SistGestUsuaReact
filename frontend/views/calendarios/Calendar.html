@@ -1,0 +1,24 @@
+//<script type="text/jsx">
+function Calendar() {
+  useEffect(() => {
+    notificacionObteniendoDatos("Obteniendo datos del calendario 📅...");
+  }, []);
+
+  const handleIframeLoad = () => {
+    Swal.close(); 
+  };
+
+  return (
+    <div className="text-center bg-blue-100" style={{ backgroundImage: 'url("https://res.cloudinary.com/dt1aacjqj/image/upload/v1716766791/fondo1_jgbisn.jpg")', backgroundSize: 'cover', backgroundPosition: 'center',  width: '100%',  height: '100vh', }}>
+      <iframe
+        style={{ marginTop: '4%' }}
+        onLoad={handleIframeLoad}
+        src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FBogota&bgcolor=%23ffffff&src=cHNpY28uYW1nZ0BnbWFpbC5jb20&src=NGQzZWIxNjc4ZDI4ZTRmNzI3YmY4NTk3YzA4MjZiOGZmZjMxZmVhMGY2NzU1ODE3ODgxNmIxYWM1MDY5OTBhZEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=YWRkcmVzc2Jvb2sjY29udGFjdHNAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&src=ZmFtaWx5MTEzMzMyNzc2Mzk4NjMxNDgwNTlAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&src=ZXMuY28jaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%237CB342&color=%237CB342&color=%2333B679&color=%23009688&color=%230B8043"
+        className=" border border-gray-400 rounded-lg mx-auto w-[90vw] h-[70vh] md:w-[800px] md:h-[600px] mt-10"
+        frameBorder="0"
+        scrolling="no"
+      ></iframe>
+    </div>
+  );
+}
+//</script>

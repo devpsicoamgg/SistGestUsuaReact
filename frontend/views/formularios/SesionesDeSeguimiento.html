@@ -1,0 +1,266 @@
+//<script type="text/jsx">
+
+
+function SesionesDeSeguimiento() {
+  const history = useHistory();
+  const [form] = Form.useForm();
+  const { id } = useParams();
+  const [initialValues, setInitialValues] = useState(undefined);
+  let globalUniqueId;  
+
+  useEffect(() => {
+    if (id) {
+      notificacionObteniendoDatos("Obteniendo datos del paciente desde el servidor...");
+      google.script.run
+        .withSuccessHandler(res => {
+          const usuario = JSON.parse(res);
+          console.log(usuario);
+          if (usuario.createDataHC === "") {
+            const nombreMayuscula = usuario.nombreCompleto.toUpperCase();
+            Swal.fire({
+              title: `${nombreMayuscula} NO TIENE HISTORIA CLÍNICA AUN!`,
+              text: `Debes crear primero la historia clínica para poder registrar sesiones de seguimiento.`,
+              icon: 'warning',
+              confirmButtonText: 'OK'
+            }).then(() => {
+              history.push("/historiaClinica/" + usuario.id)
+            });
+            return; 
+          }
+          setInitialValues(usuario);
+          Swal.close();
+        }).listarUsuarios(id)
+    }
+  }, [id])
+
+
+
+const guardarFormulario = (datosFormulario) => {
+  console.log(datosFormulario);
+  notificacionGuardando("💾Guardando sesión de seguimiento " + initialValues.nombreCompleto);
+
+  const fechaSinEspacios = fechaCreacion.replace(/\s+/g, '');
+  globalUniqueId = initialValues.nombreCompleto.slice(0, 3) + id + fechaSinEspacios;  // Guardar uniqueId en la variable global
+
+  // Obtener los valores de fecha y hora desde el formulario
+  const proximaSesionFecha = datosFormulario.proximaSesionFecha;
+  const proximaSesionHora = datosFormulario.proximaSesionHora;
+
+  // Formatear y combinar fecha y hora en formato ISO 8601 con UTC
+  const proximaSesionFechaHora = `${proximaSesionFecha}T${proximaSesionHora}:00Z`;
+
+  console.log(proximaSesionFechaHora, "proximaSesionFechaHora");
+
+
+  datosFormulario.proximaSesionFecha = proximaSesionFechaHora;
+  datosFormulario.proximaSesionHora = proximaSesionHora;
+
+  if (id) {
+    google.script.run
+      .withSuccessHandler(({ titulo, descripcion }) => {
+        notificacionTareaTerminada(titulo, descripcion);
+        form.resetFields();
+        if (datosFormulario.agregarAMeets === "Sí") {
+          crearEventoDespuesDeGuardar();  
+        } else {
+          history.push('/welcome');
+        }
+        console.log(datosFormulario);
+      })
+      .guardarSesionesSeguimiento(JSON.stringify({
+        id,
+        uniqueId: globalUniqueId,  
+        nombreCompleto: initialValues.nombreCompleto,
+        tipoDocumento: initialValues.tipoDocumento,
+        numeroDocumento: initialValues.numeroDocumento,
+        correo: initialValues.correo,
+        telefono: initialValues.telefono,
+        fechaNacimiento: initialValues.fechaNacimiento,
+        fechaSesion: fechaCreacion,
+        proximaSesionFecha: proximaSesionFechaHora,  
+        ...datosFormulario
+      }));
+  }
+};
+
+const crearEventoDespuesDeGuardar = () => {
+  console.log("entró a crearEventoDespuesDeGuardar");
+  try {
+    google.script.run
+      .withSuccessHandler(() => {
+        console.log("Evento creado exitosamente");
+        agregandoAMeets();
+        history.push('/welcome');
+      })
+      .withFailureHandler((error) => {
+        console.error("Error al crear el evento en Google Calendar:", error);
+        notificacionError("Error al crear la sesión en calendar", error);
+      })
+      .crearEventoGoogleCalendarSeg(globalUniqueId);  
+  } catch (error) {
+    console.error("Error al ejecutar crearEventoGoogleCalendarHC:", error);
+    notificacionError("Error al ejecutar crearEventoGoogleCalendarHC", error);
+  }
+};
+
+
+
+  
+  const { Option, OptGroup } = Select;
+  
+  moment.locale('es');
+  const fechaCreacion = moment().utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
+
+
+ 
+
+  const Formulario = () => {
+    const [mostrarPreguntas, setMostrarPreguntas] = useState(false);
+
+    const handleAgregarACalendarChange = (value) => {
+      setMostrarPreguntas(value === 'Sí');
+    };
+  
+    return (
+      <Form
+        initialValues={initialValues}
+        form={form}
+        onFinish={guardarFormulario}
+        layout="vertical"
+        style={{ width: '80%', margin: '0 auto' }}
+      >
+<div style={{ marginTop: '20px' }}>
+        <div className="grid grid-cols-2 gap-1">
+        <div className="border p-1">
+          <p><strong>Fecha sesión:</strong> <em>{fechaCreacion}</em></p>
+        </div>
+
+
+
+        <div className="border p-1">
+          <p><strong>Modelo de Intervención:</strong> <em>{initialValues ? initialValues.modeloIntervencion : ''}</em></p>
+        </div>
+        </div>
+
+
+        <div className="border p-1" style={{ width: '100%', textAlign: 'justify',  marginTop: '10px' }}>
+      <p>
+    <strong>Objetivo General según HC:</strong> {initialValues ? initialValues.objetivoGeneral : ''}
+      </p>
+      </div>
+
+      <h2 className="text-center font-bold text-m pb-2" style={{ marginTop: '5px' }} >DATOS DE LA SESIÓN</h2>
+
+          <Item 
+          label="Objetivo seguimiento"
+          name="objetivoSeguimiento" >
+          
+          <Select defaultValue="Selecciona Objetivo de la sesión 🏹" style={{ width: '100%' }}>
+          <OptGroup label="Objetivos según Historia Clínica" style={{ backgroundColor: '#FFDAB9' }}>
+            <Option value={initialValues ? initialValues.objetivosEspecificosUno : 'N/A N° 1'} style={{ backgroundColor: '#FFD19C' }}>
+              {initialValues ? initialValues.objetivosEspecificosUno : ''}
+            </Option>
+            <Option value={initialValues ? initialValues.objetivosEspecificosDos : 'N/A N° 2'} style={{ backgroundColor: '#FFC784' }}>
+              {initialValues ? initialValues.objetivosEspecificosDos : ''}
+            </Option>
+            <Option value={initialValues ? initialValues.objetivosEspecificosTres : 'N/A N° 3'} style={{ backgroundColor: '#FFBE6F' }}>
+              {initialValues ? initialValues.objetivosEspecificosTres : ''}
+            </Option>
+          </OptGroup>
+          <OptGroup label="Otros" style={{ backgroundColor: '#ADD8E6' }}>
+            <Option value="atención en crisis" style={{ backgroundColor: '#92C3E4' }}>Atención en crisis</Option>
+            <Option value="Seguimiento al caso" style={{ backgroundColor: '#6FB3E1' }}>Seguimiento al caso</Option>
+            <Option value="Evaluación de objetivos" style={{ backgroundColor: '#4CA2DE' }}>Evaluación de objetivos</Option>
+            <Option value="Otros" style={{ backgroundColor: '#87CEFA' }}>Otros</Option>
+          </OptGroup>
+        </Select>
+          </Item>
+        
+          <Item
+            name="dlloSesion"
+            label="Desarrollo de la sesión:"
+          >
+            <TextArea
+              autoSize={{ minRows: 8, maxRows: 16, resize: 'none' }}
+              style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' }}
+            />
+          </Item>
+
+          <Item
+            name="tareasProximaSesion"
+            label="Actividades (tareas) recomendadas para la proxima sesión:"
+          >
+            <TextArea
+              autoSize={{ minRows: 8, maxRows: 16, resize: 'none' }}
+              style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' }}
+            />
+          </Item>
+
+        <div>
+      
+              <Item name="agregarACalendar" label="Agregar a Calendar:">
+              <Select defaultValue="Programar proximo encuentro 📅" style={{ width: '100%' }} onChange={handleAgregarACalendarChange}>
+                <Option value="Sí">Sí</Option>
+                <Option value="No">No</Option>
+              </Select>
+            </Item>
+
+            {mostrarPreguntas && (
+                      <div>
+                      <Row gutter={16}>
+                        <Col xs={24} sm={12}>
+                          <Item name="proximaSesionFecha" label="Fecha de la próxima sesión:">
+                            <input type="date" id="proximaSesionFecha" name="fecha" style={{ width: '100%' }} />
+                          </Item>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                          <Item name="proximaSesionHora" label="Hora de la próxima sesión:">
+                          <input type="time" id="proximaSesionHora" name="hora" style={{ width: '100%' }} />
+                            
+                          </Item>
+                        </Col>
+                        <Col xs={24} sm={12}> 
+                          <Item name="agregarAMeets" label="Agregar a Meets:">
+                            <Select id="agregarAMeets" defaultValue="Agregar videoconferencia 💻" style={{ width: '100%' }}>
+                              <Option value="Sí">Sí</Option>
+                              <Option value="No">No</Option>
+                            </Select>
+                          </Item>
+                        </Col>
+                      </Row>
+                    </div>
+     
+            )}
+
+        </div>
+
+</div>
+  
+          <Button htmlType="submit" className="mr-3 px-3 py-1 bg-blue-700 text-white rounded-2xl">
+            Guardar
+          </Button>
+       
+      </Form>
+    )
+  }
+
+  return (
+    <div className="px-4 py-2" style={{ maxWidth: '100%', margin: '0 auto', textAlign: 'center', backgroundColor: 'rgba(255, 255, 255, 0.3)', backgroundImage: 'url("https://res.cloudinary.com/dt1aacjqj/image/upload/v1716767758/wallpaper-962590_1280_wkby9v.png")', backgroundSize: 'cover', minHeight: '100vh' }}>
+      <div style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)', 
+                  color: '#000000',
+                  transition: 'background-color 0.3s, color 0.3s',
+                  border: '2px solid transparent',
+                  textAlign: 'center',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+      <h2 className="text-center font-bold text-m pb-2 py-2">DATOS BÁSICOS: {initialValues ? <span style={{ textTransform: 'uppercase' }}>{`${initialValues.nombreCompleto} ${initialValues.tipoDocumento} ${initialValues.numeroDocumento}`}</span>
+: ''}</h2>
+      {(id && initialValues) ? <Formulario /> : <Formulario />}
+    </div>
+    </div>
+  );
+}
+
+//</script>

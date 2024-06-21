@@ -1,0 +1,331 @@
+//<script type="text/jsx">
+function Ajustes() {
+  const [datosTerapeuta, setDatosTerapeuta] = useState({
+    fullName: '',
+    tipoDoc: '',
+    doc: '',
+    tp: '',
+    reg: '',
+    username: '',
+    password: '',
+    imageUrl: '',
+  });
+  const [isClaveOpen, setIsClaveOpen] = useState(false);
+  const [isDatosTerapeutaOpen, setIsDatosTerapeutaOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [datosCargados, setDatosCargados] = useState(false);
+  const history = useHistory();
+  const Tooltip = window.antd.Tooltip;
+
+  useEffect(() => {
+    cargarDatosTerapeuta();
+  }, []);
+
+  useEffect(() => {
+    console.log('Estados actualizados:', datosTerapeuta);
+  }, [datosTerapeuta]);
+
+  const toggleClave = (e) => {
+    if (['INPUT', 'LABEL', 'SPAN', 'SELECT', 'OPTION'].includes(e.target.tagName) || e.target.closest('.ant-input-password-icon')) {
+      return;
+    }
+    setIsClaveOpen(!isClaveOpen);
+    setIsDatosTerapeutaOpen(false);
+  };
+
+  const toggleDatosTerapeuta = (e) => {
+    if (['INPUT', 'LABEL', 'SPAN', 'SELECT', 'OPTION'].includes(e.target.tagName)) {
+      return;
+    }
+    setIsDatosTerapeutaOpen(!isDatosTerapeutaOpen);
+    setIsClaveOpen(false);
+  };
+
+
+  const handleSave = () => {
+    notification.info({
+      message: "Guardando datos",
+      description: "Por favor, espera un momento mientras se guardan los datos...",
+    });
+    google.script.run
+      .withSuccessHandler((response) => {
+        notification.success({
+          message: response.titulo,
+          description: response.descripcion,
+        });
+        history.push('/welcome');
+      })
+      .withFailureHandler(() => {
+        notification.error({
+          message: "Error",
+          description: "Hubo un problema al actualizar la información.",
+        });
+      })
+      .actualizarClave(datosTerapeuta.username, datosTerapeuta.password, datosTerapeuta.fullName, datosTerapeuta.tipoDoc, datosTerapeuta.doc, datosTerapeuta.tp, datosTerapeuta.reg, datosTerapeuta.imageUrl);
+  
+  };
+
+  const cargarDatosTerapeuta = () => {
+    google.script.run
+      .withSuccessHandler((terapeutaData) => {
+        console.log('Tipo de terapeutaData:', typeof terapeutaData);
+        const terapeutaObj = JSON.parse(terapeutaData);
+        if (Array.isArray(terapeutaObj) && terapeutaObj.length > 0) {
+          const { fullName, tipoDoc, doc, tp, reg, username, password, imageUrl } = terapeutaObj[0];
+          setDatosTerapeuta({
+            ...datosTerapeuta,
+            fullName: fullName || '',
+            tipoDoc: tipoDoc || '',
+            doc: doc || '',
+            tp: tp || '',
+            reg: reg || '',
+            username: username || '',
+            password: password || '',
+            imageUrl: imageUrl || '',
+          });
+        }
+        Swal.close();
+        setLoading(false);
+        setDatosCargados(true);
+      })
+      .withFailureHandler(() => {
+        Swal.close();
+        setLoading(false);
+      })
+      .mostrarDatosTerapeuta();
+  };
+  
+  if (loading && !datosCargados) {
+    notificacionObteniendoDatos("Cargando datos personales del terapeuta");
+    return null;
+  }
+
+  const subirImagen = (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'ml_default'); 
+
+    fetch('https://api.cloudinary.com/v1_1/dt1aacjqj/image/upload', {
+      method: 'POST',
+      body: formData,
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.secure_url) {
+          setDatosTerapeuta({ ...datosTerapeuta, imageUrl: data.secure_url });
+          notification.success({
+            message: 'Imagen subida con éxito',
+            description: `URL: ${data.secure_url}`,
+          });
+        } else {
+          throw new Error('Error al subir imagen a Cloudinary');
+        }
+      })
+      .catch(error => {
+        notification.error({
+          message: 'Error',
+          description: `Error al subir imagen: ${error.message}`,
+        });
+      });
+
+    return false; 
+  };
+
+
+ 
+
+  const placeholderStyles = `
+    ::-webkit-input-placeholder {
+      color: #000000;
+      font-weight: normal;
+    }
+    :-ms-input-placeholder {
+      color: #000000;
+      font-weight: normal;
+    }
+    ::placeholder {
+      color: #000000;
+      font-weight: normal;
+    }
+  `;
+
+  return (
+    <div style={{ backgroundImage: 'url("https://res.cloudinary.com/dt1aacjqj/image/upload/v1716767758/wallpaper-962590_1280_wkby9v.png")', backgroundSize: 'cover', minHeight: '100vh' }}>
+    <div style={{ maxWidth: '80%', margin: '0 auto', textAlign: 'center' }}>
+      <style>{placeholderStyles}</style>
+      <style>
+        {`
+          .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 5%
+          }
+          .card {
+            padding: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 65%;
+            cursor: pointer;
+            text-align: left;
+            background-color: white;
+          }
+          @media (max-width: 768px) {
+            .card {
+              width: 100%;
+            }
+          }
+        `}
+      </style>
+      <h1 style={{ fontSize: '2.25rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>AJUSTES</h1>
+      <div className="container">
+        <div className="card" onClick={toggleClave}>
+          <Tooltip title="Editar clave y usuario del terapeuta" overlayStyle={{ backgroundColor: 'grey' }}>    
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '1rem' }}>Clave & Usuario</h2>
+            {isClaveOpen && (
+              <div style={{ marginTop: '1rem' }}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>person</span>
+                    <label style={{ textAlign: 'left' }}>Nuevo Usuario</label>
+                  </div>
+                  <Input 
+                    type="text" 
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }} 
+                    value={datosTerapeuta.username}
+                   // onChange={(e) => setDatosTerapeuta({...datosTerapeuta, username: e.target.value})}
+                   disabled
+                  />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>key</span>
+                    <label style={{ textAlign: 'left' }}>Nueva Clave</label>
+                  </div>
+                  <Input.Password 
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }} 
+                    value={datosTerapeuta.password} 
+                    disabled
+                   // onChange={(e) => setDatosTerapeuta({...datosTerapeuta, password: e.target.value})}
+                  />
+                </div>
+                <Button type="primary" onClick={handleSave} style={{ marginTop: '1rem' }}>
+                  Guardar
+                </Button>
+              </div>
+            )}
+          </Tooltip>
+        </div>
+  
+        <div className="card" onClick={toggleDatosTerapeuta}>
+          <Tooltip title="Editar información básica, documento, registro profesional, tarjeta profesional" overlayStyle={{ backgroundColor: 'grey' }}>   
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '600' }}>Datos perfil profesional</h2>
+            {isDatosTerapeutaOpen && (
+              <div style={{ marginTop: '1rem' }}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>badge</span>
+                    <label style={{ textAlign: 'left' }}>Nombre Completo</label>
+                  </div>
+                  <Input 
+                    type="text" 
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }} 
+                    value={datosTerapeuta.fullName}
+                    onChange={(e) => setDatosTerapeuta({...datosTerapeuta, fullName: e.target.value})} 
+                  />
+                </div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>inventory</span>
+                    <label style={{ textAlign: 'left' }}>Tipo de Documento</label>
+                  </div>
+                  <select
+                    value={datosTerapeuta.tipoDoc}
+                    onChange={(e) => setDatosTerapeuta({ ...datosTerapeuta, tipoDoc: e.target.value })}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem', color: 'black' }}
+                  >
+                    <option value="" disabled>Tipo 💳</option>
+                    <option value="TI">TI</option>
+                    <option value="CC">CC</option>
+                    <option value="CE">CE</option>
+                    <option value="PPT">PPT</option>
+                    <option value="PEP">PEP</option>
+                    <option value="PASAPORTE">PASAPORTE</option>
+                    <option value="OTRO">OTRO</option>
+                  </select>
+                </div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>pin</span> 
+                    <label style={{ textAlign: 'left' }}>Número de Documento</label>
+                  </div>
+                  <Input 
+                    type="text" 
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }} 
+                    value={datosTerapeuta.doc}
+                    onChange={(e) => setDatosTerapeuta({...datosTerapeuta, doc: e.target.value})} 
+                  />
+                </div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span className="material-icons" style={{fontSize: '16px', marginRight: '5px' }}>badge</span>
+                      <label style={{ textAlign: 'left' }}>Tarjeta Profesional</label>
+                      </div>
+                      <Input
+                      type="text"
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }}
+                      value={datosTerapeuta.tp}
+                      onChange={(e) => setDatosTerapeuta({...datosTerapeuta, tp: e.target.value})}
+                      />
+                      </div>
+                      <div style={{ marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>badge</span>
+                      <label style={{ textAlign: 'left' }}>Registro Profesional</label>
+                      </div>
+                      <Input
+                      type="text"
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }}
+                      value={datosTerapeuta.reg}
+                      onChange={(e) => setDatosTerapeuta({...datosTerapeuta, reg: e.target.value})}
+                      />
+                      </div>
+
+                      <div style={{ marginTop: '2rem' }}>
+                            <h1>Logo</h1>
+                            <Upload
+                              beforeUpload={subirImagen}
+                              showUploadList={false}
+                              accept="image/*"
+                            >
+                              <Button icon={<UploadOutlined />}>Subir Imagen</Button>
+                            </Upload>
+                            {datosTerapeuta.imageUrl && (
+                              <div style={{ marginTop: '1rem' }}>
+                                <img src={datosTerapeuta.imageUrl} alt="Selected" style={{ maxWidth: '100%', maxHeight: '200px' }} />
+                              </div>
+                            )}
+                          </div>
+     
+    
+
+                      <Button type="primary" onClick={handleSave} style={{ marginTop: '1rem' }}>
+                      Guardar
+                      </Button>
+                      </div>
+                      )}
+                      </Tooltip>
+                      </div>
+                      </div>
+                      
+                        </div>
+                      </div>
+  );
+}
+
+
+//</script>
+

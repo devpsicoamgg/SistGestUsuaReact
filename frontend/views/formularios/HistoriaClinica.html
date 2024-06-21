@@ -1,0 +1,480 @@
+//<script type="text/jsx">
+
+
+
+function HistoriaClinica() {
+  const history = useHistory();
+  const [form] = Form.useForm();
+  const { id } = useParams();
+  const [initialValues, setInitialValues] = useState(undefined);
+  const { Option } = Select;
+  
+  const createDataHC = moment().utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
+
+      useEffect(() => {
+        if (id) {
+          Swal.fire({ title: 'Cargando...', text: 'Obteniendo datos desde el servidor...' , showConfirmButton: false });
+          google.script.run
+            .withSuccessHandler(res => {
+              const usuario = JSON.parse(res);
+              console.log("El usuarioooo en clinical",usuario);
+             
+              usuario.createDataHC = usuario.createDataHC || createDataHC;
+              setInitialValues(usuario);
+              console.log("Initial Values",initialValues)
+              Swal.close();
+            }).listarUsuarios(id)
+        } else {
+          setInitialValues({ createDataHC });
+        }
+      },  [])
+      
+      const camposInteres = [
+        "motivoConsulta",
+        "porteYApariencia",
+        "orientacion",
+        "inteligencia",
+        "lenguaje",
+        "afecto",
+        "sensorPercepcion",
+        "actividadPsicomotora",
+        "aprendizajeAtencion",
+        "memoria",
+        "actitudValoracion",
+        "abusoSexual",
+        "ideasMuerte",
+        "planSuicida",
+        "actoSuicida",
+        "consumoProblematico",
+        "cicloSueño",
+        "afectividadSexualidad",
+        "cicloAlimentacion",
+        "actividadFisica",
+        "personalesEnSaludMental",
+        "familiaresEnSaludMental",
+        "educacionTrabajo",
+        "relacionesFamiliares",
+        "observacionesTerapeuta",
+        "diagnosticoPrincipal",
+        "tipoDiagnostico",
+        "diagnosticoRelacionadoUno",
+        "diagnosticoRelacionadoDos",
+        "diagnosticoRelacionadoTres",
+        "modeloIntervencion",
+        "objetivoGeneral",
+        "objetivosEspecificosUno",
+        "objetivosEspecificosDos",
+        "objetivosEspecificosTres",
+        "proximaSesionFecha",
+        "proximaSesionHora",
+        "agregarAMeets"
+      ];
+      
+      const tieneDatos = () => {
+        if (!initialValues) {
+          return false;
+        }
+      
+        for (const campo of camposInteres) {
+          if (initialValues[campo]) {
+            return true;
+          }
+        }
+      
+        return false;
+      };
+      
+      const guardarFormulario = (datosFormulario) => {
+        Swal.fire({ title: 'Guardando..', text: 'Guardando HC ' + initialValues.nombreCompleto, showConfirmButton: false });
+        const proximaSesionFecha = moment.utc(datosFormulario.proximaSesionFecha).format('YYYY-MM-DD');
+        const proximaSesionHora = moment.utc(datosFormulario.proximaSesionHora, 'HH:mm').format('HH:mm:ss[Z]');
+        const proximaSesionFechaHora = `${proximaSesionFecha}T${proximaSesionHora}`;
+        datosFormulario.proximaSesionFecha = proximaSesionFechaHora;
+        datosFormulario.proximaSesionHora = proximaSesionHora;
+        
+        google.script.run
+          .withSuccessHandler(({ titulo, descripcion }) => {
+            Swal.fire({ title: titulo, text: descripcion, icon: 'success' });
+            setInitialValues(undefined);
+            form.resetFields();
+            if (datosFormulario.agregarAMeets === "Sí") {
+              crearEventoDespuesDeGuardar();
+            } else {
+              history.push('/welcome');
+            }
+          })
+          .actualizarUsuario(id, JSON.stringify(datosFormulario));
+      };
+      
+      const crearEventoDespuesDeGuardar = () => {
+        console.log("entró a crearEventoDespuesDeGuardar");
+        try {
+          google.script.run
+            .withSuccessHandler(() => {
+              console.log("Evento creado exitosamente");
+              agregandoAMeets();
+              history.push('/welcome');
+            })
+            .withFailureHandler((error) => {
+              console.error("Error al crear el evento en Google Calendar:", error);
+              notificacionError("Error al crear la sesión en calendar", error);
+            })
+            .crearEventoGoogleCalendarHC(id);
+        } catch (error) {
+          console.error("Error al ejecutar crearEventoGoogleCalendarHC:", error);
+          notificacionError("Error al ejecutar crearEventoGoogleCalendarHC", error);
+        }
+      };
+      
+      
+
+      
+  
+
+      const Formulario = () => {
+        return (
+          
+          <Form
+            initialValues={initialValues}
+            form={form}
+            onFinish={guardarFormulario}
+            layout="vertical"   
+            disabled={tieneDatos()}    
+            className="mx-auto max-w-xl"    
+          >
+            <details style={{ width: '100%', marginBottom: '10px', background: '#f5d7b6', borderBottom: '1px solid #ccc' }}>
+              <summary style={{ cursor: 'pointer', padding: '10px' }}>Motivo de Consulta</summary>
+              <div style={{ width: '100%', padding: '10px', borderTop: '1px solid #ccc' }}>
+              <Form.Item
+                key={"motivoConsulta"}
+                name={"motivoConsulta"}
+                label={"Motivo de Consulta"} 
+              >
+                <Input.TextArea
+                  rows={4}
+                  style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA', color: tieneDatos() ? '#555' : '#000' }}
+                  autoSize={{ minRows: 4, maxRows: 4, resize: 'none' }}
+                  disabled={tieneDatos()}
+                />
+              </Form.Item>
+              <Form.Item name="createDataHC" key="createDataHC" label="Fecha creación:" style={{ marginBottom: '0', marginRight: '10px', flex: '1 1 100%', color: tieneDatos() ? '#555' : '#000', display: tieneDatos() ? 'none' : 'block' }}>
+                <input type="date"  style={{ width: '100%' }} disabled={tieneDatos()} />
+              </Form.Item>
+ 
+              </div>
+            </details>
+
+
+<details
+      style={{
+        width: '100%',
+        marginBottom: '10px',
+        background: '#b3d6c6',
+        borderBottom: '1px solid #ccc'
+      }}
+    >
+<summary style={{ cursor: 'pointer', padding: '10px' }}>Examen Mental</summary>
+<div style={{ width: '100%', padding: '10px', borderTop: '1px solid #ccc', display: 'flex', flexDirection: 'row' }}>
+  <div style={{ flex: '1', marginRight: '10px' }}>
+    <Form.Item name="porteYApariencia"  label={<span style={{ fontWeight: 'bold' }}>01.-Porte & Apariencia</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="orientacion"  label={<span style={{ fontWeight: 'bold' }}>02.-Orientación</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="inteligencia"  label={<span style={{ fontWeight: 'bold' }}>03.-Inteligencia</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="lenguaje"  label={<span style={{ fontWeight: 'bold' }}>04.-Lenguaje</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="afecto"  label={<span style={{ fontWeight: 'bold' }}>05.-Afecto</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+  </div>
+  <div style={{ flex: '1', marginLeft: '10px' }}>
+    <Form.Item name="sensorPercepcion"  label={<span style={{ fontWeight: 'bold' }}>06.-Senso - Percepción</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="actividadPsicomotora"  label={<span style={{ fontWeight: 'bold' }}>07.-Actividad PsicoMotora</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="aprendizajeAtencion"  label={<span style={{ fontWeight: 'bold' }}>08.-Atención</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="memoria"  label={<span style={{ fontWeight: 'bold' }}>09.-Memoria</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="actitudValoracion"  label={<span style={{ fontWeight: 'bold' }}>10.-Actitud Ante la Valoración</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+  </div>
+</div>
+
+</details>
+
+
+<details
+      style={{
+        width: '100%',
+        marginBottom: '10px',
+        background: '#a6c1db',
+        borderBottom: '1px solid #ccc'
+      }}
+    >
+<summary style={{ cursor: 'pointer', padding: '10px' }}>Otros Indicadores</summary>
+<div style={{ width: '100%', padding: '10px', borderTop: '1px solid #ccc', display: 'flex', flexDirection: 'row' }}>
+  <div style={{ flex: '1', marginRight: '10px' }}>
+    <Form.Item name="abusoSexual"  label={<span style={{ fontWeight: 'bold' }}>01.-Abuso Sexual</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="ideasMuerte"  label={<span style={{ fontWeight: 'bold' }}>02.-Ideas de Muerte</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()}  />
+    </Form.Item>
+    <Form.Item name="planSuicida"  label={<span style={{ fontWeight: 'bold' }}>03.-Plan Suicida</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }} autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()}  />
+    </Form.Item>
+    <Form.Item name="actoSuicida"  label={<span style={{ fontWeight: 'bold' }}>04.-Acto Suicida</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }} autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="consumoProblematico"  label={<span style={{ fontWeight: 'bold' }}>05.-Consumo Problemático</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }} autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="cicloSueño"  label={<span style={{ fontWeight: 'bold' }}>06.-Ciclo de Sueño</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }} autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="afectividadSexualidad"  label={<span style={{ fontWeight: 'bold' }}>07.-Afectividad & Sexualidad</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }} autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+  </div>
+  <div style={{ flex: '1', marginLeft: '10px' }}>
+    <Form.Item name="cicloAlimentacion"  label={<span style={{ fontWeight: 'bold' }}>08.-Ciclo de Alimentación</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }} autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="actividadFisica"  label={<span style={{ fontWeight: 'bold' }}>09.-Actividad Física</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }} autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()}/>
+    </Form.Item>
+    <Form.Item name="personalesEnSaludMental"  label={<span style={{ fontWeight: 'bold' }}>10.-Antecedentes Personales</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }} autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()} />
+    </Form.Item>
+    <Form.Item name="familiaresEnSaludMental"  label={<span style={{ fontWeight: 'bold' }}>11.-Antecedentes Familiares</span>}>
+      <Input.TextArea rows={2}  style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }} autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()}/>
+    </Form.Item>
+    <Form.Item name="educacionTrabajo"  label={<span style={{ fontWeight: 'bold' }}>12.-Educación & Trabajo</span>}>
+      <Input.TextArea rows={2} style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }} autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()}/>
+    </Form.Item>
+    <Form.Item name="relacionesFamiliares"  label={<span style={{ fontWeight: 'bold' }}>13.-Relaciones Familiares</span>}>
+      <Input.TextArea rows={2}  style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }} autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()}/>
+    </Form.Item>
+    <Form.Item name="observacionesTerapeuta"  label={<span style={{ fontWeight: 'bold' }}>12.-Observaciones del Terapeuta</span>}>
+      <Input.TextArea rows={2}  style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }} autoSize={{ minRows: 2, maxRows: 2, resize: 'none' }} disabled={tieneDatos()}/>
+    </Form.Item>
+  </div>
+</div>
+
+</details>
+
+
+<details 
+  style={{
+    width: '100%',
+    marginBottom: '10px',
+    background: '#f0c9d7',
+    borderBottom: '1px solid #ccc'
+  }}
+>
+<summary style={{ cursor: 'pointer', padding: '10px' }}>
+  Diagnóstico <span style={{ color: 'red', fontWeight: 'bold', fontSize: '0.9em' }}>* campos obligatorios</span>
+</summary>
+ <div style={{ width: '100%', padding: '10px', borderTop: '1px solid #ccc', display: 'flex', flexDirection: 'row' }}>
+    <div style={{ flex: '1', marginRight: '10px' }}>
+    
+             
+          <Form.Item
+            name="diagnosticoPrincipal"
+            label={<span style={{ fontWeight: 'bold' }}>Diagnóstico Principal</span>}
+            rules={[
+              { required: true, message: "El diagnóstico principal es requerido" }
+            ]}
+            style={{ marginRight: '10px' }} 
+          >
+            <Input className="bg-gray-200" style={{ backgroundColor: 'white', marginBottom: '8px', color: tieneDatos() ? '#555' : '#000' }} disabled={tieneDatos()}/>
+          </Form.Item>
+
+          <Form.Item
+            name="tipoDiagnostico"
+            label="Tipo de Diagnóstico*"
+            rules={[
+              { required: true, message: "Por favor selecciona una opción" }
+            ]}
+            style={{ width: '100%' }}
+          >
+            <Select style={{ width: '100%', backgroundColor: 'white', border: '0.5px solid #AAAAAA' , color: tieneDatos() ? '#555' : '#000' }}  placeholder="Tipo Diagnóstico" disabled={tieneDatos()}>
+              <Option value="Impresión Diagnostica">Impresión Diagnóstica</Option>
+              <Option value="Confirmado Nuevo">Confirmado Nuevo</Option>
+              <Option value="Confirmado Repetido">Confirmado Repetido</Option>
+            </Select>
+          </Form.Item>
+        
+
+
+      <Form.Item
+        name="diagnosticoRelacionadoUno"
+        label={<span style={{ fontWeight: 'bold' }}>Diagnóstico Relacionado 1</span>}
+      >
+        <Input style={{ backgroundColor: 'white', border: '1px solid #787878', color: tieneDatos() ? '#555' : '#000'}} disabled={tieneDatos()} />
+      </Form.Item>
+
+      {/* Diagnóstico Relacionado 2 */}
+      <Form.Item
+        name="diagnosticoRelacionadoDos"
+        label={<span style={{ fontWeight: 'bold' }}>Diagnóstico Relacionado 2</span>}
+      >
+        <Input style={{ backgroundColor: 'white', border: '1px solid #787878', color: tieneDatos() ? '#555' : '#000'  }} disabled={tieneDatos()} />
+      </Form.Item>
+
+      {/* Diagnóstico Relacionado 3 */}
+      <Form.Item
+        name="diagnosticoRelacionadoTres"
+        label={<span style={{ fontWeight: 'bold' }}>Diagnóstico Relacionado 3</span>}
+      >
+        <Input style={{ backgroundColor: 'white', border: '1px solid #787878', color: tieneDatos() ? '#555' : '#000'  }} disabled={tieneDatos()} />
+      </Form.Item>
+    </div>
+  </div>
+</details>
+
+<details 
+  style={{
+    width: '100%',
+    marginBottom: '10px',
+    background: '#99ccff',
+    borderBottom: '1px solid #ccc'
+  }}
+>
+  <summary style={{ cursor: 'pointer', padding: '10px' }}>Plan de Intervención</summary>
+  <div style={{ width: '100%', padding: '10px', borderTop: '1px solid #ccc', display: 'flex', flexDirection: 'row' }}>
+    <div style={{ flex: '1', marginRight: '10px' }}>
+    
+      {/* Modelo de Intervención */}
+      <Form.Item
+        name="modeloIntervencion"
+        label={<span style={{ fontWeight: 'bold' }}>01. Modelo de Intervención</span>}
+      >
+        <Input style={{ backgroundColor: 'white', border: '1px solid #787878', color: tieneDatos() ? '#555' : '#000' }} disabled={tieneDatos()} />
+      </Form.Item>
+
+      {/* Objetivo General */}
+      <Form.Item
+        name="objetivoGeneral"
+        label={<span style={{ fontWeight: 'bold' }}>02. Objetivo General</span>}
+      >
+        <Input style={{ backgroundColor: 'white', border: '1px solid #787878', color: tieneDatos() ? '#555' : '#000' }} disabled={tieneDatos()} />
+      </Form.Item>
+
+      {/* Objetivos Específicos 1 */}
+      <Form.Item
+        name="objetivosEspecificosUno"
+        label={<span style={{ fontWeight: 'bold' }}>03. Objetivos Específicos 1</span>}
+      >
+        <Input style={{ backgroundColor: 'white', border: '1px solid #787878', color: tieneDatos() ? '#555' : '#000' }} disabled={tieneDatos()}/>
+      </Form.Item>
+
+      <Form.Item
+        name="objetivosEspecificosDos"
+        label={<span style={{ fontWeight: 'bold' }}>03. Objetivos Específicos 2</span>}
+      >
+        <Input style={{ backgroundColor: 'white', border: '1px solid #787878', color: tieneDatos() ? '#555' : '#000' }} disabled={tieneDatos()} />
+      </Form.Item>
+
+      <Form.Item
+        name="objetivosEspecificosTres"
+        label={<span style={{ fontWeight: 'bold' }}>03. Objetivos Específicos 3</span>}
+      >
+        <Input style={{ backgroundColor: 'white', border: '1px solid #787878', color: tieneDatos() ? '#555' : '#000' }} disabled={tieneDatos()} />
+      </Form.Item>
+
+    </div>
+  </div>
+</details>
+
+<details 
+  style={{
+    width: '100%',
+    marginBottom: '10px',
+    background: '#BDFCB9',
+    borderBottom: '1px solid #ccc',
+    display: tieneDatos() ? 'none' : 'block'
+  }}
+>
+  <summary style={{ cursor: 'pointer', padding: '10px' }}>Programar próxima sesión</summary>
+  <div style={{
+    width: '100%',
+    padding: '10px',
+    borderTop: '1px solid #ccc',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap' 
+  }}>
+    <div style={{ 
+      flex: '1', 
+      display: 'flex', 
+      flexDirection: 'row', 
+      marginRight: '10px', 
+      flexWrap: 'wrap' 
+    }}>
+      <Form.Item name="proximaSesionFecha" label="Fecha de la próxima sesión:" style={{ marginBottom: '0', marginRight: '10px', flex: '1 1 100%' }}>
+        <input id="proximaSesionFecha"  type="date" style={{ width: '100%', color: tieneDatos() ? '#555' : '#000' }}  disabled={tieneDatos()} />
+      </Form.Item>      
+      <Form.Item name="proximaSesionHora" label="Hora de la próxima sesión:" style={{ marginBottom: '0', marginRight: '10px', flex: '1 1 100%' }}>
+        <input id="proximaSesionHora" type="time" style={{ width: '100%', color: tieneDatos() ? '#555' : '#000' }} disabled={tieneDatos()} />
+      </Form.Item>  
+      <Form.Item name="agregarAMeets" label="Agregar a Meets:" style={{ marginBottom: 0, flex: '1 1 100%' }}>
+        <Select id="meet" defaultValue="Agregar videoconferencia 💻" style={{ width: '100%', color: tieneDatos() ? '#555' : '#000' }} disabled={tieneDatos()}>
+          <Option value="Sí">Sí</Option>
+          <Option value="No">No</Option>
+        </Select>
+      </Form.Item>
+    </div>
+  </div>
+</details>
+
+
+
+              <Item className="text-center">
+              <Button htmlType="submit" className="mr-3 px-3 py-1 bg-blue-700 text-white rounded-2xl">
+            Guardar
+          </Button>
+            </Item>
+          </Form>
+                   
+        )
+      }
+
+      return (
+        <div className="px-4 py-8" style={{ maxWidth: '100%', margin: '0 auto', textAlign: 'center', backgroundColor: 'rgba(255, 255, 255, 0.3)', backgroundImage: 'url("https://res.cloudinary.com/dt1aacjqj/image/upload/v1716766791/fondo1_jgbisn.jpg")', backgroundSize: 'cover', minHeight: '100vh' }}>
+          <h2 style={{marginBottom: "0px"}} className="text-center font-bold text-xl my-6">Historia Clínica de {initialValues ? initialValues.nombreCompleto : ''}</h2>
+          {initialValues && tieneDatos() && (
+          <h2 style={{
+            padding: '10px',
+            color: 'red',
+            textAlign: 'center',
+            backgroundColor: '#f0f0f0',
+            fontSize: '1.2em',
+            margin: '0 0 10px 0',
+            marginBottom: "0px"
+          }}>
+           {initialValues ? initialValues.nombreCompleto : ''} ya tiene una Historia Clínica. Puedes crear otra pero no modificar la actual.
+            </h2>
+        )}
+          {
+            (id && initialValues)
+              ? <Formulario />
+              : <Formulario />
+          }
+        </div>
+      );
+    }
+
+    //</script>

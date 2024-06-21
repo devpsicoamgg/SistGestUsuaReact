@@ -1,0 +1,110 @@
+//<script type="text/jsx">
+
+function capitalizeWords(str) {
+  return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+}
+
+function Welcome() {
+  const [datosTerapeuta, setDatosTerapeuta] = useState({
+    fullName: '',
+    imageUrl: ''
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const cargarDatosTerapeuta = () => {
+      google.script.run
+        .withSuccessHandler((terapeutaData) => {
+          const terapeutaObj = JSON.parse(terapeutaData);
+          if (Array.isArray(terapeutaObj) && terapeutaObj.length > 0) {
+            setDatosTerapeuta({
+              fullName: capitalizeWords(terapeutaObj[0].fullName || ''),
+              imageUrl: terapeutaObj[0].imageUrl || ''
+            });
+          }
+          setLoading(false);
+          Swal.close();
+        })
+        .withFailureHandler(() => {
+          setLoading(false);
+          Swal.close();
+        })
+        .mostrarDatosTerapeuta();
+    };
+
+    cargarDatosTerapeuta();
+  }, []);
+
+  const containerStyle = {
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "100vh",
+    background: `url('https://res.cloudinary.com/dt1aacjqj/image/upload/v1716783003/Dise%C3%B1o_sin_t%C3%ADtulo_20240526_230928_0000_d8a4nk.png') no-repeat center center fixed`,
+    backgroundSize: "cover",
+    backgroundSize: "cover",
+    backgroundColor: "rgba(247, 247, 247, 0.7)", 
+    backdropFilter: "blur(5px)"
+  };
+
+  const imageContainerStyle = {
+    textAlign: "center"
+  };
+
+  const imageStyle = {
+    width: "200px",
+    borderRadius: "50%",
+    boxShadow: "0px 8px 15px rgba(0, 0, 0, 0.1)"
+  };
+
+  const contentContainerStyle = {
+    textAlign: "center",
+    maxWidth: "800px",
+    padding: "2rem"
+  };
+
+  const textStyle = {
+    fontSize: "1.5rem",
+    lineHeight: "1.8",
+    color: "#333",
+    marginBottom: "2rem"
+  };
+
+  const footerStyle = {
+    fontSize: "0.8rem",
+    color: "#666",
+    marginTop: "2rem"
+  };
+
+  return (
+    <div style={containerStyle}>
+      <div style={imageContainerStyle}>
+        {datosTerapeuta.imageUrl && (
+          <img
+            src={datosTerapeuta.imageUrl}
+            alt="Avatar"
+            style={imageStyle}
+          />
+        )}
+      </div>
+      <div style={contentContainerStyle}>
+        {datosTerapeuta.fullName && (
+          <h1 style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>
+            ¡Hola!, {datosTerapeuta.fullName}!
+          </h1>
+        )}
+        <p style={textStyle}>
+          Esta es una herramienta diseñada para simplificar la gestión de pacientes en su consulta de psicología.
+        </p>
+        <footer style={footerStyle}>
+          ©2024 Sistema de Manejo de Pacientes de Psicología Google App Script & React - Todos los derechos reservados
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+
+  //</script>

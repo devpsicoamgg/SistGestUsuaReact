@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <?!= include('frontend/config/cdn') ?>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+  <div id="root"></div>
+</body>
+
+<components style="display: none;">
+  <!-- importaciones -->
+
+  <!-- constantes -->
+  <?!= include('frontend/config/constantesCdn') ?>
+
+  <!-- rutas -->
+  <?!= include('frontend/routes/Routes') ?>
+
+  <!-- helpers -->
+  <?!= include('frontend/helpers/modalesNotificaciones') ?>
+
+  <!-- vistas -->
+  <?!= include('frontend/views/Inicio') ?>
+  <?!= include('frontend/views/Welcome') ?>
+  <?!= include('frontend/views/usuarios/Usuarios') ?>
+  <?!= include('frontend/views/formularios/FormularioRegistro') ?>
+  <?!= include('frontend/views/formularios/SesionesDeSeguimiento') ?>
+  <?!= include('frontend/views/editBasicData/EditBasicData') ?>
+  <?!= include('frontend/views/clinicalHistoryView/ClinicalHistoryView') ?>
+  <?!= include('frontend/views/trackingSessionsViews/TrackingSessionsViews') ?>
+  <?!= include('frontend/views/formularios/HistoriaClinica') ?>
+  <?!= include('frontend/views/descargas/Descargas') ?>
+  <?!= include('frontend/views/calendarios/Calendar') ?>
+  <?!= include('frontend/views/backUpBaseDeDatos/BackUpBaseDeDatos') ?>
+  <?!= include('frontend/views/ajustes/Ajustes') ?>
+  <?!= include('frontend/components/Header') ?>
+
+
+  
+
+  <!-- componente raíz -->
+  <?!= include('frontend/App') ?>
+
+</components>
+
+</html>

@@ -1,0 +1,245 @@
+//<script type="text/jsx">
+  
+
+function Header({ isAuthenticated, handleLogout }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const history = useHistory();
+
+  const handleLogoutClick = () => {
+    localStorage.removeItem('username');
+    localStorage.removeItem('isAuthenticated');
+    history.push('/welcome');
+    handleLogout();
+  };
+
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
+
+  return (
+    <div className="shadow-2xl p-2 fixed top-0 left-0 right-0 z-50" style={{ backgroundImage: 'url("https://res.cloudinary.com/dt1aacjqj/image/upload/v1716783003/Dise%C3%B1o_sin_t%C3%ADtulo_20240526_230928_0000_d8a4nk.png")', backgroundSize: 'cover', backgroundColor: 'rgba(255, 255, 255, 0.5)' }}>
+      <div className="flex flex-col md:flex-row items-center md:justify-between">
+        <button
+           className="md:hidden text-black font-bold flex justify-center items-center" 
+          onClick={toggleMenu}
+          style={{
+            background: 'none',
+            border: 'none',
+            fontSize: '32px',
+            cursor: 'pointer',
+            alignSelf: 'center' 
+          }}
+        >
+          <span className="material-icons" style={{  fontSize: '32px' }}>  {menuOpen ? 'menu_open' : 'menu'} </span>
+        </button>
+        <div className={`flex flex-col md:flex-row w-full md:w-auto ${menuOpen ? 'block' : 'hidden'} md:block`}>
+          {isAuthenticated && (
+      
+            <div className="flex flex-col md:flex-row justify-center"   style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              alignSelf: 'center' 
+            }}>
+              <NavLink
+                exact
+                activeClassName="bg-blue-500"
+                className="mb-2 md:mb-0 md:mr-3 px-3 py-1 bg-blue-700 text-white rounded-2xl"
+                to="/formularioRegistro"
+                style={{
+                  textDecoration: 'none',
+                  transition: 'color 0.2s, transform 0.2s',
+                  border: '2px solid transparent',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.color = '#A6FB98';
+                  e.currentTarget.style.borderColor = '#41FF00';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.color = '#FFF';
+                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>how_to_reg</span>
+                  <span>Registro</span>
+                </div>
+              </NavLink>
+
+              <NavLink
+                exact
+                activeClassName="bg-blue-500"
+                className="mb-2 md:mb-0 md:mr-3 px-3 py-1 bg-blue-700 text-white rounded-2xl"
+                to="/usuarios"
+                style={{
+                  textDecoration: 'none',
+                  transition: 'color 0.2s, transform 0.2s',
+                  border: '2px solid transparent',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.color = '#A6FB98';
+                  e.currentTarget.style.borderColor = '#41FF00';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.color = '#FFF';
+                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>format_list_bulleted</span>
+                  <span>Listado</span>
+                </div>
+              </NavLink>
+
+              <NavLink
+                exact
+                activeClassName="bg-blue-500"
+                className="mb-2 md:mb-0 md:mr-3 px-3 py-1 bg-blue-700 text-white rounded-2xl"
+                to="/descargas"
+                style={{
+                  textDecoration: 'none',
+                  transition: 'color 0.2s, transform 0.2s',
+                  border: '2px solid transparent',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.color = '#A6FB98';
+                  e.currentTarget.style.borderColor = '#41FF00';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.color = '#FFF';
+                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>arrow_downward</span>
+                  <span>Descargas</span>
+                </div>
+              </NavLink>
+
+              <NavLink
+                exact
+                activeClassName="bg-blue-500"
+                className="mb-2 md:mb-0 md:mr-3 px-3 py-1 bg-blue-700 text-white rounded-2xl"
+                to="/backUpBaseDeDatos"
+                style={{
+                  textDecoration: 'none',
+                  transition: 'color 0.2s, transform 0.2s',
+                  border: '2px solid transparent',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.color = '#A6FB98';
+                  e.currentTarget.style.borderColor = '#41FF00';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.color = '#FFF';
+                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>backup</span>
+                  <span>Back-Up</span>
+                </div>
+              </NavLink>
+
+              <NavLink
+                exact
+                activeClassName="bg-blue-500"
+                className="mb-2 md:mb-0 md:mr-3 px-3 py-1 bg-blue-700 text-white rounded-2xl"
+                to="/calendar"
+                style={{
+                  textDecoration: 'none',
+                  transition: 'color 0.2s, transform 0.2s',
+                  border: '2px solid transparent',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.color = '#A6FB98';
+                  e.currentTarget.style.borderColor = '#41FF00';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.color = '#FFF';
+                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>calendar_month</span>
+                  <span>Calendario</span>
+                </div>
+              </NavLink>
+
+              <NavLink
+                exact
+                activeClassName="bg-blue-500"
+                className="mb-2 md:mb-0 md:mr-3 px-3 py-1 bg-blue-700 text-white rounded-2xl"
+                to="/ajustes"
+                style={{
+                  textDecoration: 'none',
+                  transition: 'color 0.2s, transform 0.2s',
+                  border: '2px solid transparent',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.color = '#A6FB98';
+                  e.currentTarget.style.borderColor = '#41FF00';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.color = '#FFF';
+                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>manage_accounts</span>
+                  <span>Ajustes</span>
+                </div>
+              </NavLink>
+
+              <button
+                onClick={handleLogoutClick}
+                className="mb-2 md:mb-0 md:mr-3 px-3 py-1 rounded-2xl"
+                style={{
+                  backgroundColor: '#1D4ED8',
+                  color: '#FFF',
+                  transition: 'background-color 0.3s, color 0.3s',
+                  border: '2px solid transparent',
+                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1D4ED8';
+                  e.currentTarget.style.color = '#FB9898';
+                  e.currentTarget.style.borderColor = '#FF0000';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1D4ED8';
+                  e.currentTarget.style.color = '#FFF';
+                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>logout</span>
+                  <span>Cerrar Sesión</span>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+//</script>

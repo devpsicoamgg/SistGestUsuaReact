@@ -1,0 +1,40 @@
+//<script type="text/jsx">
+function Routes() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const handleLogout = () => {
+    localStorage.removeItem('username');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('sessionToken');
+    setIsAuthenticated(false);
+  };
+  return (
+    <Router>
+    <Header isAuthenticated={isAuthenticated} handleLogout={handleLogout} />
+    <Switch>
+      {!isAuthenticated && (
+        <div>
+          <Route path="/" render={(props) => <Inicio {...props} setIsAuthenticated={setIsAuthenticated} />} />
+        </div>
+
+      )}
+      {isAuthenticated && (
+        <div>
+      <Route path="/formularioRegistro/:id?" component={FormularioRegistro} />
+      <Route path="/sesionesDeSeguimiento/:id?" component={SesionesDeSeguimiento} />
+      <Route path="/historiaClinica/:id?" component={HistoriaClinica} />
+      <Route path="/viewClinicalHistory/:id?" component={ClinicalHistoryView} />
+      <Route path="/viewTrackingSessions/:id?" component={TrackingSessionsViews} />
+      <Route path="/usuarios" component={Usuarios} />
+      <Route path="/welcome" component={Welcome} />
+      <Route path="/descargas" component={Descargas} />
+      <Route path="/calendar" component={Calendar} />
+      <Route path="/backUpBaseDeDatos" component={BackUpBaseDeDatos} />
+      <Route path="/ajustes" component={Ajustes} />
+      <Route path="/editBasicData/:id?" component={EditBasicData} />
+        </div>
+      )}
+    </Switch>
+  </Router>
+  );
+}
+//</script>

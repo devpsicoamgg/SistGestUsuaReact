@@ -1,0 +1,223 @@
+//<script type="text/jsx">
+
+function Usuarios() {
+  const [dataSource, setDataSource] = useState([]);
+  const [searchText, setSearchText] = useState('');
+  const history = useHistory();
+  const Tooltip = window.antd.Tooltip;
+  
+  useEffect(() => {
+    listarUsuarios();
+  }, []);
+
+  function listarUsuarios() {
+    notificacionObteniendoDatos("Obteniendo lista de usuarios desde el servidor");
+    google.script.run
+      .withSuccessHandler(res => {
+        const usuarios = JSON.parse(res);
+        usuarios.sort((a, b) => (a.nombreCompleto > b.nombreCompleto) ? 1 : -1);
+        let arreglo = usuarios.map((usuario, index) => ({
+          key: usuario.id,
+          numero: index + 1,
+          ...usuario,
+          fechaCreacionHC: formatFecha(usuario.createDataHC),
+          acciones: (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                <Tooltip title="Editar datos básicos del paciente">
+                <Button
+                onClick={() => {
+
+                  history.push("/editBasicData/" + usuario.id);
+                }}
+                style={{
+                  borderRadius: '20px',
+                  fontWeight: 'bold',
+                  backgroundColor: '#FFF', 
+                  color: '#000', 
+                  border: '2px solid #000', 
+                  transition: 'transform 0.2s, color 0.2s, background-color 0.2s, border-color 0.2s', 
+                  transform: 'scale(1)', 
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.color = '#FFF'; 
+                  e.currentTarget.style.backgroundColor = '#000'; 
+                  e.currentTarget.style.borderColor = '#41FF00'; 
+                  e.currentTarget.style.transform = 'scale(1.15)'; 
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.color = '#000'; 
+                  e.currentTarget.style.backgroundColor = '#FFF'; 
+                  e.currentTarget.style.borderColor = '#000'; 
+                  e.currentTarget.style.transform = 'scale(1)'; 
+                }}
+              >
+           <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>edit_note</span>
+              <span>Edit</span>
+            </div>
+              </Button>
+              </Tooltip>
+
+              <Tooltip title="Crear historia clínica del paciente" style={{ backgroundColor: '#800080', color: 'white' }}>    
+              <Button
+                onClick={() => {
+                  history.push("/historiaClinica/" + usuario.id);
+                }}
+                style={{
+                  borderRadius: '20px',
+                  fontWeight: 'bold',
+                  backgroundColor: '#FFF', 
+                  color: '#000', 
+                  border: '2px solid #000', 
+                  transition: 'transform 0.2s, color 0.2s, background-color 0.2s, border-color 0.2s', 
+                  transform: 'scale(1)', 
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.color = '#FFF'; 
+                  e.currentTarget.style.backgroundColor = '#000'; 
+                  e.currentTarget.style.borderColor = '#41FF00'; 
+                  e.currentTarget.style.transform = 'scale(1.15)'; 
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.color = '#000'; 
+                  e.currentTarget.style.backgroundColor = '#FFF'; 
+                  e.currentTarget.style.borderColor = '#000'; 
+                  e.currentTarget.style.transform = 'scale(1)'; 
+                }}
+              >
+                
+            <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>note_add</span>
+              <span>H.C</span>
+            </div>
+              </Button>
+              </Tooltip> 
+
+              <Tooltip title="Crear sesiones de seguimiento de un paciente" >
+              <Button
+                onClick={() => {
+                  history.push("/sesionesDeSeguimiento/" + usuario.id);
+                }}
+                style={{
+                  borderRadius: '20px',
+                  fontWeight: 'bold',
+                  backgroundColor: '#FFF', 
+                  color: '#000', 
+                  border: '2px solid #000', 
+                  transition: 'transform 0.2s, color 0.2s, background-color 0.2s, border-color 0.2s', 
+                  transform: 'scale(1)', 
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.color = '#FFF'; 
+                  e.currentTarget.style.backgroundColor = '#000'; 
+                  e.currentTarget.style.borderColor = '#41FF00'; 
+                  e.currentTarget.style.transform = 'scale(1.15)'; 
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.color = '#000'; 
+                  e.currentTarget.style.backgroundColor = '#FFF'; 
+                  e.currentTarget.style.borderColor = '#000'; 
+                  e.currentTarget.style.transform = 'scale(1)'; 
+                }}
+              >
+           <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="material-icons" style={{ fontSize: '16px', marginRight: '5px' }}>query_stats</span>
+              <span>Seg.</span>
+            </div>
+              </Button>
+              </Tooltip>
+              
+            </div>
+          )
+        }));
+       
+        setDataSource(arreglo);
+        Swal.close();
+      })
+      .listarUsuarios();
+  }
+
+  function formatFecha(fecha) {
+  
+    if (!fecha) return 'Sin creación de HC';
+    
+    const date = new Date(fecha);
+    if (isNaN(date)) return '';
+  
+    const day = String(date.getDate()).padStart(2, '0');
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    console.log(`${day}/${month}/${year}`);
+    return `${day}/${month}/${year}`;
+  }
+
+  function handleSearch(value) {
+    setSearchText(value);
+    if (value === '') {
+      listarUsuarios(); 
+    } else {
+      const filteredData = dataSource.filter(user =>
+        user.nombreCompleto.toLowerCase().includes(value.toLowerCase())
+      );
+      setDataSource(filteredData);
+    }
+  }
+  
+
+  const columns = [
+    {
+      title: 'N°',
+      dataIndex: 'numero',
+      key: 'numero',
+    },
+    {
+      title: 'Nombre completo',
+      dataIndex: 'nombreCompleto',
+      key: 'nombreCompleto',
+    },
+    {
+      title: 'Correo',
+      dataIndex: 'correo',
+      key: 'correo',
+    },
+    {
+      title: 'Teléfono',
+      dataIndex: 'telefono',
+      key: 'telefono',
+    },
+    {
+      title: 'Fecha Creación',
+      dataIndex: 'fechaCreacionHC', 
+      key: 'fechaCreacionHC',
+    },
+    {
+      title: 'Acciones Terapéuticas',
+      dataIndex: 'acciones',
+      key: 'acciones',
+    },
+  ];
+
+  return (
+    <div style={{ width: '100%',  height: '100vh', backgroundImage: 'url("https://res.cloudinary.com/dt1aacjqj/image/upload/v1716767758/wallpaper-962590_1280_wkby9v.png")', backgroundSize: 'cover', backgroundPosition: 'center'}}>
+    <div style={{ width: 'fit-content', margin: '0 auto', textAlign: 'center', padding: '20px', borderRadius: '10px', marginTop: "25px" }}> 
+      <Input.Search
+        placeholder="Buscar por nombre ✍🏽"
+        value={searchText}
+        onChange={e => handleSearch(e.target.value)}
+        style={{ width: '300px', marginBottom: '12px', marginTop: '12px', backgroundColor: '#F0F0F0' }} 
+      />
+      <Table
+        dataSource={dataSource}
+        columns={columns}
+        pagination={{ pageSize: 5 }}
+        style={{ backgroundColor: '#DFDAEA', borderRadius: '10px', boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.4)', border: '1px solid #ccc' }}
+        bordered
+      />
+    </div>
+  </div>
+  
+  );
+}
+
+//</script>

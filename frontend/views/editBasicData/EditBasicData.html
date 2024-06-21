@@ -1,0 +1,233 @@
+//<script type="text/jsx">
+
+function EditBasicData() {
+  const history = useHistory();
+  const [form] = Form.useForm();
+  const { id } = useParams();
+  const [initialValues, setInitialValues] = useState(undefined);
+
+
+  useEffect(() => {
+    if (id) {
+      notificacionObteniendoDatos("Obteniendo datos del paciente desde el servidor...");
+      google.script.run
+        .withSuccessHandler(res => {
+          const usuario = JSON.parse(res);
+          console.log(usuario);
+          if (usuario.fechaNacimiento) {
+            usuario.fechaNacimiento = moment(usuario.fechaNacimiento);
+          }
+          setInitialValues(usuario);
+          form.setFieldsValue(usuario); 
+          Swal.close();
+        })
+        .listarUsuarios(id);
+    }
+  }, [id]);
+
+
+  const guardarFormulario = (datosFormulario) => {
+
+
+const capitalizeFirstLetter = (str) => {
+  return str.toLowerCase().replace(/(?:^|\s)\w/g, function(match) {
+    return match.toUpperCase();
+  });
+};
+
+
+const nombreCompleto = capitalizeFirstLetter(datosFormulario.nombre1) + " " + (datosFormulario.nombre2 ? capitalizeFirstLetter(datosFormulario.nombre2) : "") + " " + capitalizeFirstLetter(datosFormulario.apellido1) + " " + (datosFormulario.apellido2 ? capitalizeFirstLetter(datosFormulario.apellido2) : "");
+
+
+    datosFormulario.nombreCompleto = nombreCompleto;
+
+
+    notificacionGuardando("Editando usuario/a " + nombreCompleto);
+
+
+    if (id) {
+      google.script.run
+        .withSuccessHandler(({ titulo, descripcion }) => {
+          notificacionTareaTerminada(titulo, descripcion);
+          setInitialValues(undefined);
+          form.resetFields();
+          history.push('/welcome');
+        }).actualizarUsuario(id, JSON.stringify(datosFormulario));
+      } else {
+        const id = v4();
+        google.script.run
+        .withSuccessHandler(({ titulo, descripcion }) => {
+          notificacionTareaTerminada(titulo, descripcion);
+          form.resetFields();
+          history.push('/welcome');
+        }).guardarUsuario(JSON.stringify({ id, ...datosFormulario }));
+    }
+
+  }
+
+  const { Option } = Select;
+
+  const fechaCreacion = moment().format('YYYY-MM-DD'); 
+
+  const Formulario = () => {
+    return (
+      <div style={{margin: '0 auto', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#F3F4F6' }}>
+      <div style={{ maxWidth: '90%', margin: '0 auto', padding: '20px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '8px', backgroundColor: '#E2F5EF' }}>
+        <Form
+          initialValues={initialValues}
+          form={form}
+          onFinish={guardarFormulario}
+          layout="vertical"
+          style={{ maxWidth: '100%' }}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+            {/* Primera fila */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              <Item
+                name="nombre1"
+                label="Primer nombre"
+                rules={[{ required: true, message: "El primer nombre es requerido para el registro" }]}
+                style={{ marginBottom: '0' }}
+              >
+                <Input className="bg-gray-200" />
+              </Item>
+              <Item
+                name="nombre2"
+                label="Segundo nombre"
+                style={{ marginBottom: '0' }}
+              >
+                <Input className="bg-gray-200" />
+              </Item>
+              <Item
+                name="apellido1"
+                label="Primer apellido"
+                rules={[{ required: true, message: "El primer apellido es requerido para el registro" }]}
+                style={{ marginBottom: '0' }}
+              >
+                <Input className="bg-gray-200" />
+              </Item>
+              <Item
+                name="apellido2"
+                label="Segundo apellido"
+                style={{ marginBottom: '0' }}
+              >
+                <Input className="bg-gray-200" />
+              </Item>
+              <Item
+                name="tipoDocumento"
+                label="Tipo de Documento"
+                rules={[{ required: true, message: "Por favor selecciona el tipo de documento" }]}
+                style={{ marginBottom: '0' }}
+              >
+                <Select className="bg-gray-200" style={{ width: '100%' }} placeholder="Tipo de documento 💳">
+                  <Option value="CC">Cédula Ciudadanía</Option>
+                  <Option value="TI">Tarjeta de Identidad</Option>
+                  <Option value="RC">Registro Civil</Option>
+                  <Option value="SD">Sin Documento de identidad</Option>
+                  <Option value="PPT">PPT</Option>
+                  <Option value="PEP">PEP</Option>
+                  <Option value="Pasaporte">Pasaporte</Option>
+                  <Option value="Visa">Visa</Option>
+                  <Option value="Otro">Otro</Option>
+                </Select>
+              </Item>
+            </div>
+    
+            {/* Segunda fila */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              <Item
+                name="numeroDocumento"
+                label="Número de documento"
+                rules={[{ required: true, message: "El número de documento es requerido para el registro" }]}
+                style={{ marginBottom: '0' }}
+              >
+                <Input className="bg-gray-200" />
+              </Item>
+              <Item
+                name="fechaNacimiento"
+                label="Fecha de nacimiento"
+                rules={[{ required: true, message: "La fecha de nacimiento es requerida para el registro" }]}
+                style={{ marginBottom: '0' }}
+              >
+                <DatePicker className="bg-gray-200" style={{ width: '100%' }}  format="DD/MM/YYYY"  />
+              </Item>
+              <Item
+                name="telefono"
+                label="Teléfono"
+                rules={[{ pattern: /^[0-9]*$/, message: 'Por favor ingresa solo números en el campo de teléfono' }]}
+                style={{ marginBottom: '0' }}
+              >
+                <Input className="bg-gray-200" />
+              </Item>
+
+              <Item
+                name="sexo"
+                label="Sexo"
+                rules={[{ required: true, message: "Por favor selecciona el sexo" }]}
+                style={{ marginBottom: '0' }}
+              >
+                <Select className="bg-gray-200" style={{ width: '100%' }} placeholder="Sexo ♀ ♂">
+                  <Option value="Femenino">Femenino</Option>
+                  <Option value="Masculino">Masculino</Option>
+                  <Option value="No responde">No responde</Option>
+                </Select>
+              </Item>
+
+
+              <Item
+                name="correo"
+                label="Correo"
+                rules={[{ type: 'email', message: 'Por favor ingresa un correo electrónico válido' }, { required: false }]}
+                style={{ marginBottom: '0' }}
+              >
+                <Input className="bg-gray-200" />
+              </Item>
+
+              <Item
+                name="autorizarEnvioCorreos"
+                label="Autorización envío de correos"
+                valuePropName="checked"
+                initialValue={true} 
+                style={{ marginBottom: '0' }}
+              >
+          <Checkbox style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} />
+              </Item>
+
+              <Item
+                name="fechaCreacion"
+                label="Fecha de Creación"
+                initialValue={fechaCreacion}
+                style={{ marginBottom: '0' }}
+              >
+                <Input disabled className="bg-gray-200" />
+              </Item>
+            </div>
+          </div>
+    
+          <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+            <Button htmlType="submit" style={{ padding: '0.5rem 1rem', backgroundColor: '#1890ff', color: '#fff', borderRadius: '9999px', cursor: 'pointer', border: 'none' }}>
+              Editar
+            </Button>
+          </div>
+        </Form>
+      </div>
+    </div>
+    
+    
+    )
+  }
+
+  return (
+    <div style={{ width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+      <h2 className="text-center font-bold text-xl my-6">Edición de Datos Básicos</h2>
+      {
+        (id && initialValues)
+          ? <Formulario />
+          : <Formulario />
+      }
+
+    </div>
+  )
+}
+
+//</script>

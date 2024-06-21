@@ -1,0 +1,578 @@
+//<script type="text/jsx">
+
+
+function ClinicalHistoryView() {
+  const { id } = useParams();
+  const history = useHistory();
+  const [initialValues, setInitialValues] = useState(undefined);
+  const [datosTerapeuta, setDatosTerapeuta] = useState({fullName: '', imageUrl: ''});
+  const [loading, setLoading] = useState(true);
+  const Tooltip = window.antd.Tooltip;
+
+
+  const parseISO = (isoString) => new Date(isoString);
+
+  const parseDateTime = (dateTime) => {
+    if (!dateTime) return { date: '', time: '' };
+
+    const localDateTime = new Date(dateTime);
+  
+    const datePart = localDateTime.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      year: '2-digit'
+    }).replace(/(\d+)\s(\w+)\.\s(\d+)/, '$1/$2/$3').replace(/(\w+)/, match => match.charAt(0).toUpperCase() + match.slice(1));
+
+
+    const timePart = localDateTime.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    }).replace(/\s/g, '').toUpperCase();
+
+    return { date: datePart, time: timePart };
+  };
+
+  useEffect(() => {
+    if (id) {
+      notificacionObteniendoDatos("Obteniendo datos del paciente desde el servidor...");
+      google.script.run
+        .withSuccessHandler(res => {
+          const usuario = JSON.parse(res);
+          console.log(usuario);
+          setInitialValues(usuario);
+          Swal.close();
+        }).listarUsuarios(id)
+    }
+  }, [])
+
+  useEffect(() => {
+    const cargarDatosTerapeuta = () => {
+      google.script.run
+        .withSuccessHandler((terapeutaData) => {
+          const terapeutaObj = JSON.parse(terapeutaData);
+          if (Array.isArray(terapeutaObj) && terapeutaObj.length > 0) {
+            setDatosTerapeuta({
+              fullName: terapeutaObj[0].fullName || '',
+              imageUrl: terapeutaObj[0].imageUrl || ''
+            });
+          }
+          setLoading(false);
+        })
+        .withFailureHandler(() => {
+          setLoading(false);
+        })
+        .mostrarDatosTerapeuta();
+    };
+
+    cargarDatosTerapeuta();
+  }, []);
+
+  const differenceInYears = (date1, date2) => {
+    return date1.getFullYear() - date2.getFullYear() - 
+      (date1.getMonth() < date2.getMonth() || 
+       (date1.getMonth() === date2.getMonth() && date1.getDate() < date2.getDate()) ? 1 : 0);
+  };
+  
+  const differenceInMonths = (date1, date2) => {
+    const years = differenceInYears(date1, date2);
+    return (date1.getFullYear() - date2.getFullYear()) * 12 + date1.getMonth() - date2.getMonth();
+  };
+  
+  const differenceInDays = (date1, date2) => {
+    return Math.floor((date1 - date2) / (1000 * 60 * 60 * 24));
+  };
+  
+  const calcularEdad = (fechaNacimiento, createDataHC) => {
+    const nacimiento = parseISO(fechaNacimiento);
+    const sesion = parseISO(createDataHC);
+
+    const anos = differenceInYears(sesion, nacimiento);
+    const meses = differenceInMonths(sesion, nacimiento) % 12;
+    const dias = differenceInDays(sesion, nacimiento) % 30;
+
+    return `${anos} años, ${meses} meses, ${dias} días`;
+  };
+
+  const eliminarPostDescarga = (nuevoDocId) => {
+    google.script.run
+    .withSuccessHandler(() => {
+      console.log("HC Eliminada en drive");
+    })
+    .withFailureHandler(() => {
+      console.log('Error al eliminar', error);
+    })
+    .eliminarPostDescargaDocumento(nuevoDocId)
+  }
+
+  const descargarHistoriaClinica = (id) => {
+    console.log("Entra a descargar Histria");
+    generandoDocumento();
+    google.script.run
+        .withSuccessHandler((resultado) => {
+            console.log('HC descargada con éxito:', resultado.enlaceDescarga);
+            Swal.close();
+            window.open(resultado.enlaceDescarga, '_blank');
+            eliminarPostDescarga(resultado.nuevoDocId)
+        })
+        .withFailureHandler((error) => {
+            console.error('Error al descargar la sesión de seguimiento:', error);
+            Swal.close();
+            notificacionError("Error al descargar la historía clínica",error)
+        })
+        .generarInformeWordHC(id)
+};
+
+function mailHistoriaClinica(id) {
+  enviarCorreo();
+  google.script.run.withSuccessHandler(() => {
+    console.log("Correo enviado exitosamente");
+    Swal.close(); 
+    Swal.fire({
+      icon: 'success',
+      title: 'Correo Enviado',
+      showConfirmButton: false,
+      timer: 1500
+    });
+  }).withFailureHandler((error) => {
+    console.error("Error al enviar el correo:", error);
+    Swal.close(); 
+    notificacionError("Al hacer envio de HC", `${error}`);
+  }).enviarCorreoConHTMLTemplateHistClinic(id);
+}
+
+const { createDataHC } = initialValues || {};
+const { date: fechaValoracion, time: horaValoracion } = parseDateTime(createDataHC || '');
+
+  const InformeHC = () => {
+    return (
+      <div> 
+      <div style={{ overflow: 'hidden' }}> 
+      <div
+        layout="vertical"
+        style={{ width: '80%', margin: '0 auto' }}
+      >
+<div>
+        <div className="grid grid-cols-2 gap-1">
+        <div className="border p-1">
+          <p><strong>Fecha de valoración:</strong> <em>{fechaValoracion}</em></p>
+        </div>
+
+        <div className="border p-1">
+          <p><strong>Hora de valoración:</strong> <em>{horaValoracion}</em></p>
+        </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-1">
+        <div className="border p-1">
+          <p><strong>Nombre completo:</strong> <em>{initialValues ? initialValues.nombreCompleto : ''}</em></p>
+        </div>
+
+        <div className="border p-1">
+          <p><strong>Documento:</strong> <em>{initialValues ? `${initialValues.tipoDocumento} ${initialValues.numeroDocumento}` : ''}</em></p>
+        </div>
+
+        <div className="border p-1">
+          <p><strong>Edad:</strong> <em>{initialValues ? calcularEdad(initialValues.fechaNacimiento, initialValues.createDataHC) : ''}</em></p>
+        </div>
+
+        </div>
+
+        <div className="grid grid-cols-2 gap-1">
+        <div className="border p-1">
+          <p><strong>Teléfono:</strong> <em>{initialValues ? initialValues.telefono : ''}</em></p>
+        </div>
+
+        <div className="border p-1">
+          <p><strong>Correo:</strong> <em>{initialValues ? initialValues.correo  : ''}</em></p>
+        </div>
+        </div>
+
+        <table style={{ borderCollapse: 'collapse', width: '100%', marginTop: '4px' }}>
+        <tbody>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top', width: '20%' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Motivo de Consulta:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top', width: '80%' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.motivoConsulta : ''}</em>
+    </td>
+  </tr>
+
+          <tr>
+            <td colSpan="2" style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'center', backgroundColor: '#B1B1B1' }}>
+              <strong>EXAMEN MENTAL</strong>
+            </td>
+          </tr>
+
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top', width: '20%'  }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Porte y Apariencia:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top', width: '80%'  }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.porteYApariencia : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Orientación:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.orientacion : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Inteligencia:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.inteligencia : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Lenguaje:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.lenguaje : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Afecto:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.afecto : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Sensor y Percepción:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.sensorPercepcion : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Actividad Psicomotora:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.actividadPsicomotora : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Aprendizaje y Atención:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.aprendizajeAtencion : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Memoria:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.memoria : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Actitud ante la Valoración:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.actitudValoracion : ''}</em>
+    </td>
+  </tr>
+
+          <tr>
+            <td colSpan="2" style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'center', backgroundColor: '#B1B1B1' }}>
+              <strong>OTROS INDICADORES</strong>
+            </td>
+          </tr>
+
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top', width: '20%'  }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Abuso Sexual:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top', width: '80%'  }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.abusoSexual : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Ideas de Muerte:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.ideasMuerte : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Plan Suicida:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.planSuicida : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Acto Suicida:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.actoSuicida : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Consumo Problemático:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.consumoProblematico : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Ciclo de Sueño:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+ <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.cicloSueño : ''}</em>
+</td>
+
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Afectividad y Sexualidad:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.afectividadSexualidad : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Ciclo de Alimentación:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.cicloAlimentacion : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Actividad Física:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.actividadFisica : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Personales en Salud Mental:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.personalesEnSaludMental : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Familiares en Salud Mental:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.familiaresEnSaludMental : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Educación y Trabajo:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.educacionTrabajo : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Relaciones Familiares:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.relacionesFamiliares : ''}</em>
+    </td>
+  </tr>
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Observaciones del Terapeuta:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.observacionesTerapeuta : ''}</em>
+    </td>
+  </tr>
+  </tbody>
+        </table>
+
+<table style={{ borderCollapse: 'collapse', width: '100%' }}>
+<tbody>
+<tr>
+            <td colSpan="2" style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'center', backgroundColor: '#B1B1B1' }}>
+              <strong>DIAGNOSTICO</strong>
+            </td>
+          </tr>
+
+          <tr>
+              <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top', width: '50%' }}>
+                <strong style={{ display: 'block', textAlign: 'center' }}>Diagnóstico Principal:</strong>
+                <em style={{ display: 'block', textAlign: 'center' }}>{initialValues ? initialValues.diagnosticoPrincipal : ''}</em>
+              </td>
+              <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top', width: '50%' }}>
+                <strong style={{ display: 'block', textAlign: 'center' }}>Tipo de diagnóstico:</strong>
+                <em style={{ display: 'block', textAlign: 'center' }}>{initialValues ? initialValues.tipoDiagnostico : ''}</em>
+              </td>
+          </tr>
+
+          <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top', width: '20%'  }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Diagnostico Relacionado 1:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top', width: '80%'  }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.diagnosticoRelacionadoUno : ''}</em>
+    </td>
+  </tr>
+
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Diagnostico Relacionado 2:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.diagnosticoRelacionadoDos : ''}</em>
+    </td>
+  </tr>
+
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Diagnostico Relacionado 3:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.diagnosticoRelacionadoTres : ''}</em>
+    </td>
+  </tr>
+ </tbody>
+</table>
+
+
+<table style={{ borderCollapse: 'collapse', width: '100%' }}>
+<tbody>
+<tr>
+            <td colSpan="2" style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'center', backgroundColor: '#B1B1B1' }}>
+              <strong>OBJETIVOS TERAPÉUTICOS & MODELO DE INTERVENCIÓN</strong>
+            </td>
+          </tr>
+
+          <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top', width: '20%'  }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Modelo de intervención:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top', width: '80%' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.modeloIntervencion : ''}</em>
+    </td>
+  </tr>
+
+          <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Objetivo General:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.objetivoGeneral : ''}</em>
+    </td>
+  </tr>
+
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Diagnostico Relacionado 1:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.diagnosticoRelacionadoUno : ''}</em>
+    </td>
+  </tr>
+
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Diagnostico Relacionado 2:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.diagnosticoRelacionadoDos : ''}</em>
+    </td>
+  </tr>
+
+  <tr>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+      <strong style={{ display: 'block', textAlign: 'center' }}>Diagnostico Relacionado 3:</strong>
+    </td>
+    <td style={{ border: '1px solid #cccccc', padding: '10px', textAlign: 'center', verticalAlign: 'top' }}>
+       <em style={{ display: 'block', textAlign: 'justify'}}>{initialValues ? initialValues.diagnosticoRelacionadoTres : ''}</em>
+    </td>
+  </tr>
+ </tbody>
+</table>
+
+
+
+     
+
+</div>
+  
+  <div style={{ marginTop: '12px', padding: '10px', textAlign: 'center', verticalAlign: 'center' }}>
+  <Tooltip title={`Descargar la historia de ${initialValues ? initialValues.nombreCompleto : ''} a su dispositivo`} overlayStyle={{ backgroundColor: 'orange' }}>  
+          <Button htmlType="submit" onClick={() => descargarHistoriaClinica(initialValues.id)}  className="mr-3 px-3 py-1 bg-blue-700 text-white rounded-2xl"><span className="material-icons">download</span>
+          </Button>
+</Tooltip>
+<Tooltip title={`Regresar al home`} overlayStyle={{ backgroundColor: 'orange' }}>   
+          <Button onClick={() => history.push("/descargas")} htmlType="submit" className="mr-3 px-3 py-1 bg-blue-700 text-white rounded-2xl"><span className="material-icons">home</span>
+          </Button>
+</Tooltip>
+<Tooltip title={`Enviar via e-mail al correo ${initialValues ? initialValues.correo : ''} la historia clínica`} overlayStyle={{ backgroundColor: 'orange' }}> 
+          <Button htmlType="send" onClick={() => mailHistoriaClinica(initialValues.id)} className="mr-3 px-3 py-1 bg-blue-700 text-white rounded-2xl"><span className="material-icons">mail</span>
+          </Button>
+</Tooltip>
+          </div>
+      </div>
+      </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="px-4 py-2" style={{ maxWidth: '93%', margin: 'auto', textAlign: 'center', marginTop: '15px',  border: '1px solid #cccccc', borderRadius: '8px', padding: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', boxSizing: 'border-box', backgroundColor: 'rgba(255, 255, 255, 0.3)', backgroundSize: 'cover', minHeight: '100vh' }}>
+  <div
+    style={{
+      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+      color: '#000000',
+      transition: 'background-color 0.3s, color 0.3s',
+      border: '2px solid transparent',
+      textAlign: 'center',
+      alignItems: 'center',
+      justifyContent: 'center',
+      display: 'flex',
+      flexDirection: 'row',
+      padding: '20px',
+      boxSizing: 'border-box',
+      marginTop: '5px',
+    }}
+  >
+ 
+      <img
+        src={datosTerapeuta.imageUrl}
+        alt="Aquí va su logo"
+        style={{ width: '100px', height: '100px', marginRight: '20px', marginTop: '5px', borderRadius: '50%' }}
+      />
+    
+    <h2 className="text-center font-bold text-m" style={{ margin: '0', flex: '1' }}>
+      INFORME HISTORIA CLÍNICA
+    </h2>
+  </div>
+  <div style={{ marginTop: '20px' }}>
+    {(id && initialValues) ? <InformeHC /> : <InformeHC />}
+  </div>
+</div>
+
+  );
+}
+
+//</script>

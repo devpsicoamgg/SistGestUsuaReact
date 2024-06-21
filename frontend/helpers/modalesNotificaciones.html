@@ -1,0 +1,230 @@
+//<script type="text/jsx">
+
+const notificacionGuardando = (titulo) => {
+  Swal.fire({
+    title: titulo,
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+      const modal = Swal.getPopup();
+      modal.style.background = '#DB863F'; 
+      modal.style.zIndex = 9999;
+      const title = modal.querySelector('.swal2-title');
+      title.style.color = 'black'; 
+      title.style.textShadow = '1px 1px 2px rgba(0,0,0,0.4)';
+    },
+  });
+};
+
+const notificacionObteniendoDatos = (titulo) => {
+  Swal.fire({
+    title: titulo,
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+      const modal = Swal.getPopup();
+      modal.style.background = '#54DB3F'; 
+      modal.style.zIndex = 9999;
+      const title = modal.querySelector('.swal2-title');
+      title.style.color = 'black'; 
+      title.style.textShadow = '1px 1px 2px rgba(0,0,0,0.4)';
+    },
+  });
+};
+
+const notificacionTareaTerminada = (titulo, descripcion) => {
+  return Swal.fire({
+    title: titulo,
+    text: descripcion,
+    timerProgressBar: true,
+    confirmButtonText: "Cerrar",
+  });
+};
+
+const notificacionError = (titulo, descripcion) => {
+  Swal.fire({
+    title: titulo,
+    text: descripcion,
+    timerProgressBar: true,
+    confirmButtonText: "Cerrar",
+    didOpen: () => {
+      const modal = Swal.getPopup();
+      modal.style.background = '#ffcccc'; 
+      modal.style.zIndex = 9999;
+      const title = modal.querySelector('.swal2-title');
+      title.style.color = 'red'; 
+      title.style.textShadow = '1px 1px 2px rgba(0,0,0,0.4)';
+      const confirmButton = modal.querySelector('.swal2-confirm');
+      confirmButton.style.background = 'red';
+      confirmButton.style.borderColor = 'red';
+    }
+  });
+};
+
+const generandoDocumento = () => {
+  const mensajes = ['Generando documento. Este proceso puede tardar...', 'Obteniendo datos de la base de datos...', 'Ejecutando búsqueda de registros correspondientes...', 'Creando Archivo...', 'Remplazando los marcadores de posición en el documento...', 'Guardando el documento generado en la carpeta temporal...', 'Generando .docx'];
+  let index = 0;
+
+  const actualizarMensaje = () => {
+    Swal.getTitle().textContent = mensajes[index];
+    index = (index + 1) % mensajes.length;
+  };
+
+  const intervalo = setInterval(actualizarMensaje, 976); 
+
+  Swal.fire({
+    title: mensajes[0],
+    html: `
+      <div style="text-align: center;">
+        <i class="material-icons" style="font-size: 48px; color: #4CAF50; animation: bounce 1s infinite;">task</i>
+        <p style="margin-top: 20px;">${mensajes[0]}</p>
+      </div>
+      <style>
+        @keyframes bounce {
+          0% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0); }
+        }
+      </style>
+    `,
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+      const modal = Swal.getPopup();
+      modal.style.zIndex = 9999;
+      modal.style.background = '#F5F5F5'; // Cambiar el color de fondo aquí
+      modal.style.borderRadius = '10px'; // Agregar bordes redondeados al modal
+      modal.style.boxShadow = '0px 8px 15px rgba(0, 0, 0, 0.1)'; // Agregar sombra al modal
+      const title = modal.querySelector('.swal2-title');
+      title.style.color = '#4CAF50'; // Cambiar el color del título aquí
+      title.style.textShadow = '1px 1px 2px rgba(0,0,0,0.4)';
+    },
+    willClose: () => {
+      clearInterval(intervalo); 
+    }
+  });
+};
+
+const enviarCorreo = () => {
+  Swal.fire({
+    title: 'Enviando Correo...',
+    html: `
+      <div id="correoStatus" style="text-align: center;">
+        <i class="material-icons" style="font-size: 48px; color: #007bff; animation: bounce 1s infinite;">send</i>
+        <p id="correoMensaje" style="margin-top: 20px;">Por favor, espera mientras se envía el correo.</p>
+      </div>
+      <style>
+        @keyframes bounce {
+          0% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0); }
+        }
+      </style>
+    `,
+    allowOutsideClick: false,
+    didOpen: () => {
+      const modal = Swal.getPopup();
+      modal.style.zIndex = 9999;
+      modal.style.background = '#f8f9fa';
+      const title = modal.querySelector('.swal2-title');
+      title.style.color = '#007bff';
+      title.style.textShadow = '1px 1px 2px rgba(0,0,0,0.4)';
+
+      const messages = [
+        'Conectando con el servidor...',
+        'Autenticando datos...',
+        'Preparando datos de la hoja de calculo...',
+        'Reemplazando marcadores de posición en el documento...',
+        'Realizando conversión a documento tipo pdf...',
+        'Preparando template para correo...',
+        'Configurando envío de correo...',
+        'Enviando correo...',
+        'Verificando configuración de envío de correo...',
+        'Correo enviado exitosamente!'
+      ];
+
+      let currentMessage = 0;
+      const interval = setInterval(() => {
+        const correoMensajeElement = document.getElementById('correoMensaje');
+        if (correoMensajeElement) {
+          if (currentMessage < messages.length) {
+            correoMensajeElement.textContent = messages[currentMessage];
+            currentMessage++;
+          } else {
+            clearInterval(interval);
+            Swal.close();
+          }
+        } else {
+          clearInterval(interval);
+        }
+      }, 1500);
+    },
+    showConfirmButton: false
+  });
+};
+
+const agregandoAMeets = () => {
+  Swal.fire({
+    title: 'Agregando a meets...',
+    html: `
+      <div id="correoStatus" style="text-align: center;">
+        <i class="material-icons" style="font-size: 48px; color: #007bff; animation: bounce 1s infinite;">send</i>
+        <p id="correoMensaje" style="margin-top: 20px;">Por favor, espera mientras se envía el correo.</p>
+      </div>
+      <style>
+        @keyframes bounce {
+          0% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0); }
+        }
+      </style>
+    `,
+    allowOutsideClick: false,
+    didOpen: () => {
+      const modal = Swal.getPopup();
+      modal.style.zIndex = 9999;
+      modal.style.background = '#f8f9fa';
+      const title = modal.querySelector('.swal2-title');
+      title.style.color = '#007bff';
+      title.style.textShadow = '1px 1px 2px rgba(0,0,0,0.4)';
+
+      const messages = [
+        'Conectando con el servidor...',
+        'Autenticando datos...',
+        'Preparando datos del calendar...',
+        'Preparando vinculo de meets...',
+        'Generando video conferencia...',
+        'Generando acciones primarías de ejecución...',
+        'Adjuntando datos de correo...',
+        'Accediendo s servicios de google...',
+        'Verificando configuración de calendar y meets...',
+        'Meet generado y vinculado a calendar!'
+      ];
+
+      let currentMessage = 0;
+      const interval = setInterval(() => {
+        const correoMensajeElement = document.getElementById('correoMensaje');
+        if (correoMensajeElement) {
+          if (currentMessage < messages.length) {
+            correoMensajeElement.textContent = messages[currentMessage];
+            currentMessage++;
+          } else {
+            clearInterval(interval);
+            Swal.close();
+          }
+        } else {
+          clearInterval(interval);
+        }
+      }, 1500);
+    },
+    showConfirmButton: false
+  });
+};
+
+
+
+
+
+
+
+//</script>

@@ -1,0 +1,16 @@
+{
+  "name": "clinicalhistorygoogle",
+  "version": "1.0.0",
+  "description": "Sistema que busca hacer integración de React y google para historias clínica psicología ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Alberto Mario Guerrero G",
+  "license": "ISC",
+  "dependencies": {
+    "@types/google-apps-script": "^1.0.83",
+    "tailwindcss": "^3.4.3"
+  }
+}
