@@ -1,7 +1,7 @@
 {
-  "name": "clinicalhistorygoogle",
+  "name": "usersSystem",
   "version": "1.0.0",
-  "description": "Sistema que busca hacer integración de React y google para historias clínica psicología ",
+  "description": "Sistema que busca hacer integración de React y google para historias gestion de usuarios",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

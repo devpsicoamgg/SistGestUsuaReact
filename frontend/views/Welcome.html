@@ -1,17 +1,19 @@
 //<script type="text/jsx">
 
-const { Bar } = ReactChartJS2;
 
 function capitalizeWords(str) {
   return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
 }
 
 function Welcome() {
+
   const [datosTerapeuta, setDatosTerapeuta] = useState({
     fullName: '',
     imageUrl: ''
   });
   const [loading, setLoading] = useState(true);
+
+
   
 
   useEffect(() => {
@@ -81,34 +83,6 @@ function Welcome() {
     marginTop: "2rem"
   };
 
-  const data = {
-    labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
-    datasets: [
-      {
-        label: 'Ventas 2023 (en miles)',
-        backgroundColor: '#4CAF50',
-        borderColor: '#4CAF50',
-        borderWidth: 1,
-        hoverBackgroundColor: '#5ACD7E',
-        hoverBorderColor: '#5ACD7E',
-        data: [65, 59, 80, 81, 56, 55],
-      },
-    ],
-  };
-
-  const options = {
-    maintainAspectRatio: false,
-    scales: {
-      yAxes: [
-        {
-          ticks: {
-            beginAtZero: true,
-          },
-        },
-      ],
-    },
-  };
-
 
   return (
     <div style={containerStyle}>
@@ -130,10 +104,7 @@ function Welcome() {
         <p style={textStyle}>
           Esta es una herramienta diseñada para simplificar la gestión de pacientes en su consulta de psicología.
         </p>
-        <div>
-      <h2>Ejemplo de Gráfico de Barras</h2>
-      <Bar data={data} options={options} />
-    </div>
+
         <footer style={footerStyle}>
           ©2024 Sistema de Manejo de Pacientes de Psicología Google App Script & React - Todos los derechos reservados
         </footer>
