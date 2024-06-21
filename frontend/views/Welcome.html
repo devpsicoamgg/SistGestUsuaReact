@@ -1,5 +1,7 @@
 //<script type="text/jsx">
 
+const { Bar } = ReactChartJS2;
+
 function capitalizeWords(str) {
   return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
 }
@@ -10,7 +12,7 @@ function Welcome() {
     imageUrl: ''
   });
   const [loading, setLoading] = useState(true);
-  const { Bar } = ReactChartJS2;
+  
 
   useEffect(() => {
     const cargarDatosTerapeuta = () => {
