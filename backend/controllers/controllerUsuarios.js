@@ -36,7 +36,7 @@ function guardarRRHH(humanResource) {
     Insert(JSON.parse(humanResource), sheetDataBase);
     return {
       titulo: "Registro exitoso",
-      descripcion: "El contrato ha sido 💾 guardado en la base de datos.",
+      descripcion: "El colaborador ha sido 💾 guardado en la base de datos.",
     };
   } catch (error) {
     return {
@@ -46,13 +46,13 @@ function guardarRRHH(humanResource) {
   }
 }
 
-function guardarGrupo(humanResource) {
+function guardarGrupo(groups) {
   try {
-    const sheetDataBase = obtenerSheet(env_().SH_REGISTRO_RRHH);
-    Insert(JSON.parse(humanResource), sheetDataBase);
+    const sheetDataBase = obtenerSheet(env_().SH_REGISTRO_GRUPOS);
+    Insert(JSON.parse(groups), sheetDataBase);
     return {
       titulo: "Registro exitoso",
-      descripcion: "El contrato ha sido 💾 guardado en la base de datos.",
+      descripcion: "El el grupo ha sido 💾 guardado en la base de datos.",
     };
   } catch (error) {
     return {
@@ -147,6 +147,12 @@ function listarRRHH(id = undefined) {
   return JSON.stringify(_read(obtenerSheet(env_().SH_REGISTRO_RRHH), id));
 }
 
+function listarGrupos(id = undefined) {
+  // return obtenerDatos(env_().SH_REGISTRO_GRUPOS);
+  return JSON.stringify(_read(obtenerSheet(env_().SH_REGISTRO_GRUPOS), id));
+}
+
+
 function mostrarDatosTerapeuta(id = undefined) {
   // return obtenerDatos(env_().SH_REGISTRO_SESIONES_SEGUIMIENTO);
   return JSON.stringify(_read(obtenerSheet(env_().SH_CREDENTIALS_ADMIN), id));
@@ -194,7 +200,25 @@ function actualizarRRHH(id, datos) {
     const sheetDataBase = obtenerSheet(env_().SH_REGISTRO_RRHH);
     Update(id, datos, sheetDataBase);
     return {
-      titulo: "Contrato actualizado correctamente",
+      titulo: "Colaborador/a actualizado/a correctamente",
+      descripcion:
+        "Actualización exitosa y almacenada en la base de datos",
+    };
+  } catch (error) {
+    return {
+      titulo: "Ops ha ocurrido un error! " + error,
+      descripcion: "Por favor contacte a soporte.",
+    };
+  }
+}
+
+function actualizarGrupo(id, datos) {
+  try {
+    console.log(datos);
+    const sheetDataBase = obtenerSheet(env_().SH_REGISTRO_GRUPOS);
+    Update(id, datos, sheetDataBase);
+    return {
+      titulo: "Grupo actualizado correctamente",
       descripcion:
         "Actualización exitosa y almacenada en la base de datos",
     };
