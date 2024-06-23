@@ -20,7 +20,6 @@ function FormularioRegistroGrupo() {
 
   const guardarFormulario = (datosFormulario) => {
 
-
     if (id) {
       google.script.run
         .withSuccessHandler(({ titulo, descripcion }) => {
@@ -133,8 +132,8 @@ function FormularioRegistroGrupo() {
                 style={{ marginBottom: '0' }}
               >
                 <Select className="bg-gray-200" style={{ width: '100%' }} placeholder="Estado del grupo">
-                  <Option value="CC">Activo</Option>
-                  <Option value="TI">Inactivo</Option>
+                  <Option value="Activo">Activo</Option>
+                  <Option value="Inactivo">Inactivo</Option>
                 </Select>
               </Item>
               </div>
@@ -149,6 +148,33 @@ function FormularioRegistroGrupo() {
                 <Input disabled className="bg-gray-200" />
               </Item>
               </div>
+
+              {/* Campos adicionales para grupos inactivos */}
+              {form.getFieldValue('isActive') === 'Inactivo' && (
+                <>
+                  <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
+                    <Item
+                      name="fechaInactivacion"
+                      label="Fecha de Inactivación"
+                      rules={[{ required: true, message: "La fecha de inactivación es requerida para grupos inactivos" }]}
+                      style={{ marginBottom: '0' }}
+                    >
+                      <DatePicker style={{ width: '100%' }} format='YYYY-MM-DD' />
+                    </Item>
+                  </div>
+
+                  <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
+                    <Item
+                      name="motivoInactivacion"
+                      label="Motivo de Inactivación"
+                      rules={[{ required: true, message: "El motivo de inactivación es requerido para grupos inactivos" }]}
+                      style={{ marginBottom: '0' }}
+                    >
+                      <Input />
+                    </Item>
+                  </div>
+                </>
+              )}
 
             </div>
           </div>
