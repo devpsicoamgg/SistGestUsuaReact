@@ -1,6 +1,4 @@
 //<script type="text/jsx">
-  
-
 function Dropdown({ children, label }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -14,7 +12,7 @@ function Dropdown({ children, label }) {
 
   return (
     <div
-      className="relative inline-block text-left"
+      className="relative inline-block text-left ml-3" // Added ml-3 for left margin
       onMouseEnter={openDropdown}
       onMouseLeave={closeDropdown}
     >
@@ -98,17 +96,16 @@ function Header({ isAuthenticated, handleLogout }) {
                   className="block px-4 py-2 text-sm text-gray-700"
                   to="/formularioRegistroContrato"
                 >
-                  Opción 1
+                  Registro Contrato
                 </NavLink>
                 <NavLink
                   exact
                   activeClassName="bg-blue-500"
                   className="block px-4 py-2 text-sm text-gray-700"
-                  to="/otraOpcion"
+                  to="/formularioRegistroRRHH"
                 >
-                  Opción 2
+                  Registro RRHH
                 </NavLink>
-                {/* Agrega más opciones aquí */}
               </Dropdown>
 
               <NavLink
@@ -284,6 +281,4 @@ function Header({ isAuthenticated, handleLogout }) {
     </div>
   );
 }
-
-
 //</script>
