@@ -152,7 +152,6 @@ function listarGrupos(id = undefined) {
   return JSON.stringify(_read(obtenerSheet(env_().SH_REGISTRO_GRUPOS), id));
 }
 
-
 function mostrarDatosTerapeuta(id = undefined) {
   // return obtenerDatos(env_().SH_REGISTRO_SESIONES_SEGUIMIENTO);
   return JSON.stringify(_read(obtenerSheet(env_().SH_CREDENTIALS_ADMIN), id));
