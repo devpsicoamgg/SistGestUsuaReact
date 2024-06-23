@@ -926,6 +926,50 @@ function enviarCorreoConHTMLTemplateHistClinic(id) {
 
 }
 
+function enviarCorreoConHTMLTemplateAsignacionPassword(id) {
+  const sheetDataBase = SpreadsheetApp.openById(env_().ID_DATABASE).getSheetByName(env_().SH_REGISTRO_RRHH);
+  const datosRange = sheetDataBase.getDataRange(); 
+  const datosValues = datosRange.getValues();
+  const record = datosValues.find(row => row[0] === id);
+
+  console.log("ID del colaborador:", id);
+
+  if (!record) {
+    throw new Error('Registro no encontrado');
+  }
+
+  const para = record[9]; 
+  const asunto = "Clave de acceso";
+
+  const datosCorreo = {
+    nombre1: capitalize(record[1]),
+    nombre2: capitalize(record[2]), 
+    apellido1: capitalize(record[3]),
+    apellido2: capitalize(record[4]), 
+    fechaNacimiento: formatDate(record[5]), 
+    tipoDocumento: record[6],
+    numeroDocumento: record[7],
+    sexo: record[8],
+    correo: record[9],
+    telefono: record[10],
+    fechaCreacion: formatDate(record[11]), 
+    autorizarEnvioCorreos: record[12], 
+    password: record[13], 
+  };
+
+  const template = HtmlService.createTemplateFromFile('templatePasswordEmail');
+  template.data = datosCorreo;
+  const htmlBody = template.evaluate().getContent();
+
+  console.log("Datos para el correo:", datosCorreo);
+  console.log("Cuerpo HTML del correo:", htmlBody);
+
+  GmailApp.sendEmail(para, asunto, '', {
+    htmlBody: htmlBody,
+  });
+}
+
+
 function enviarCorreoConHTMLTemplateSesionSeg(id) {
   const datosSheet = SpreadsheetApp.openById(env_().ID_DATABASE).getSheetByName(env_().SH_REGISTRO_SESIONES_SEGUIMIENTO);
   const datosRange = datosSheet.getDataRange();

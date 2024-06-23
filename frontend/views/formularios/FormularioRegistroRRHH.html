@@ -1,5 +1,10 @@
 //<script type="text/jsx">
 
+function enviarCorreoConClave(id) {
+  google.script.run.withSuccessHandler(() => {
+    console.log(`Correo enviado para el ID: ${id}`);
+  }).enviarCorreoConHTMLTemplateAsignacionPassword(id); 
+}
 
 function FormularioRegistroRRHH() {
   const history = useHistory();
@@ -32,7 +37,7 @@ function FormularioRegistroRRHH() {
   };
 
   const guardarFormulario = (datosFormulario) => {
-    const password = generatePassword(); // Generar password
+    const password = generatePassword(); 
     datosFormulario.password = password;
     if (id) {
       google.script.run
@@ -41,6 +46,7 @@ function FormularioRegistroRRHH() {
           setInitialValues(undefined);
           form.resetFields();
           history.push('/welcome');
+          enviarCorreoConClave(datosFormulario.id);
         }).actualizarRRHH(id, JSON.stringify(datosFormulario));
       } else {
         const id = v4();
@@ -49,6 +55,7 @@ function FormularioRegistroRRHH() {
           notificacionTareaTerminada(titulo, descripcion);
           form.resetFields();
           history.push('/welcome');
+          enviarCorreoConClave(id);
         }).guardarRRHH(JSON.stringify({ id, ...datosFormulario }));
     }
 
