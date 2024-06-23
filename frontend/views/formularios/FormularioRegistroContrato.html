@@ -21,18 +21,6 @@ function FormularioRegistroContrato() {
   const guardarFormulario = (datosFormulario) => {
 
 
-const capitalizeFirstLetter = (str) => {
-  return str.toLowerCase().replace(/(?:^|\s)\w/g, function(match) {
-    return match.toUpperCase();
-  });
-};
-
-
-const nombreCompleto = capitalizeFirstLetter(datosFormulario.nombre1) + " " + (datosFormulario.nombre2 ? capitalizeFirstLetter(datosFormulario.nombre2) : "") + " " + capitalizeFirstLetter(datosFormulario.apellido1) + " " + (datosFormulario.apellido2 ? capitalizeFirstLetter(datosFormulario.apellido2) : "");
-    datosFormulario.nombreCompleto = nombreCompleto;
-    console.log(datosFormulario)
-    notificacionGuardando("Guardando al usuario " + nombreCompleto);
-
     if (id) {
       google.script.run
         .withSuccessHandler(({ titulo, descripcion }) => {
