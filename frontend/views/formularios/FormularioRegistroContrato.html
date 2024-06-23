@@ -27,7 +27,7 @@ function FormularioRegistroContrato() {
           notificacionTareaTerminada(titulo, descripcion);
           setInitialValues(undefined);
           form.resetFields();
-          history.push('/Contratos');
+          history.push('/welcome');
         }).actualizarContrato(id, JSON.stringify(datosFormulario));
       } else {
         const id = v4();
@@ -35,7 +35,7 @@ function FormularioRegistroContrato() {
         .withSuccessHandler(({ titulo, descripcion }) => {
           notificacionTareaTerminada(titulo, descripcion);
           form.resetFields();
-          history.push('/Contratos');
+          history.push('/welcome');
         }).guardarContrato(JSON.stringify({ id, ...datosFormulario }));
     }
 
@@ -166,7 +166,7 @@ function FormularioRegistroContrato() {
               <Item
                 name="legalRepresentative"
                 label="Representante Legal"
-                rules={[{ type: 'email', message: 'Por favor ingresa un correo electrónico válido' }, { required: false }]}
+                rules={[{ message: 'Por favor ingresa un correo electrónico válido' }, { required: true }]}
                 style={{ marginBottom: '0' }}
               >
                 <Input />

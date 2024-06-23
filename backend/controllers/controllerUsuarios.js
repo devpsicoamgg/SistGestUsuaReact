@@ -30,6 +30,22 @@ function guardarContrato(contrato) {
   }
 }
 
+function guardarRRHH(humanResource) {
+  try {
+    const sheetDataBase = obtenerSheet(env_().SH_REGISTRO_RRHH);
+    Insert(JSON.parse(humanResource), sheetDataBase);
+    return {
+      titulo: "Registro exitoso",
+      descripcion: "El contrato ha sido 💾 guardado en la base de datos.",
+    };
+  } catch (error) {
+    return {
+      titulo: "Ops ha ocurrido un error! " + error,
+      descripcion: "Por favor contacte a soporte.",
+    };
+  }
+}
+
 function actualizarClave(username, password, fullName, tipoDoc, doc, tp, reg, imageUrl) {
   try {
     const sheetCredenciales = obtenerSheet(env_().SH_CREDENTIALS);
@@ -110,6 +126,11 @@ function listarContratos(id = undefined) {
   return JSON.stringify(_read(obtenerSheet(env_().SH_REGISTRO_CONTRATO), id));
 }
 
+function listarRRHH(id = undefined) {
+  // return obtenerDatos(env_().SH_REGISTRO_RRHH);
+  return JSON.stringify(_read(obtenerSheet(env_().SH_REGISTRO_RRHH), id));
+}
+
 function mostrarDatosTerapeuta(id = undefined) {
   // return obtenerDatos(env_().SH_REGISTRO_SESIONES_SEGUIMIENTO);
   return JSON.stringify(_read(obtenerSheet(env_().SH_CREDENTIALS_ADMIN), id));
@@ -137,6 +158,24 @@ function actualizarContrato(id, datos) {
   try {
     console.log(datos);
     const sheetDataBase = obtenerSheet(env_().SH_REGISTRO_CONTRATO);
+    Update(id, datos, sheetDataBase);
+    return {
+      titulo: "Contrato actualizado correctamente",
+      descripcion:
+        "Actualización exitosa y almacenada en la base de datos",
+    };
+  } catch (error) {
+    return {
+      titulo: "Ops ha ocurrido un error! " + error,
+      descripcion: "Por favor contacte a soporte.",
+    };
+  }
+}
+
+function actualizarRRHH(id, datos) {
+  try {
+    console.log(datos);
+    const sheetDataBase = obtenerSheet(env_().SH_REGISTRO_RRHH);
     Update(id, datos, sheetDataBase);
     return {
       titulo: "Contrato actualizado correctamente",
