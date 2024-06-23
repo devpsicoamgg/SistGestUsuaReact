@@ -43,13 +43,12 @@ const nombreCompleto = capitalizeFirstLetter(datosFormulario.nombre1) + " " + (d
         }).actualizarUsuario(id, JSON.stringify(datosFormulario));
       } else {
         const id = v4();
-        
         google.script.run
         .withSuccessHandler(({ titulo, descripcion }) => {
           notificacionTareaTerminada(titulo, descripcion);
           form.resetFields();
           history.push('/Usuarios');
-        }).guardarUsuario(JSON.stringify({ id, ...datosFormulario }));
+        }).guardarContrato(JSON.stringify({ id, ...datosFormulario }));
     }
 
   }
