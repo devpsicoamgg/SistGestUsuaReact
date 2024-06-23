@@ -5,7 +5,7 @@ function FormularioRegistroGrupo() {
   const [form] = Form.useForm();
   const { id } = useParams();
   const [initialValues, setInitialValues] = useState(undefined);
-  const [isActive, setIsActive] = useState('Activo'); // Estado local para el estado del grupo
+  const [isActive, setIsActive] = useState('Activo'); 
 
   useEffect(() => {
     if (id) {
@@ -14,8 +14,9 @@ function FormularioRegistroGrupo() {
           const grupo = JSON.parse(res);
           console.log(grupo);
           setInitialValues(grupo);
-          setIsActive(grupo.isActive); // Actualizar el estado local con el valor de isActive del grupo
+          setIsActive(grupo.isActive); 
         }).listarGrupos(id)
+        console.log(listarGrupos);
     }
   }, [])
 
