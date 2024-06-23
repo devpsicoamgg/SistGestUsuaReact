@@ -46,6 +46,22 @@ function guardarRRHH(humanResource) {
   }
 }
 
+function guardarGrupo(humanResource) {
+  try {
+    const sheetDataBase = obtenerSheet(env_().SH_REGISTRO_RRHH);
+    Insert(JSON.parse(humanResource), sheetDataBase);
+    return {
+      titulo: "Registro exitoso",
+      descripcion: "El contrato ha sido 💾 guardado en la base de datos.",
+    };
+  } catch (error) {
+    return {
+      titulo: "Ops ha ocurrido un error! " + error,
+      descripcion: "Por favor contacte a soporte.",
+    };
+  }
+}
+
 function actualizarClave(username, password, fullName, tipoDoc, doc, tp, reg, imageUrl) {
   try {
     const sheetCredenciales = obtenerSheet(env_().SH_CREDENTIALS);

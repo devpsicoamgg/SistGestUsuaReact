@@ -1,44 +1,26 @@
 //<script type="text/jsx">
 
-function enviarCorreoConClave(id) {
-  google.script.run.withSuccessHandler(() => {
-    console.log(`Correo enviado para el ID: ${id}`);
-  }).enviarCorreoConHTMLTemplateAsignacionPassword(id); 
-}
-
-function FormularioRegistroRRHH() {
+function FormularioRegistroGrupo() {
   const history = useHistory();
   const [form] = Form.useForm();
   const { id } = useParams();
   const [initialValues, setInitialValues] = useState(undefined);
   const Tooltip = window.antd.Tooltip;
-  const [generatedPassword, setGeneratedPassword] = useState('');
 
   useEffect(() => {
     if (id) {
       google.script.run
         .withSuccessHandler(res => {
-          const humanResource = JSON.parse(res);
-          console.log(humanResource);
-          setInitialValues(humanResource);
-        }).listarRRHH(id)
+          const contrato = JSON.parse(res);
+          console.log(contrato);
+          setInitialValues(contrato);
+        }).listarContratos(id)
     }
   }, [])
 
-  const generatePassword = () => {
-    const length = 8;
-    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let password = "";
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * charset.length);
-      password += charset[randomIndex];
-    }
-    return password;
-  };
-
   const guardarFormulario = (datosFormulario) => {
-    const password = generatePassword(); 
-    datosFormulario.password = password;
+
+
     if (id) {
       google.script.run
         .withSuccessHandler(({ titulo, descripcion }) => {
@@ -46,8 +28,7 @@ function FormularioRegistroRRHH() {
           setInitialValues(undefined);
           form.resetFields();
           history.push('/welcome');
-          enviarCorreoConClave(datosFormulario.id);
-        }).actualizarRRHH(id, JSON.stringify(datosFormulario));
+        }).actualizarContrato(id, JSON.stringify(datosFormulario));
       } else {
         const id = v4();
         google.script.run
@@ -55,8 +36,7 @@ function FormularioRegistroRRHH() {
           notificacionTareaTerminada(titulo, descripcion);
           form.resetFields();
           history.push('/welcome');
-          enviarCorreoConClave(id);
-        }).guardarRRHH(JSON.stringify({ id, ...datosFormulario }));
+        }).guardarContrato(JSON.stringify({ id, ...datosFormulario }));
     }
 
   }
@@ -74,7 +54,7 @@ function FormularioRegistroRRHH() {
         style={{ position: "absolute", top: "0", left: "0", width: "100%", height: '100vh', zIndex: "-1", animation: "movimientoFondo 20s infinite linear", objectFit: "fill"}}/>
         <div style={{justifyContent: 'center', alignItems: 'center'}}>
            <div style={{ maxWidth: '100%', margin: '0 auto', padding: '20px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '8px', backgroundColor: 'rgba(34, 34, 34, 0.7)', color: '#E2F5EF'}}>
-            <h2 className="text-center font-bold text-xl" style={{ paddingTop: '1.5rem', paddingBottom: '1.5rem' }}>Registro Talento Humano</h2>
+            <h2 className="text-center font-bold text-xl" style={{ paddingTop: '1.5rem', paddingBottom: '1.5rem' }}>Registro de contrato</h2>
         <Form
           initialValues={initialValues}
           form={form}
@@ -89,9 +69,23 @@ function FormularioRegistroRRHH() {
 
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
               <Item
-                name="nombre1"
-                label="Primer nombre"
-                rules={[{ required: true, message: "El primer nombre es requerido para el registro" }]}
+                name="areaMisionalIcbf"
+                label="Área Misional"
+                rules={[{ required: true, message: "Por favor selecciona el área misional" }]}
+                style={{ marginBottom: '0' }}
+              >
+                <Select className="bg-gray-200" style={{ width: '100%' }} placeholder="Área misional">
+                  <Option value="CC">Cédula Ciudadanía</Option>
+                  <Option value="TI">Tarjeta de Identidad</Option>
+                </Select>
+              </Item>
+              </div>
+
+              <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
+              <Item
+                name="regional"
+                label="Regional"
+                rules={[{ required: true, message: "La vigencia es necesaria para el registro" }]}
                 style={{ marginBottom: '0' }}
               >
                 <Input />
@@ -100,21 +94,11 @@ function FormularioRegistroRRHH() {
 
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
               <Item
-                name="nombre2"
-                label="Segundo nombre"
+                name="vigencia"
+                label="Vigencia"
+                rules={[{ required: true, message: "La vigencia es necesaria para el registro" }]}
                 style={{ marginBottom: '0' }}
-              >
-                <Input />
-              </Item>
-              </div>
-
-              <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
-              <Item
-                name="apellido1"
-                label="Primer apellido"
-                rules={[{ required: true, message: "El primer apellido es requerido para el registro" }]}
-                style={{ marginBottom: '0' }}
-              >
+                >
                 <Input />
               </Item>
               </div>
@@ -122,8 +106,9 @@ function FormularioRegistroRRHH() {
 
             <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
               <Item
-                name="apellido2"
-                label="Segundo apellido"
+                name="serviceName"
+                label="Nombre del servicio"
+                rules={[{ required: true, message: "Nombre del servicio" }]}
                 style={{ marginBottom: '0' }}
               >
                 <Input />
@@ -132,30 +117,9 @@ function FormularioRegistroRRHH() {
 
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
               <Item
-                name="tipoDocumento"
-                label="Tipo de Documento"
-                rules={[{ required: true, message: "Por favor selecciona el tipo de documento" }]}
-                style={{ marginBottom: '0' }}
-              >
-                <Select className="bg-gray-200" style={{ width: '100%' }} placeholder="Tipo de documento 💳">
-                  <Option value="CC">Cédula Ciudadanía</Option>
-                  <Option value="TI">Tarjeta de Identidad</Option>
-                  <Option value="RC">Registro Civil</Option>
-                  <Option value="SD">Sin Documento de identidad</Option>
-                  <Option value="PPT">PPT</Option>
-                  <Option value="PEP">PEP</Option>
-                  <Option value="Pasaporte">Pasaporte</Option>
-                  <Option value="Visa">Visa</Option>
-                  <Option value="Otro">Otro</Option>
-                </Select>
-              </Item>
-              </div>
-
-              <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
-              <Item
-                name="numeroDocumento"
-                label="Número de documento"
-                rules={[{ required: true, message: "El número de documento es requerido para el registro" }]}
+                name="supervisor"
+                label="Supervisor"
+                rules={[{ required: true, message: "El nombre del supervisor es requerido" }]}
                 style={{ marginBottom: '0' }}
               >
                 <Input />
@@ -167,9 +131,9 @@ function FormularioRegistroRRHH() {
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap'}}>
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
               <Item
-                name="fechaNacimiento"
-                label="Fecha de nacimiento"
-                rules={[{ required: true, message: "La fecha de nacimiento es requerida para el registro" }]}
+                name="startDate"
+                label="Fecha de inicio"
+                rules={[{ required: true, message: "La fecha de inicio del contrato es requerida" }]}
                 style={{ marginBottom: '0' }}
               >
                  <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' />
@@ -178,9 +142,20 @@ function FormularioRegistroRRHH() {
 
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
               <Item
-                name="telefono"
-                label="Teléfono"
-                rules={[{ pattern: /^[0-9]*$/, message: 'Por favor ingresa solo números en el campo de teléfono' }]}
+                name="endDate"
+                label="Fecha de finalización"
+                rules={[{ required: true, message: "La fecha de finalización del contrato es requerida" }]}
+                style={{ marginBottom: '0' }}
+              >
+                 <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' />
+              </Item>
+              </div>
+
+              <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
+              <Item
+                name="contractNumber"
+                label="Número de contrato"
+                rules={[{ pattern: /^[0-9]*$/, message: 'Por favor ingresa solo números en el campo número de contrato' }]}
                 style={{ marginBottom: '0' }}
               >
                 <Input />
@@ -189,47 +164,25 @@ function FormularioRegistroRRHH() {
 
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
               <Item
-                name="sexo"
-                label="Sexo"
-                rules={[{ required: true, message: "Por favor selecciona el sexo" }]}
-                style={{ marginBottom: '0' }}
-              >
-                <Select className="bg-gray-200" style={{ width: '100%' }} placeholder="Sexo ♀ ♂">
-                  <Option value="Femenino">Femenino</Option>
-                  <Option value="Masculino">Masculino</Option>
-                  <Option value="No responde">No responde</Option>
-                </Select>
-              </Item>
-              </div>
-
-              <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
-              <Item
-                name="correo"
-                label="Correo"
-                rules={[{ type: 'email', message: 'Por favor ingresa un correo electrónico válido' }, { required: false }]}
+                name="legalRepresentative"
+                label="Representante Legal"
+                rules={[{ message: 'Por favor ingresa un correo electrónico válido' }, { required: true }]}
                 style={{ marginBottom: '0' }}
               >
                 <Input />
               </Item>
               </div>
 
+
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
-              <Tooltip title={() => {
-                    const values = form.getFieldsValue();
-                    return `Ley 1581 de 2012
-                      Reconoce y protege el derecho a conocer, actualizar y rectificar 
-                      los datos recopilados de ${values.nombre1} ${values.apellido1}`;
-                  }}>
               <Item
-                name="autorizarEnvioCorreos"
-                label="Tratamiento datos"
-                valuePropName="checked"
-                initialValue={true} 
+                name="cupos"
+                label="Cupos"
+                rules={[{ pattern: /^[0-9]*$/, message: 'Por favor ingresa solo números en el campo cupos del contrato' }]}
                 style={{ marginBottom: '0' }}
               >
-              <Checkbox style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} />
+                <Input />
               </Item>
-              </Tooltip>
               </div>
 
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
