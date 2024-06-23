@@ -5,8 +5,7 @@ function FormularioRegistroGrupo() {
   const [form] = Form.useForm();
   const { id } = useParams();
   const [initialValues, setInitialValues] = useState(undefined);
-  const [isActive, setIsActive] = useState('Activo');
-  const Tooltip = window.antd.Tooltip;
+  const [isActive, setIsActive] = useState('Activo'); // Estado local para el estado del grupo
 
   useEffect(() => {
     if (id) {
@@ -15,7 +14,7 @@ function FormularioRegistroGrupo() {
           const grupo = JSON.parse(res);
           console.log(grupo);
           setInitialValues(grupo);
-          setIsActive(grupo.isActive); 
+          setIsActive(grupo.isActive); // Actualizar el estado local con el valor de isActive del grupo
         }).listarGrupos(id)
     }
   }, [])
@@ -158,7 +157,7 @@ function FormularioRegistroGrupo() {
               </div>
 
               {/* Campos adicionales para grupos inactivos */}
-              {'isActive' === 'Inactivo' && (
+              {isActive === 'Inactivo' && (
                 <React.Fragment>
                   <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
                     <Item
