@@ -5,6 +5,7 @@ function FormularioRegistroGrupo() {
   const [form] = Form.useForm();
   const { id } = useParams();
   const [initialValues, setInitialValues] = useState(undefined);
+  const [isActive, setIsActive] = useState('Activo');
   const Tooltip = window.antd.Tooltip;
 
   useEffect(() => {
@@ -14,6 +15,7 @@ function FormularioRegistroGrupo() {
           const grupo = JSON.parse(res);
           console.log(grupo);
           setInitialValues(grupo);
+          setIsActive(grupo.isActive); 
         }).listarGrupos(id)
     }
   }, [])
@@ -131,7 +133,13 @@ function FormularioRegistroGrupo() {
                 rules={[{ required: true, message: "Por favor selecciona el estado del grupo" }]}
                 style={{ marginBottom: '0' }}
               >
-                <Select className="bg-gray-200" style={{ width: '100%' }} placeholder="Estado del grupo">
+                <Select
+                  className="bg-gray-200"
+                  style={{ width: '100%' }}
+                  placeholder="Estado del grupo"
+                  onChange={(value) => setIsActive(value)}
+                  defaultValue="Activo"
+                >
                   <Option value="Activo">Activo</Option>
                   <Option value="Inactivo">Inactivo</Option>
                 </Select>
@@ -150,8 +158,8 @@ function FormularioRegistroGrupo() {
               </div>
 
               {/* Campos adicionales para grupos inactivos */}
-              {form.getFieldValue('isActive') === 'Inactivo' && (
-                <>
+              {'isActive' === 'Inactivo' && (
+                <React.Fragment>
                   <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
                     <Item
                       name="fechaInactivacion"
@@ -173,7 +181,7 @@ function FormularioRegistroGrupo() {
                       <Input />
                     </Item>
                   </div>
-                </>
+                </React.Fragment>
               )}
 
             </div>
