@@ -7,6 +7,7 @@ function FormularioRegistroRRHH() {
   const { id } = useParams();
   const [initialValues, setInitialValues] = useState(undefined);
   const Tooltip = window.antd.Tooltip;
+  const [generatedPassword, setGeneratedPassword] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -19,7 +20,20 @@ function FormularioRegistroRRHH() {
     }
   }, [])
 
+  const generatePassword = () => {
+    const length = 8;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+    return password;
+  };
+
   const guardarFormulario = (datosFormulario) => {
+    const password = generatePassword(); // Generar password
+    datosFormulario.password = password;
     if (id) {
       google.script.run
         .withSuccessHandler(({ titulo, descripcion }) => {
