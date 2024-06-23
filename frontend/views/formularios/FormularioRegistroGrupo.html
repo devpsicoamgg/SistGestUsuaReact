@@ -6,6 +6,18 @@ function FormularioRegistroGrupo() {
   const { id } = useParams();
   const [initialValues, setInitialValues] = useState(undefined);
   const [isActive, setIsActive] = useState('Activo'); 
+   const [grupos, setGrupos] = useState([]);
+
+  const obtenerGrupos = () => {
+    google.script.run
+      .withSuccessHandler(grupos => {
+        setGrupos(grupos);
+      }).listarGrupos();
+  };
+
+  useEffect(() => {
+    obtenerGrupos(); 
+  }, []);
 
   useEffect(() => {
     if (id) {
