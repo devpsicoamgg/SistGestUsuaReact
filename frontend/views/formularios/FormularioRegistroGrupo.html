@@ -5,54 +5,59 @@ function FormularioRegistroGrupo() {
   const [form] = Form.useForm();
   const { id } = useParams();
   const [initialValues, setInitialValues] = useState(undefined);
-  const [isActive, setIsActive] = useState('Activo'); 
-   const [grupos, setGrupos] = useState([]);
-
-  const obtenerGrupos = () => {
-    google.script.run
-      .withSuccessHandler(grupos => {
-        setGrupos(grupos);
-      }).listarGrupos();
-  };
-
-  useEffect(() => {
-    obtenerGrupos(); 
-  }, []);
+  const [isActive, setIsActive] = useState('Activo');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (id) {
+      setLoading(true);
+      notificacionObteniendoDatos("Obteniendo datos de los grupos...");
       google.script.run
         .withSuccessHandler(res => {
           const grupo = JSON.parse(res);
           console.log(grupo);
           setInitialValues(grupo);
-          setIsActive(grupo.isActive); 
-        }).listarGrupos(id)
-        console.log(listarGrupos);
+          setIsActive(grupo.isActive);
+          setLoading(false);
+          Swal.close(); 
+        })
+        .listarGrupos(id);
     }
-  }, [])
+  }, []);
 
   const guardarFormulario = (datosFormulario) => {
-
+    setLoading(true);
+    notificacionGuardando("Guardando información...");
     if (id) {
       google.script.run
         .withSuccessHandler(({ titulo, descripcion }) => {
           notificacionTareaTerminada(titulo, descripcion);
           setInitialValues(undefined);
           form.resetFields();
-          history.push('/welcome');
-        }).actualizarGrupo(id, JSON.stringify(datosFormulario));
-      } else {
-        const id = v4();
-        google.script.run
+          setLoading(false);
+        
+        })
+        .withFailureHandler((error) => {
+          notificacionError("Error al actualizar el grupo", error.message);
+          setLoading(false);
+        })
+        .actualizarGrupo(id, JSON.stringify(datosFormulario));
+    } else {
+      const id = v4();
+      google.script.run
         .withSuccessHandler(({ titulo, descripcion }) => {
           notificacionTareaTerminada(titulo, descripcion);
           form.resetFields();
-          history.push('/welcome');
-        }).guardarGrupo(JSON.stringify({ id, ...datosFormulario }));
-    }
+          setLoading(false);
 
-  }
+        })
+        .withFailureHandler((error) => {
+          notificacionError("Error al guardar el grupo", error.message);
+          setLoading(false);
+        })
+        .guardarGrupo(JSON.stringify({ id, ...datosFormulario }));
+    }
+  };
 
   const { Option } = Select;
 
@@ -150,12 +155,16 @@ function FormularioRegistroGrupo() {
                   style={{ width: '100%' }}
                   placeholder="Estado del grupo"
                   onChange={(value) => setIsActive(value)}
-                  defaultValue="Activo"
+                  defaultValue=""
                 >
+                  <Option value="" disabled>
+                    Selecciona el estado
+                  </Option>
                   <Option value="Activo">Activo</Option>
                   <Option value="Inactivo">Inactivo</Option>
                 </Select>
               </Item>
+
               </div>
 
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
@@ -172,11 +181,17 @@ function FormularioRegistroGrupo() {
               {/* Campos adicionales para grupos inactivos */}
               {isActive === 'Inactivo' && (
                 <React.Fragment>
+                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap'}}> 
                   <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
                     <Item
                       name="fechaInactivacion"
                       label="Fecha de Inactivación"
-                      rules={[{ required: true, message: "La fecha de inactivación es requerida para grupos inactivos" }]}
+                      rules={[
+                        {
+                          required: isActive === 'Inactivo',
+                          message: "La fecha de inactivación es requerida para grupos inactivos"
+                        }
+                      ]}
                       style={{ marginBottom: '0' }}
                     >
                       <DatePicker style={{ width: '100%' }} format='YYYY-MM-DD' />
@@ -187,11 +202,17 @@ function FormularioRegistroGrupo() {
                     <Item
                       name="motivoInactivacion"
                       label="Motivo de Inactivación"
-                      rules={[{ required: true, message: "El motivo de inactivación es requerido para grupos inactivos" }]}
+                      rules={[
+                        {
+                          required: isActive === 'Inactivo',
+                          message: "El motivo de inactivación es requerido para grupos inactivos"
+                        }
+                      ]}
                       style={{ marginBottom: '0' }}
                     >
                       <Input />
                     </Item>
+                  </div>
                   </div>
                 </React.Fragment>
               )}

@@ -49,18 +49,44 @@ function guardarRRHH(humanResource) {
 function guardarGrupo(groups) {
   try {
     const sheetDataBase = obtenerSheet(env_().SH_REGISTRO_GRUPOS);
-    Insert(JSON.parse(groups), sheetDataBase);
-    return {
-      titulo: "Registro exitoso",
-      descripcion: "El el grupo ha sido 💾 guardado en la base de datos.",
-    };
+    const newGroup = JSON.parse(groups);
+    const data = sheetDataBase.getDataRange().getValues();
+    const headers = data[0];
+    const groupNameIndex = headers.indexOf('groupName'); 
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][groupNameIndex] === newGroup.groupName) {
+        return {
+          error: true,
+          titulo: "Error al guardar el grupo",
+          descripcion: "El nombre del grupo ya está registrado. Por favor, elige otro nombre.",
+        };
+      }
+    }
+    try {
+      Insert(newGroup, sheetDataBase);
+      return {
+        error: false,
+        titulo: "Registro exitoso",
+        descripcion: "El grupo ha sido 💾 guardado en la base de datos.",
+      };
+    } catch (error) {
+      return {
+        error: true,
+        titulo: "Error al guardar el grupo",
+        descripcion: "Hubo un problema al guardar el grupo en la base de datos. Por favor, inténtalo de nuevo o contacta a soporte.",
+      };
+    }
   } catch (error) {
     return {
-      titulo: "Ops ha ocurrido un error! " + error,
+      error: true,
+      titulo: "Ops ha ocurrido un error!",
       descripcion: "Por favor contacte a soporte.",
     };
   }
 }
+
+
+
 
 function actualizarClave(username, password, fullName, tipoDoc, doc, tp, reg, imageUrl) {
   try {
