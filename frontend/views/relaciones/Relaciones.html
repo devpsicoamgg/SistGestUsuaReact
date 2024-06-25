@@ -1,4 +1,5 @@
 //<script type="text/jsx">
+
 function Relaciones() {
   const [contractData, setContractData] = useState([]);
   const [gruposData, setGruposData] = useState([]);
@@ -15,8 +16,17 @@ function Relaciones() {
     listarGrupos();
   }, []);
 
+  const formatFecha = (fecha) => {
+    const date = new Date(fecha);
+    const day = String(date.getDate()).padStart(2, '0');
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   const listarContratos = () => {
-    notificacionObteniendoDatos("Obteniendo lista de contratos desde el servidor");
+    notificacionObteniendoDatos("Obteniendo la información de contratos, RRHH y grupos desde el servidor");
     google.script.run
       .withSuccessHandler(res => {
         try {
@@ -64,15 +74,6 @@ function Relaciones() {
         }
       })
       .listarGrupos();
-  };
-
-  const formatFecha = (fecha) => {
-    const date = new Date(fecha);
-    const day = String(date.getDate()).padStart(2, '0');
-    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    const month = monthNames[date.getMonth()];
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
   };
 
   const handleSearchContract = (value) => {
@@ -228,5 +229,37 @@ function Relaciones() {
             </Tooltip>
           }
         >
-          
+          <Table
+            columns={gruposColumns}
+            dataSource={gruposData}
+            pagination={{ pageSize: 3 }}
+          />
+        </Card>
+
+        <Card 
+          title="Talento Humano (RRHH)" 
+          className="rounded" 
+          extra={
+            <Tooltip title="Buscar RRHH">
+              <Input.Search
+                placeholder="Buscar por nombre ✍🏽"
+                value={searchTextrrhh}
+                onChange={e => handleSearchRRHH(e.target.value)}
+                className="flex-1 p-2 rounded border border-gray-300"
+              />
+            </Tooltip>
+          }
+        >
+          <Table
+            columns={rrhhColumns}
+            dataSource={rrhhData}
+            pagination={{ pageSize: 3 }}
+          />
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+
 //</script>
