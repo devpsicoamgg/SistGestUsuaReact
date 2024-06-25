@@ -49,7 +49,6 @@ function FormularioRegistroGrupo() {
           notificacionTareaTerminada(titulo, descripcion);
           form.resetFields();
           setLoading(false);
-
         })
         .withFailureHandler((error) => {
           notificacionError("Error al guardar el grupo", error.message);
