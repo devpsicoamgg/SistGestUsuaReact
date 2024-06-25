@@ -86,8 +86,6 @@ function guardarGrupo(groups) {
 }
 
 
-
-
 function actualizarClave(username, password, fullName, tipoDoc, doc, tp, reg, imageUrl) {
   try {
     const sheetCredenciales = obtenerSheet(env_().SH_CREDENTIALS);

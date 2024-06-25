@@ -1,0 +1,409 @@
+//<script type="text/jsx">
+
+function Relaciones() {
+  const [contractData, setContractData] = useState([]);
+  const [gruposData, setGruposData] = useState([]);
+  const [rrhhData, setRrhhData] = useState([]);
+  const [searchTextContract, setSearchTextContract] = useState('');
+  const [searchTextGrupos, setSearchTextGrupos] = useState('');
+  const [searchTextrrhh, setSearchTextrrhh] = useState('');
+  const [historiaClinicaCardOpen, setHistoriaClinicaCardOpen] = useState(false);
+  const [sesionesSeguimientoCardOpen, setSesionesSeguimientoCardOpen] = useState(false);
+  const history = useHistory();
+  const Tooltip = window.antd.Tooltip;
+
+  const handleHistoriaClinicaCardOpen = () => {
+    setHistoriaClinicaCardOpen(true);
+    setSesionesSeguimientoCardOpen(false); 
+  };
+  
+  const handleSesionesSeguimientoCardOpen = () => {
+    setSesionesSeguimientoCardOpen(true);
+    setHistoriaClinicaCardOpen(false); 
+  };
+  
+  const UpOutlined = () => (
+    <svg viewBox="0 0 1024 1024" focusable="false" className="" data-icon="up" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M884 256h-75c-5.1 0-10 2-13.6 5.7L512 544.5 228.6 261.7c-3.6-3.7-8.5-5.7-13.6-5.7H140c-6.8 0-10.5 8-5.7 13.6l382 379.4c3.1 3 8.1 3 11.2 0l382-379.4c5-5.2 1.3-13.6-5.5-13.6z"></path></svg>
+  );
+
+  const DownOutlined = () => (
+    <svg viewBox="0 0 1024 1024" focusable="false" className="" data-icon="down" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M884 256h-75c-5.1 0-10 2-13.6 5.7L512 544.5 228.6 261.7c-3.6-3.7-8.5-5.7-13.6-5.7H140c-6.8 0-10.5 8-5.7 13.6l382 379.4c3.1 3 8.1 3 11.2 0l382-379.4c5-5.2 1.3-13.6-5.5-13.6z"></path></svg>
+  );
+
+  useEffect(() => {
+    listarUsuarios();
+    listarUsuariosSeguimientos();
+  }, []);
+
+  const listarUsuarios = () => {
+    notificacionObteniendoDatos("Obteniendo lista de usuarios desde el servidor");
+    google.script.run
+      .withSuccessHandler(res => {
+        try {
+          const usuarios = JSON.parse(res);
+          usuarios.sort((a, b) => (a.nombreCompleto > b.nombreCompleto) ? 1 : -1);
+          let arreglo = usuarios.map((usuario, index) => ({
+            key: usuario.id,
+            numero: index + 1,
+            ...usuario,
+            fechaCreacionHC: formatFecha(usuario.createDataHC),
+            acciones: (
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                <Button
+                  onClick={() => history.push("/historiaClinica/" + usuario.id)}
+                  style={{ borderRadius: '20px', fontWeight: 'bold', backgroundColor: '#000', color: '#fff', transition: 'transform 0.2s' }}
+                >
+                  Historia Clínica
+                </Button>
+                <Button
+                  style={{ borderRadius: '20px', fontWeight: 'bold', backgroundColor: '#000', color: '#fff', transition: 'transform 0.2s' }}
+                >
+                  Seguimiento
+                </Button>
+              </div>
+            )
+          }));
+
+          const historiasConDiagnostico = arreglo.filter(usuario => usuario.diagnosticoPrincipal !== '');
+          setHistoriaClinicaData(historiasConDiagnostico);
+          Swal.close();
+        } catch (error) {
+          console.error('Error parsing JSON:', error);
+          Swal.close();
+        }
+      })
+      .listarUsuarios();
+  };
+
+  const listarUsuariosSeguimientos = () => {
+    notificacionObteniendoDatos("Obteniendo lista de sesiones de seguimiento desde el servidor");
+    google.script.run
+      .withSuccessHandler(res => {
+        try {
+          const sesiones = JSON.parse(res);
+          sesiones.sort((a, b) => (a.nombreCompleto > b.nombreCompleto) ? 1 : -1);
+          let arreglo = sesiones.map((sesion, index) => ({
+            key: sesion.uniqueId,
+            numero: index + 1,
+            ...sesion,
+            fechaSesion: formatFecha(sesion.fechaSesion),
+            acciones: (
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                <Button
+                  onClick={() => history.push("/sesionesDeSeguimiento/" + sesion.uniqueId)}
+                  style={{ borderRadius: '20px', fontWeight: 'bold', backgroundColor: '#000', color: '#fff', transition: 'transform 0.2s' }}
+                >
+                  Ver Sesión
+                </Button>
+              </div>
+            )
+          }));
+
+          setSesionesSeguimientoData(arreglo);
+          Swal.close();
+        } catch (error) {
+          console.error('Error parsing JSON:', error);
+          Swal.close();
+        }
+      })
+      .listarUsuariosSeguimientos();
+  };
+
+  const formatFecha = (fecha) => {
+    const date = new Date(fecha);
+    const day = String(date.getDate()).padStart(2, '0');
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const handleSearchHC = (value) => {
+    setSearchTextHC(value);
+    if (value === '') {
+      listarUsuarios();
+    } else {
+      const filteredDataHC = historiaClinicaData.filter(historia =>
+        historia.nombreCompleto.toLowerCase().includes(value.toLowerCase())
+      );
+      setHistoriaClinicaData(filteredDataHC);
+    }
+  };
+  
+  const handleSearchSS = (value) => {
+    setSearchTextSS(value);
+    if (value === '') {
+      listarUsuariosSeguimientos();
+    } else {
+      const filteredDataSS = sesionesSeguimientoData.filter(sesion =>
+        sesion.nombreCompleto.toLowerCase().includes(value.toLowerCase())
+      );
+      setSesionesSeguimientoData(filteredDataSS);
+    }
+  };
+
+  const descargarHistoriaClinica = (id) => {
+    console.log("Entra a descargar Histria");
+    generandoDocumento();
+    google.script.run
+        .withSuccessHandler((resultado) => {
+            console.log('HC descargada con éxito:', resultado.enlaceDescarga);
+            Swal.close();
+            window.open(resultado.enlaceDescarga, '_blank');
+            eliminarPostDescarga(resultado.nuevoDocId)
+        })
+        .withFailureHandler((error) => {
+            console.error('Error al descargar la sesión de seguimiento:', error);
+            Swal.close();
+            notificacionError("Error al descargar la historía clínica",error)
+        })
+        .generarInformeWordHC(id)
+};
+
+const descargarSeguimiento = (id) => {
+  console.log("Entra a descargar seguimiento");
+  generandoDocumento();
+  google.script.run
+      .withSuccessHandler((resultado) => {
+          console.log('HC descargada con éxito:', resultado.enlaceDescarga);
+          Swal.close();
+          window.open(resultado.enlaceDescarga, '_blank');
+          eliminarPostDescarga(resultado.nuevoDocId)
+      })
+      .withFailureHandler((error) => {
+          console.error('Error al descargar la sesión de seguimiento:', error);
+          Swal.close();
+          notificacionError("Al descargar seguimiento", `${error}`)
+      })
+      .generarInformeWordSeg(id)
+};
+
+  const verHistoriaClinica = (id) => {
+    console.log('Redireccionando a HC con ID:', id);
+    history.push("/viewClinicalHistory/" + id); 
+  };
+
+  function mailHistoriaClinica(id) {
+    enviarCorreo();
+    google.script.run.withSuccessHandler(() => {
+      console.log("Correo enviado exitosamente");
+      Swal.close(); 
+      Swal.fire({
+        icon: 'success',
+        title: 'Correo Enviado',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    }).withFailureHandler((error) => {
+      console.error("Error al enviar el correo:", error);
+      Swal.close(); 
+      notificacionError("Al hacer envio de HC", `${error}`);
+    }).enviarCorreoConHTMLTemplateHistClinic(id);
+  }
+
+  const verSeguimiento = (id) => {
+    console.log('Redireccionando a sesión de seguimiento con ID:', id);
+    console.log(history)
+    console.log(history.push)
+    history.push("/viewTrackingSessions/" + id); 
+  };
+
+  const mailSeguimiento = (id) => {
+    enviarCorreo();
+    google.script.run.withSuccessHandler(() => {
+      console.log("Correo enviado exitosamente");
+      Swal.close(); 
+      Swal.fire({
+        icon: 'success',
+        title: 'Correo Enviado',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    }).withFailureHandler((error) => {
+      console.error("Error al enviar el correo:", error);
+      Swal.close(); 
+      notificacionError("Al hacer envio de HC", `${error}`);
+    }).enviarCorreoConHTMLTemplateSesionSeg(id);
+  };
+
+  const eliminarPostDescarga = (nuevoDocId) => {
+    google.script.run
+    .withSuccessHandler(() => {
+      console.log("Doc Eliminado en el drive");
+    })
+    .withFailureHandler(() => {
+      console.log('Error al eliminar', error);
+    })
+    .eliminarPostDescargaDocumento(nuevoDocId)
+  }
+
+  const historiaClinicaColumns = [
+    {
+      title: 'Nombre completo',
+      dataIndex: 'nombreCompleto',
+      key: 'nombreCompleto',
+    },
+    {
+      title: 'Fecha Creación',
+      dataIndex: 'fechaCreacionHC',
+      key: 'fechaCreacionHC',
+    },
+    {
+      title: 'Acciones',
+      key: 'acciones',
+      render: (text, record) => (
+        <div>
+           <Tooltip title={`Ver HC de ${record.nombreCompleto}`} overlayStyle={{ backgroundColor: 'purple' }} >
+        <Button onClick={() => verHistoriaClinica(record.id)}><span className="material-icons">visibility</span>
+        </Button>
+        </Tooltip>
+
+
+        <Tooltip title={`Dercargar HC de ${record.nombreCompleto}`} overlayStyle={{ backgroundColor: 'purple' }} >
+        <Button onClick={() => descargarHistoriaClinica(record.id)}><span className="material-icons">download</span>
+        </Button>
+        </Tooltip>
+
+
+
+        <Tooltip title={`Hacer envio por e.mail de HC de ${record.nombreCompleto} a ${record.correo}`} overlayStyle={{ backgroundColor: 'purple' }} >
+        <Button onClick={() => mailHistoriaClinica(record.id)}><span className="material-icons">mail</span>
+        </Button>
+        </Tooltip>
+        </div>
+
+      ),
+    },
+  ];
+
+  const sesionesSeguimientoColumns = [
+    {
+      title: 'Nombre completo',
+      dataIndex: 'nombreCompleto',
+      key: 'nombreCompleto',
+    },
+    {
+      title: 'Fecha de Sesión',
+      dataIndex: 'fechaSesion',
+      key: 'fechaSesion',
+    },
+    {
+      title: 'Acciones',
+      key: 'acciones',
+      render: (text, record) => (
+        
+        <div>
+           <Tooltip title={`Ver sesión de seguimiento de ${record.nombreCompleto}`} overlayStyle={{ backgroundColor: 'lime' }} >
+        <Button onClick={() => verSeguimiento(record.id)}><span className="material-icons">visibility</span>
+        </Button>
+        </Tooltip>
+
+
+        <Tooltip title={`Dercargar sesión de seguimiento de ${record.nombreCompleto}`} overlayStyle={{ backgroundColor: 'lime' }} >
+        <Button onClick={() => descargarSeguimiento(record.uniqueId)}><span className="material-icons">download</span>
+        </Button>
+        </Tooltip>
+
+
+
+        <Tooltip title={`Hacer envio por e-mail de sesión de seguimiento de ${record.nombreCompleto} a ${record.correo}`} overlayStyle={{ backgroundColor: 'lime' }} >
+        <Button onClick={() => mailSeguimiento(record.uniqueId)}><span className="material-icons">mail</span>
+        </Button>
+        </Tooltip>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+
+      <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen" style={{ backgroundImage: 'url("https://res.cloudinary.com/dt1aacjqj/image/upload/v1716766791/fondo1_jgbisn.jpg")', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <h2 className="font-bold text-2xl mb-4">ZONA DESCARGAS</h2>
+      <div className="w-full max-w-screen-lg flex flex-col gap-4">
+        <Card 
+          title="Historia Clínica" 
+          className="rounded" 
+          extra={
+            <Tooltip title={historiaClinicaCardOpen ? 'Cerrar historia clínica' : 'Abrir historia clínica'}>
+              <Button
+                type="text"
+                icon={historiaClinicaCardOpen ? <UpOutlined /> : <DownOutlined />}
+                onClick={handleHistoriaClinicaCardOpen}
+              />
+            </Tooltip>
+          }
+        > 
+          {!historiaClinicaCardOpen && (
+            <div>
+              <p className="text-gray-600">
+                Aquí puedes ver, descargar y hacer envío al email registrado la/s historia/s clínica/s de lo/s usuario/s.<br />
+                Utiliza la barra de búsqueda para encontrar un usuario por su nombre completo.
+              </p>
+            </div>
+          )}
+
+          {historiaClinicaCardOpen && (
+            <div className="p-4 bg-blue-200 shadow-md rounded">
+              <div className="flex gap-2">
+                <Input.Search
+                  placeholder="Buscar por nombre ✍🏽"
+                  value={searchTextHC}
+                  onChange={e => handleSearchHC(e.target.value)}
+                  className="flex-1 p-2 rounded border border-gray-300"
+                />
+              </div>
+              <Table
+                columns={historiaClinicaColumns}
+                dataSource={historiaClinicaData}
+                pagination={{ pageSize: 3 }}
+              />
+               
+            </div>
+          )}
+        </Card>
+
+        <Card 
+          title="Sesiones de Seguimiento" 
+          className="rounded" 
+          extra={
+            <Tooltip title={sesionesSeguimientoCardOpen ? 'Cerrar sesiones seguimiento' : 'Abrir sesiones seguimiento'}>
+              <Button
+                type="text"
+                icon={sesionesSeguimientoCardOpen ? <UpOutlined /> : <DownOutlined />}
+                onClick={handleSesionesSeguimientoCardOpen}
+              />
+            </Tooltip>
+          }
+        > 
+            {!sesionesSeguimientoCardOpen && (
+            <div>
+              <p className="text-gray-600">
+                Aquí puedes ver, descargar y hacer envío al email registrado la/s sesione/s de seguimiento de los usuario/s.<br />
+                Utiliza la barra de búsqueda para encontrar un usuario por su nombre completo.
+              </p>
+            </div>
+          )}
+          {sesionesSeguimientoCardOpen && (
+            <div className="p-4 bg-pink-200 shadow-md rounded">
+              <div className="flex gap-2">
+                <Input.Search
+                  placeholder="Buscar por nombre ✍🏽"
+                  value={searchTextSS} 
+                  onChange={e => handleSearchSS(e.target.value)}
+                  className="flex-1 p-2 rounded border border-gray-300"
+                />
+              </div>
+              <Table
+                columns={sesionesSeguimientoColumns}
+                dataSource={sesionesSeguimientoData}
+                pagination={{ pageSize: 3 }}
+              />
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+//</script>
