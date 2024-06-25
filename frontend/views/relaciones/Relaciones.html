@@ -94,7 +94,7 @@ function Relaciones() {
       listarGrupos();
     } else {
       const filteredGrupos = gruposData.filter(grupo =>
-        grupo.nombreGrupo.toLowerCase().includes(value.toLowerCase())
+        grupo.groupName.toLowerCase().includes(value.toLowerCase())
       );
       setGruposData(filteredGrupos);
     }
@@ -106,7 +106,7 @@ function Relaciones() {
       listarRRHH();
     } else {
       const filteredRRHH = rrhhData.filter(rrhh =>
-        rrhh.nombreCompleto.toLowerCase().includes(value.toLowerCase())
+        rrhh.fullName.toLowerCase().includes(value.toLowerCase())
       );
       setRrhhData(filteredRRHH);
     }
@@ -137,13 +137,18 @@ function Relaciones() {
   const gruposColumns = [
     {
       title: 'Nombre del Grupo',
-      dataIndex: 'nombreGrupo',
-      key: 'nombreGrupo',
+      dataIndex: 'groupName',
+      key: 'groupName',
     },
     {
       title: 'Fecha de Creación',
       dataIndex: 'fechaCreacion',
       key: 'fechaCreacion',
+    },
+    {
+      title: 'Código Cuentame',
+      dataIndex: 'cuentameCode',
+      key: 'cuentameCoden',
     },
     {
       title: 'Acciones',
@@ -159,13 +164,13 @@ function Relaciones() {
   const rrhhColumns = [
     {
       title: 'Nombre Completo',
-      dataIndex: 'nombreCompleto',
-      key: 'nombreCompleto',
+      dataIndex: 'fullName',
+      key: 'fullName',
     },
     {
-      title: 'Puesto',
-      dataIndex: 'puesto',
-      key: 'puesto',
+      title: 'Cargo',
+      dataIndex: 'cargo',
+      key: 'cargo',
     },
     {
       title: 'Acciones',
@@ -180,7 +185,7 @@ function Relaciones() {
 
   return (
     <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
-      <h2 className="font-bold text-2xl mb-4">ZONA DESCARGAS</h2>
+      <h2 className="font-bold text-2xl mb-4">ZONA DE RELACIONES</h2>
       <div className="w-full max-w-screen-lg flex flex-col gap-4">
         <Card 
           title="Contratos" 
