@@ -1,34 +1,5 @@
 //<script type="text/jsx">
 
-const useFetchData = (fetchFunction, parseData, setData) => {
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        notificacionObteniendoDatos("Obteniendo datos desde el servidor");
-        const res = await google.script.run.withSuccessHandler();
-        const data = JSON.parse(res);
-        const sortedData = data.sort((a, b) => (parseData(a) > parseData(b) ? 1 : -1));
-        setData(sortedData);
-      } catch (error) {
-        console.error('Error parsing JSON:', error);
-      } finally {
-        Swal.close();
-      }
-    };
-
-    fetchData();
-  }, [fetchFunction, parseData, setData]);
-};
-
-const formatFecha = (fecha) => {
-  const date = new Date(fecha);
-  const day = String(date.getDate()).padStart(2, '0');
-  const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-  const month = monthNames[date.getMonth()];
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-};
-
 function Relaciones() {
   const [contractData, setContractData] = useState([]);
   const [gruposData, setGruposData] = useState([]);
@@ -39,19 +10,105 @@ function Relaciones() {
   const history = useHistory();
   const Tooltip = window.antd.Tooltip;
 
-  useFetchData(() => google.script.run.listarContratos(), data => data.nombreDelContrato, setContractData);
-  useFetchData(() => google.script.run.listarRRHH(), data => data.nombreCompleto, setRrhhData);
-  useFetchData(() => google.script.run.listarGrupos(), data => data.nombreGrupo, setGruposData);
+  useEffect(() => {
+    listarContratos();
+    listarRRHH();
+    listarGrupos();
+  }, []);
 
-  const handleSearch = (setSearchText, setData, originalData, value) => {
-    setSearchText(value);
+  const formatFecha = (fecha) => {
+    const date = new Date(fecha);
+    const day = String(date.getDate()).padStart(2, '0');
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const listarContratos = () => {
+    notificacionObteniendoDatos("Obteniendo la información de contratos, RRHH y grupos desde el servidor");
+    google.script.run
+      .withSuccessHandler(res => {
+        try {
+          const contratos = JSON.parse(res);
+          contratos.sort((a, b) => (a.nombreDelContrato > b.nombreDelContrato) ? 1 : -1);
+          setContractData(contratos);
+          Swal.close();
+        } catch (error) {
+          console.error('Error parsing JSON:', error);
+          Swal.close();
+        }
+      })
+      .listarContratos();
+  };
+
+  const listarRRHH = () => {
+    notificacionObteniendoDatos("Obteniendo lista de RRHH desde el servidor");
+    google.script.run
+      .withSuccessHandler(res => {
+        try {
+          const rrhh = JSON.parse(res);
+          rrhh.sort((a, b) => (a.nombreCompleto > b.nombreCompleto) ? 1 : -1);
+          setRrhhData(rrhh);
+          Swal.close();
+        } catch (error) {
+          console.error('Error parsing JSON:', error);
+          Swal.close();
+        }
+      })
+      .listarRRHH();
+  };
+
+  const listarGrupos = () => {
+    notificacionObteniendoDatos("Obteniendo lista de grupos desde el servidor");
+    google.script.run
+      .withSuccessHandler(res => {
+        try {
+          const grupos = JSON.parse(res);
+          grupos.sort((a, b) => (a.nombreGrupo > b.nombreGrupo) ? 1 : -1);
+          setGruposData(grupos);
+          Swal.close();
+        } catch (error) {
+          console.error('Error parsing JSON:', error);
+          Swal.close();
+        }
+      })
+      .listarGrupos();
+  };
+
+  const handleSearchContract = (value) => {
+    setSearchTextContract(value);
     if (value === '') {
-      setData(originalData);
+      listarContratos();
     } else {
-      const filteredData = originalData.filter(item => 
-        item.name.toLowerCase().includes(value.toLowerCase())
+      const filteredContracts = contractData.filter(contrato =>
+        contrato.nombreDelContrato.toLowerCase().includes(value.toLowerCase())
       );
-      setData(filteredData);
+      setContractData(filteredContracts);
+    }
+  };
+
+  const handleSearchGrupos = (value) => {
+    setSearchTextGrupos(value);
+    if (value === '') {
+      listarGrupos();
+    } else {
+      const filteredGrupos = gruposData.filter(grupo =>
+        grupo.groupName.toLowerCase().includes(value.toLowerCase())
+      );
+      setGruposData(filteredGrupos);
+    }
+  };
+
+  const handleSearchRRHH = (value) => {
+    setSearchTextrrhh(value);
+    if (value === '') {
+      listarRRHH();
+    } else {
+      const filteredRRHH = rrhhData.filter(rrhh =>
+        rrhh.fullName.toLowerCase().includes(value.toLowerCase())
+      );
+      setRrhhData(filteredRRHH);
     }
   };
 
@@ -71,23 +128,15 @@ function Relaciones() {
       dataIndex: 'fechaCreacion',
       key: 'fechaCreacion',
       render: (text, record) => formatFecha(record.fechaCreacion),
-    },
-    {
-      title: 'Acciones',
-      key: 'acciones',
-      render: (text, record) => (
-        <div>
-          {/* Aquí se pueden agregar acciones específicas para contratos */}
-        </div>
-      ),
+      
     },
   ];
 
   const gruposColumns = [
     {
       title: 'Nombre del Grupo',
-      dataIndex: 'nombreGrupo',
-      key: 'nombreGrupo',
+      dataIndex: 'groupName',
+      key: 'groupName',
     },
     {
       title: 'Fecha de Creación',
@@ -114,8 +163,8 @@ function Relaciones() {
   const rrhhColumns = [
     {
       title: 'Nombre Completo',
-      dataIndex: 'nombreCompleto',
-      key: 'nombreCompleto',
+      dataIndex: 'fullName',
+      key: 'fullName',
     },
     {
       title: 'Cargo',
@@ -140,12 +189,13 @@ function Relaciones() {
         <Card 
           title="Contratos" 
           className="rounded" 
+          style={{ backgroundColor: '#ffcccc' }} 
           extra={
             <Tooltip title="Buscar Contrato">
               <Input.Search
                 placeholder="Buscar por nombre de contrato ✍🏽"
                 value={searchTextContract}
-                onChange={e => handleSearch(setSearchTextContract, setContractData, contractData, e.target.value)}
+                onChange={e => handleSearchContract(e.target.value)}
                 className="flex-1 p-2 rounded border border-gray-300"
               />
             </Tooltip>
@@ -153,7 +203,7 @@ function Relaciones() {
         >
           <Table
             columns={contractColumns}
-            dataSource={contractData.map((contract, index) => ({ ...contract, key: index }))}
+            dataSource={contractData.map((data, index) => ({ ...data, key: index }))}
             pagination={{ pageSize: 3 }}
           />
         </Card>
@@ -161,12 +211,13 @@ function Relaciones() {
         <Card 
           title="Grupos" 
           className="rounded" 
+          style={{ backgroundColor: '#ccffcc' }} 
           extra={
             <Tooltip title="Buscar Grupo">
               <Input.Search
                 placeholder="Buscar por nombre de grupo ✍🏽"
                 value={searchTextGrupos}
-                onChange={e => handleSearch(setSearchTextGrupos, setGruposData, gruposData, e.target.value)}
+                onChange={e => handleSearchGrupos(e.target.value)}
                 className="flex-1 p-2 rounded border border-gray-300"
               />
             </Tooltip>
@@ -174,7 +225,7 @@ function Relaciones() {
         >
           <Table
             columns={gruposColumns}
-            dataSource={gruposData.map((grupo, index) => ({ ...grupo, key: index }))}
+            dataSource={gruposData.map((data, index) => ({ ...data, key: index }))}
             pagination={{ pageSize: 3 }}
           />
         </Card>
@@ -182,12 +233,13 @@ function Relaciones() {
         <Card 
           title="Talento Humano (RRHH)" 
           className="rounded" 
+          style={{ backgroundColor: '#ccccff' }}
           extra={
             <Tooltip title="Buscar RRHH">
               <Input.Search
                 placeholder="Buscar por nombre ✍🏽"
                 value={searchTextrrhh}
-                onChange={e => handleSearch(setSearchTextrrhh, setRrhhData, rrhhData, e.target.value)}
+                onChange={e => handleSearchRRHH(e.target.value)}
                 className="flex-1 p-2 rounded border border-gray-300"
               />
             </Tooltip>
@@ -195,14 +247,13 @@ function Relaciones() {
         >
           <Table
             columns={rrhhColumns}
-            dataSource={rrhhData.map((rrhh, index) => ({ ...rrhh, key: index }))}
+            dataSource={rrhhData.map((data, index) => ({ ...data, key: index }))}
             pagination={{ pageSize: 3 }}
           />
         </Card>
       </div>
     </div>
   );
-};
-
+}
 
 //</script>
