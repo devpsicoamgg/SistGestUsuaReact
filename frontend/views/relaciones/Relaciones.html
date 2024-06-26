@@ -1,19 +1,72 @@
 //<script type="text/jsx">
 
+const obtenerContratos = (setContractData) => {
+  notificacionObteniendoDatos("Obteniendo la información de contratos desde el servidor");
+  google.script.run
+    .withSuccessHandler(res => {
+      try {
+        const contratos = JSON.parse(res);
+        contratos.sort((a, b) => (a.nombreDelContrato > b.nombreDelContrato) ? 1 : -1);
+        setContractData(contratos);
+        Swal.close();
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+        Swal.close();
+      }
+    })
+    .listarContratos();
+};
+
+const obtenerRRHH = (setRrhhData) => {
+  notificacionObteniendoDatos("Obteniendo lista de RRHH desde el servidor");
+  google.script.run
+    .withSuccessHandler(res => {
+      try {
+        const rrhh = JSON.parse(res);
+        rrhh.sort((a, b) => (a.nombreCompleto > b.nombreCompleto) ? 1 : -1);
+        setRrhhData(rrhh);
+        Swal.close();
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+        Swal.close();
+      }
+    })
+    .listarRRHH();
+};
+
+const obtenerGrupos = (setGruposData) => {
+  notificacionObteniendoDatos("Obteniendo lista de grupos desde el servidor");
+  google.script.run
+    .withSuccessHandler(res => {
+      try {
+        const grupos = JSON.parse(res);
+        grupos.sort((a, b) => (a.nombreGrupo > b.nombreGrupo) ? 1 : -1);
+        setGruposData(grupos);
+        Swal.close();
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+        Swal.close();
+      }
+    })
+    .listarGrupos();
+};
+
 function Relaciones() {
   const [contractData, setContractData] = useState([]);
   const [gruposData, setGruposData] = useState([]);
   const [rrhhData, setRrhhData] = useState([]);
-  const [searchTextContract, setSearchTextContract] = useState('');
+  const [selectedContracts, setSelectedContracts] = useState({});
   const [searchTextGrupos, setSearchTextGrupos] = useState('');
   const [searchTextrrhh, setSearchTextrrhh] = useState('');
   const history = useHistory();
   const Tooltip = window.antd.Tooltip;
+  const { Panel } = Collapse;
+  const { Option } = window.antd.Select;
 
   useEffect(() => {
-    listarContratos();
-    listarRRHH();
-    listarGrupos();
+    obtenerContratos(setContractData);
+    obtenerRRHH(setRrhhData);
+    obtenerGrupos(setGruposData);
   }, []);
 
   const formatFecha = (fecha) => {
@@ -25,73 +78,11 @@ function Relaciones() {
     return `${day}/${month}/${year}`;
   };
 
-  const listarContratos = () => {
-    notificacionObteniendoDatos("Obteniendo la información de contratos, RRHH y grupos desde el servidor");
-    google.script.run
-      .withSuccessHandler(res => {
-        try {
-          const contratos = JSON.parse(res);
-          contratos.sort((a, b) => (a.nombreDelContrato > b.nombreDelContrato) ? 1 : -1);
-          setContractData(contratos);
-          Swal.close();
-        } catch (error) {
-          console.error('Error parsing JSON:', error);
-          Swal.close();
-        }
-      })
-      .listarContratos();
-  };
-
-  const listarRRHH = () => {
-    notificacionObteniendoDatos("Obteniendo lista de RRHH desde el servidor");
-    google.script.run
-      .withSuccessHandler(res => {
-        try {
-          const rrhh = JSON.parse(res);
-          rrhh.sort((a, b) => (a.nombreCompleto > b.nombreCompleto) ? 1 : -1);
-          setRrhhData(rrhh);
-          Swal.close();
-        } catch (error) {
-          console.error('Error parsing JSON:', error);
-          Swal.close();
-        }
-      })
-      .listarRRHH();
-  };
-
-  const listarGrupos = () => {
-    notificacionObteniendoDatos("Obteniendo lista de grupos desde el servidor");
-    google.script.run
-      .withSuccessHandler(res => {
-        try {
-          const grupos = JSON.parse(res);
-          grupos.sort((a, b) => (a.nombreGrupo > b.nombreGrupo) ? 1 : -1);
-          setGruposData(grupos);
-          Swal.close();
-        } catch (error) {
-          console.error('Error parsing JSON:', error);
-          Swal.close();
-        }
-      })
-      .listarGrupos();
-  };
-
-  const handleSearchContract = (value) => {
-    setSearchTextContract(value);
-    if (value === '') {
-      listarContratos();
-    } else {
-      const filteredContracts = contractData.filter(contrato =>
-        contrato.nombreDelContrato.toLowerCase().includes(value.toLowerCase())
-      );
-      setContractData(filteredContracts);
-    }
-  };
 
   const handleSearchGrupos = (value) => {
     setSearchTextGrupos(value);
     if (value === '') {
-      listarGrupos();
+      obtenerGrupos(setGruposData);
     } else {
       const filteredGrupos = gruposData.filter(grupo =>
         grupo.groupName.toLowerCase().includes(value.toLowerCase())
@@ -103,7 +94,7 @@ function Relaciones() {
   const handleSearchRRHH = (value) => {
     setSearchTextrrhh(value);
     if (value === '') {
-      listarRRHH();
+      obtenerRRHH(setRrhhData);
     } else {
       const filteredRRHH = rrhhData.filter(rrhh =>
         rrhh.fullName.toLowerCase().includes(value.toLowerCase())
@@ -112,25 +103,44 @@ function Relaciones() {
     }
   };
 
-  const contractColumns = [
-    {
-      title: 'Nombre del Contrato',
-      dataIndex: 'nombreDelContrato',
-      key: 'nombreDelContrato',
-    },
-    {
-      title: 'Número del Contrato',
-      dataIndex: 'contractNumber',
-      key: 'contractNumber',
-    },
-    {
-      title: 'Fecha Creación',
-      dataIndex: 'fechaCreacion',
-      key: 'fechaCreacion',
-      render: (text, record) => formatFecha(record.fechaCreacion),
+  const handleContractSelect = (groupId, value) => {
+    setSelectedContracts(prevState => ({
+      ...prevState,
+      [groupId]: value
+    }));
+  };
+
+
+  const handleActualizarGrupoClick = (grupoId, contratoId) => {
+    const datosActualizados = {
+      contractId: contratoId
+     
+    };
+
+   
+    google.script.run
+      .withSuccessHandler(response => {
       
-    },
-  ];
+        console.log('Respuesta del servidor:', response);
+        Swal.fire({
+          title: response.titulo,
+          text: response.descripcion,
+          icon: response.icono || 'info',
+          timer: 2000,
+          timerProgressBar: true
+        });
+      })
+      .withFailureHandler(error => {
+        console.error('Error al actualizar grupo:', error);
+        Swal.fire({
+          title: 'Ops ha ocurrido un error!',
+          text: 'Por favor contacte a soporte.',
+          icon: 'error'
+        });
+      })
+      .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
+  };
+
 
   const gruposColumns = [
     {
@@ -150,13 +160,44 @@ function Relaciones() {
       key: 'cuentameCode',
     },
     {
-      title: 'Acciones',
-      key: 'acciones',
-      render: (text, record) => (
-        <div>
-          {/* Aquí se pueden agregar acciones específicas para grupos */}
-        </div>
-      ),
+      title: 'Contrato',
+      key: 'contractInfo',
+      render: (text, record) => {
+        if (record.contractId) {
+          const contrato = contractData.find(contract => contract.id === record.contractId);
+          if (contrato) {
+            return (
+              <div>
+                <p>{`${contrato.contractNumber} - ${contrato.nombreDelContrato}`}</p>
+              
+              </div>
+            );
+          }
+        }
+        return (
+          <div>
+          <Select
+            placeholder="Seleccionar contrato 📄"
+            style={{ width: 200 }}
+            onChange={value => handleContractSelect(record.id, value)}
+            value={selectedContracts[record.id]}
+          >
+            {contractData.map(contract => (
+              <Select.Option key={contract.contractNumber} value={contract.id}>
+                {`${contract.contractNumber} - ${contract.nombreDelContrato}`}
+              </Select.Option>
+            ))}
+          </Select>
+            <Button
+            type="primary"
+            onClick={() => handleActualizarGrupoClick(record.id, selectedContracts[record.id])}
+            style={{ marginTop: 8 }}
+            >
+            Actualizar Grupo
+            </Button>
+            </div>
+        );
+      },
     },
   ];
 
@@ -186,74 +227,38 @@ function Relaciones() {
     <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
       <h2 className="font-bold text-2xl mb-4">ZONA DE RELACIONES</h2>
       <div className="w-full max-w-screen-lg flex flex-col gap-4">
-        <Card 
-          title="Contratos" 
-          className="rounded" 
-          style={{ backgroundColor: '#ffcccc' }} 
-          extra={
-            <Tooltip title="Buscar Contrato">
-              <Input.Search
-                placeholder="Buscar por nombre de contrato ✍🏽"
-                value={searchTextContract}
-                onChange={e => handleSearchContract(e.target.value)}
-                className="flex-1 p-2 rounded border border-gray-300"
-              />
-            </Tooltip>
-          }
-        >
-          <Table
-            columns={contractColumns}
-            dataSource={contractData.map((data, index) => ({ ...data, key: index }))}
-            pagination={{ pageSize: 3 }}
-          />
-        </Card>
-
-        <Card 
-          title="Grupos" 
-          className="rounded" 
-          style={{ backgroundColor: '#ccffcc' }} 
-          extra={
-            <Tooltip title="Buscar Grupo">
-              <Input.Search
-                placeholder="Buscar por nombre de grupo ✍🏽"
-                value={searchTextGrupos}
-                onChange={e => handleSearchGrupos(e.target.value)}
-                className="flex-1 p-2 rounded border border-gray-300"
-              />
-            </Tooltip>
-          }
-        >
-          <Table
-            columns={gruposColumns}
-            dataSource={gruposData.map((data, index) => ({ ...data, key: index }))}
-            pagination={{ pageSize: 3 }}
-          />
-        </Card>
-
-        <Card 
-          title="Talento Humano (RRHH)" 
-          className="rounded" 
-          style={{ backgroundColor: '#ccccff' }}
-          extra={
-            <Tooltip title="Buscar RRHH">
-              <Input.Search
-                placeholder="Buscar por nombre ✍🏽"
-                value={searchTextrrhh}
-                onChange={e => handleSearchRRHH(e.target.value)}
-                className="flex-1 p-2 rounded border border-gray-300"
-              />
-            </Tooltip>
-          }
-        >
-          <Table
-            columns={rrhhColumns}
-            dataSource={rrhhData.map((data, index) => ({ ...data, key: index }))}
-            pagination={{ pageSize: 3 }}
-          />
-        </Card>
+        <Collapse accordion>
+          <Panel header="Grupos" key="2" style={{ backgroundColor: '#ccffcc' }}>
+            <Input.Search
+              placeholder="Buscar por nombre de grupo ✍🏽"
+              value={searchTextGrupos}
+              onChange={e => handleSearchGrupos(e.target.value)}
+              className="mb-2 rounded border border-gray-300"
+            />
+            <Table
+              columns={gruposColumns}
+              dataSource={gruposData.map((data, index) => ({ ...data, key: index }))}
+              pagination={{ pageSize: 3 }}
+            />
+          </Panel>
+          <Panel header="Talento Humano (RRHH)" key="3" style={{ backgroundColor: '#ccccff' }}>
+            <Input.Search
+              placeholder="Buscar por nombre ✍🏽"
+              value={searchTextrrhh}
+              onChange={e => handleSearchRRHH(e.target.value)}
+              className="mb-2 rounded border border-gray-300"
+            />
+            <Table
+              columns={rrhhColumns}
+              dataSource={rrhhData.map((data, index) => ({ ...data, key: index }))}
+              pagination={{ pageSize: 3 }}
+            />
+          </Panel>
+        </Collapse>
       </div>
     </div>
   );
 }
+
 
 //</script>
