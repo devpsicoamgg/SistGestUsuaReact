@@ -165,6 +165,7 @@ function FormularioRegistroRRHH() {
     
             {/* Segunda fila */}
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap'}}>
+
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
               <Item
                 name="fechaNacimiento"
@@ -214,6 +215,24 @@ function FormularioRegistroRRHH() {
               </div>
 
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
+              <Item
+                name="cargo"
+                label="Cargo"
+                rules={[{ required: true, message: "Por favor selecciona el cargo" }]}
+                style={{ marginBottom: '0' }}
+              >
+                <Select className="bg-gray-200" style={{ width: '100%' }} placeholder="Sexo ♀ ♂">
+                  <Option value="Coordinador/a">Coordinador/a</Option>
+                  <Option value="Nutricionista">Nutricionista</Option>
+                  <Option value="Apoyo psicosocial">Apoyo psicosocial</Option>
+                </Select>
+              </Item>
+              </div>
+              
+            </div>
+
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap'}}> 
+              <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
               <Tooltip title={() => {
                     const values = form.getFieldsValue();
                     return `Ley 1581 de 2012
@@ -242,8 +261,10 @@ function FormularioRegistroRRHH() {
                 <Input disabled className="bg-gray-200" />
               </Item>
               </div>
+              </div>
 
-            </div>
+
+
           </div>
     
           <div style={{ textAlign: 'center', marginTop: '1rem' }}>
