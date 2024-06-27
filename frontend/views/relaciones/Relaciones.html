@@ -153,9 +153,9 @@ function Relaciones() {
 
 
 
-  const handleActualizarRRHHClick = (rrHhId, grupoId) => {
+  const handleActualizarRRHHClick = (rrHhId, coordinadorId) => {
     const datosActualizados = {
-      coordinadorId: grupoId,
+      coordinadorId: coordinadorId,
       
     };
     google.script.run.withSuccessHandler(response => {
@@ -308,7 +308,7 @@ function Relaciones() {
               ))}
             </Select>
             <Button type="primary"
-             onClick={() => handleActualizarRRHHClick(record.id, record.grupoId, index)}>
+             onClick={() => handleActualizarRRHHClick(record.id, selectedRRHH[record.id])}>
               Agregar
             </Button>
           </div>
