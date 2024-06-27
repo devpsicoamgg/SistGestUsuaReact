@@ -147,6 +147,11 @@ function Relaciones() {
       title: 'Nombre del Grupo',
       dataIndex: 'groupName',
       key: 'groupName',
+      render: (text, record) => (
+        <Tooltip title={record.groupName}>
+          <span>{record.groupName}</span>
+        </Tooltip>
+      ),
     },
     {
       title: 'Fecha de Creación',
@@ -164,25 +169,32 @@ function Relaciones() {
       key: 'contractInfo',
       render: (text, record) => {
         const contrato = record.contractId ? contractData.find(contract => contract.id === record.contractId) : null;
-        const isEditable = selectedContracts[record.id] !== undefined; // Check if the record is in edit mode
+        const isEditable = selectedContracts[record.id] !== undefined;
         const selectedValue = isEditable ? selectedContracts[record.id] : (contrato ? contrato.id : undefined);
+        const tooltipText = contrato
+          ? `El contrato asociado al grupo es ${contrato.contractNumber} - ${contrato.nombreDelContrato}`
+          : 'Se debe asociar el grupo a un contrato';
+        const tooltipColor = contrato ? 'green' : 'red';
   
         return (
           <div>
-            <Select
-              placeholder="Seleccionar contrato 📄"
-              style={{ width: 200 }}
-              onChange={value => handleContractSelect(record.id, value)}
-              value={selectedValue}
-              disabled={contrato && !isEditable}
-            >
-              {contractData.map(contract => (
-                <Select.Option key={contract.id} value={contract.id}>
-                  {`${contract.contractNumber} - ${contract.nombreDelContrato}`}
-                </Select.Option>
-              ))}
-            </Select>
+            <Tooltip title={tooltipText} color={tooltipColor}>
+              <Select
+                placeholder="Seleccionar contrato 📄"
+                style={{ width: 200 }}
+                onChange={value => handleContractSelect(record.id, value)}
+                value={selectedValue}
+                disabled={contrato && !isEditable}
+              >
+                {contractData.map(contract => (
+                  <Select.Option key={contract.id} value={contract.id}>
+                    {`${contract.contractNumber} - ${contract.nombreDelContrato}`}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Tooltip>
             {contrato ? (
+              <Tooltip title={tooltipText} color={tooltipColor}>
               <Button
                 type="primary"
                 onClick={() => {
@@ -199,6 +211,7 @@ function Relaciones() {
               >
                 {isEditable ? 'Actualizar Grupo' : 'Editar'}
               </Button>
+              </Tooltip>
             ) : (
               <Button
                 type="primary"
@@ -214,6 +227,7 @@ function Relaciones() {
       },
     },
   ];
+  
   
   
   
