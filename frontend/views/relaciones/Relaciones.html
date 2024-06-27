@@ -56,6 +56,7 @@ function Relaciones() {
   const [gruposData, setGruposData] = useState([]);
   const [rrhhData, setRrhhData] = useState([]);
   const [selectedContracts, setSelectedContracts] = useState({});
+  const [selectedRRHH, setSelectedRRHH] = useState({});
   const [searchTextGrupos, setSearchTextGrupos] = useState('');
   const [searchTextrrhh, setSearchTextrrhh] = useState('');
   const history = useHistory();
@@ -110,6 +111,13 @@ function Relaciones() {
     }));
   };
 
+  const handleRRHHSelect = (index, value) => {
+    setSelectedRRHH(prevSelected => {
+      const updatedSelected = [...prevSelected];
+      updatedSelected[index] = value;
+      return updatedSelected;
+    });
+  };
 
   const handleActualizarGrupoClick = (grupoId, contratoId) => {
     const contrato = contractData.find(contract => contract.id === contratoId);
@@ -117,12 +125,10 @@ function Relaciones() {
       console.error('Contrato no encontrado');
       return;
     }
-  
     const datosActualizados = {
       contractId: contratoId,
       contratoGrupoMunicipio: `${contrato.contractNumber} - ${contrato.nombreDelContrato}`
     };
-  
     google.script.run.withSuccessHandler(response => {
       console.log('Respuesta del servidor:', response);
       Swal.fire({
@@ -143,7 +149,36 @@ function Relaciones() {
     })
     .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
-  
+
+
+
+
+  const handleActualizarRRHHClick = (rrHhId, grupoId) => {
+    const datosActualizados = {
+      coordinadorId: grupoId,
+      
+    };
+    google.script.run.withSuccessHandler(response => {
+      console.log('Respuesta del servidor:', response);
+      Swal.fire({
+        title: response.titulo,
+        text: response.descripcion,
+        icon: response.icono || 'info',
+        timer: 2000,
+        timerProgressBar: true
+      });
+    })
+    .withFailureHandler(error => {
+      console.error('Error al actualizar grupo:', error);
+      Swal.fire({
+        title: 'Ops ha ocurrido un error!',
+        text: 'Por favor contacte a soporte.',
+        icon: 'error'
+      });
+    })
+    .actualizarGrupo(rrHhId, JSON.stringify(datosActualizados));
+  };
+
 
 
   
@@ -234,7 +269,6 @@ function Relaciones() {
     },
   ];
   
-  const coordinadoresData = dataSource.filter(record => record.cargo === 'COORDINADOR/A');
   const coordinadoresColumns = [
     {
       title: 'Nombre del Grupo',
@@ -257,23 +291,33 @@ function Relaciones() {
     {
       title: 'Acciones',
       key: 'acciones',
-      render: (text, record) => {
-        if (record.cargo === 'COORDINADOR/A') {
-          return (
-            <Select defaultValue="acciones" style={{ width: 200 }}>
-              {coordinadoresData.map(coordinador => (
+      render: (text, record, index) => {
+        const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
+        return (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Select
+              style={{ width: 200, marginRight: 8 }}
+              placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
+              onChange={value => handleRRHHSelect(record.id, value)}
+              value={selectedRRHH[index]}
+            >
+              {coordinadores.map(coordinador => (
                 <Select.Option key={coordinador.id} value={coordinador.id}>
                   {coordinador.nombreCompleto}
                 </Select.Option>
               ))}
             </Select>
-          );
-        } else {
-          return null; // No renderizar nada si no es coordinador/a
-        }
+            <Button type="primary"
+             onClick={() => handleActualizarRRHHClick(record.id, record.grupoId, index)}>
+              Agregar
+            </Button>
+          </div>
+        );
       },
     },
   ];
+  
+
 
   const rrhhColumns = [
     {
