@@ -112,35 +112,41 @@ function Relaciones() {
 
 
   const handleActualizarGrupoClick = (grupoId, contratoId) => {
+    const contrato = contractData.find(contract => contract.id === contratoId);
+    if (!contrato) {
+      console.error('Contrato no encontrado');
+      return;
+    }
+  
     const datosActualizados = {
       contractId: contratoId,
-      contratoGrupoMunicipio: contractData.contractNumber + " - " + contractData.nombreDelContrato
+      contratoGrupoMunicipio: `${contrato.contractNumber} - ${contrato.nombreDelContrato}`
     };
-
-   
-    google.script.run
-      .withSuccessHandler(response => {
-      
-        console.log('Respuesta del servidor:', response);
-        Swal.fire({
-          title: response.titulo,
-          text: response.descripcion,
-          icon: response.icono || 'info',
-          timer: 2000,
-          timerProgressBar: true
-        });
-      })
-      .withFailureHandler(error => {
-        console.error('Error al actualizar grupo:', error);
-        Swal.fire({
-          title: 'Ops ha ocurrido un error!',
-          text: 'Por favor contacte a soporte.',
-          icon: 'error'
-        });
-      })
-      .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
+  
+    google.script.run.withSuccessHandler(response => {
+      console.log('Respuesta del servidor:', response);
+      Swal.fire({
+        title: response.titulo,
+        text: response.descripcion,
+        icon: response.icono || 'info',
+        timer: 2000,
+        timerProgressBar: true
+      });
+    })
+    .withFailureHandler(error => {
+      console.error('Error al actualizar grupo:', error);
+      Swal.fire({
+        title: 'Ops ha ocurrido un error!',
+        text: 'Por favor contacte a soporte.',
+        icon: 'error'
+      });
+    })
+    .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
+  
 
+
+  
 
   const gruposColumns = [
     {
@@ -228,7 +234,7 @@ function Relaciones() {
     },
   ];
   
-
+  const coordinadoresData = dataSource.filter(record => record.cargo === 'COORDINADOR/A');
   const coordinadoresColumns = [
     {
       title: 'Nombre del Grupo',
@@ -241,18 +247,31 @@ function Relaciones() {
       key: 'cuentameCode',
     },
     {
-      title: 'Municipio',
-      dataIndex: 'municipality',
-      key: 'municipality',
+      title: 'Contrato Asociado',
+      dataIndex: 'contratoGrupoMunicipio',
+      key: 'contratoGrupoMunicipio',
+      render: (text, record) => (
+        record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
+      ),
     },
     {
       title: 'Acciones',
       key: 'acciones',
-      render: (text, record) => (
-        <div>
-          {/* Aquí se pueden agregar acciones específicas para RRHH */}
-        </div>
-      ),
+      render: (text, record) => {
+        if (record.cargo === 'COORDINADOR/A') {
+          return (
+            <Select defaultValue="acciones" style={{ width: 200 }}>
+              {coordinadoresData.map(coordinador => (
+                <Select.Option key={coordinador.id} value={coordinador.id}>
+                  {coordinador.nombreCompleto}
+                </Select.Option>
+              ))}
+            </Select>
+          );
+        } else {
+          return null; // No renderizar nada si no es coordinador/a
+        }
+      },
     },
   ];
 
