@@ -165,6 +165,7 @@ function Relaciones() {
       render: (text, record) => {
         const contrato = record.contractId ? contractData.find(contract => contract.id === record.contractId) : null;
         const isEditable = selectedContracts[record.id] !== undefined; // Check if the record is in edit mode
+        const selectedValue = isEditable ? selectedContracts[record.id] : (contrato ? contrato.id : undefined);
   
         return (
           <div>
@@ -172,7 +173,7 @@ function Relaciones() {
               placeholder="Seleccionar contrato 📄"
               style={{ width: 200 }}
               onChange={value => handleContractSelect(record.id, value)}
-              value={contrato ? contrato.id : undefined}
+              value={selectedValue}
               disabled={contrato && !isEditable}
             >
               {contractData.map(contract => (
@@ -203,7 +204,7 @@ function Relaciones() {
                 type="primary"
                 onClick={() => handleActualizarGrupoClick(record.id, selectedContracts[record.id])}
                 style={{ marginTop: 8 }}
-                disabled={!selectedContracts[record.id]} 
+                disabled={!selectedContracts[record.id]}
               >
                 Actualizar Grupo
               </Button>
@@ -213,6 +214,7 @@ function Relaciones() {
       },
     },
   ];
+  
   
 
   const rrhhColumns = [
