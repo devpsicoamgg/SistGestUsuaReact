@@ -223,12 +223,35 @@ function Relaciones() {
     },
   ];
 
+  const coordinadoresColumns = [
+    {
+      title: 'Nombre del Grupo',
+      dataIndex: 'groupName',
+      key: 'groupName',
+    },
+    {
+      title: 'Cargo',
+      dataIndex: 'cargo',
+      key: 'cargo',
+    },
+    {
+      title: 'Acciones',
+      key: 'acciones',
+      render: (text, record) => (
+        <div>
+          {/* Aquí se pueden agregar acciones específicas para RRHH */}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
       <h2 className="font-bold text-2xl mb-4">ZONA DE RELACIONES</h2>
       <div className="w-full max-w-screen-lg flex flex-col gap-4">
         <Collapse accordion>
-          <Panel header="Grupos Vs Contrato" key="2" style={{ backgroundColor: '#ccffcc' }}>
+
+        <Panel header="Grupos Vs Contrato" key="1" style={{ backgroundColor: '#ccffcc' }}>
             <Input.Search
               placeholder="Buscar por nombre de grupo ✍🏽"
               value={searchTextGrupos}
@@ -241,6 +264,21 @@ function Relaciones() {
               pagination={{ pageSize: 3 }}
             />
           </Panel>
+
+        <Panel header="Grupos Vs Coordinador" key="2" style={{ backgroundColor: '#ccffgg' }}>
+            <Input.Search
+              placeholder="Buscar por nombre de colaborador ✍🏽"
+              value={searchTextrrhh}
+              onChange={e => handleSearchRRHH(e.target.value)}
+              className="mb-2 rounded border border-gray-300"
+            />
+            <Table
+              columns={rrhhColumns}
+              dataSource={gruposData.map((data, index) => ({ ...data, key: index }))}
+              pagination={{ pageSize: 3 }}
+            />
+          </Panel>
+
           <Panel header="Talento Humano (RRHH) Vs Grupo" key="3" style={{ backgroundColor: '#ccccff' }}>
             <Input.Search
               placeholder="Buscar por nombre ✍🏽"
