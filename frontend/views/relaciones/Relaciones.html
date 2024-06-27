@@ -163,43 +163,57 @@ function Relaciones() {
       title: 'Contrato',
       key: 'contractInfo',
       render: (text, record) => {
-        if (record.contractId) {
-          const contrato = contractData.find(contract => contract.id === record.contractId);
-          if (contrato) {
-            return (
-              <div>
-                <p>{`${contrato.contractNumber} - ${contrato.nombreDelContrato}`}</p>
-              
-              </div>
-            );
-          }
-        }
+        const contrato = record.contractId ? contractData.find(contract => contract.id === record.contractId) : null;
+        const isEditable = selectedContracts[record.id] !== undefined; // Check if the record is in edit mode
+  
         return (
           <div>
-          <Select
-            placeholder="Seleccionar contrato 📄"
-            style={{ width: 200 }}
-            onChange={value => handleContractSelect(record.id, value)}
-            value={selectedContracts[record.id]}
-          >
-            {contractData.map(contract => (
-              <Select.Option key={contract.contractNumber} value={contract.id}>
-                {`${contract.contractNumber} - ${contract.nombreDelContrato}`}
-              </Select.Option>
-            ))}
-          </Select>
-            <Button
-            type="primary"
-            onClick={() => handleActualizarGrupoClick(record.id, selectedContracts[record.id])}
-            style={{ marginTop: 8 }}
+            <Select
+              placeholder="Seleccionar contrato 📄"
+              style={{ width: 200 }}
+              onChange={value => handleContractSelect(record.id, value)}
+              value={contrato ? contrato.id : undefined}
+              disabled={contrato && !isEditable}
             >
-            Actualizar Grupo
-            </Button>
-            </div>
+              {contractData.map(contract => (
+                <Select.Option key={contract.id} value={contract.id}>
+                  {`${contract.contractNumber} - ${contract.nombreDelContrato}`}
+                </Select.Option>
+              ))}
+            </Select>
+            {contrato ? (
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (isEditable) {
+                    handleActualizarGrupoClick(record.id, selectedContracts[record.id]);
+                  } else {
+                    setSelectedContracts(prevState => ({
+                      ...prevState,
+                      [record.id]: record.contractId
+                    }));
+                  }
+                }}
+                style={{ marginTop: 8 }}
+              >
+                {isEditable ? 'Actualizar Grupo' : 'Editar'}
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                onClick={() => handleActualizarGrupoClick(record.id, selectedContracts[record.id])}
+                style={{ marginTop: 8 }}
+                disabled={!selectedContracts[record.id]} 
+              >
+                Actualizar Grupo
+              </Button>
+            )}
+          </div>
         );
       },
     },
   ];
+  
 
   const rrhhColumns = [
     {
@@ -230,9 +244,14 @@ function Relaciones() {
       key: 'groupName',
     },
     {
-      title: 'Cargo',
-      dataIndex: 'cargo',
-      key: 'cargo',
+      title: 'Código Cuentame',
+      dataIndex: 'cuentameCode',
+      key: 'cuentameCode',
+    },
+    {
+      title: 'Municipio',
+      dataIndex: 'municipality',
+      key: 'municipality',
     },
     {
       title: 'Acciones',
@@ -273,8 +292,8 @@ function Relaciones() {
               className="mb-2 rounded border border-gray-300"
             />
             <Table
-              columns={rrhhColumns}
-              dataSource={rrhhData.map((data, index) => ({ ...data, key: index }))}
+              columns={coordinadoresColumns}
+              dataSource={gruposData.map((data, index) => ({ ...data, key: index }))}
               pagination={{ pageSize: 3 }}
             />
           </Panel>
