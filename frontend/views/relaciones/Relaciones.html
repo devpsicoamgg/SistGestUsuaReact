@@ -195,7 +195,7 @@ function Relaciones() {
                     }));
                   }
                 }}
-                style={{ marginTop: 8 }}
+                style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
               >
                 {isEditable ? 'Actualizar Grupo' : 'Editar'}
               </Button>
@@ -203,7 +203,7 @@ function Relaciones() {
               <Button
                 type="primary"
                 onClick={() => handleActualizarGrupoClick(record.id, selectedContracts[record.id])}
-                style={{ marginTop: 8 }}
+                style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
                 disabled={!selectedContracts[record.id]}
               >
                 Actualizar Grupo
@@ -214,6 +214,7 @@ function Relaciones() {
       },
     },
   ];
+  
   
   
 
