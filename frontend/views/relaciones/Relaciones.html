@@ -204,8 +204,8 @@ function Relaciones() {
   const rrhhColumns = [
     {
       title: 'Nombre Completo',
-      dataIndex: 'fullName',
-      key: 'fullName',
+      dataIndex: 'nombreCompleto',
+      key: 'nombreCompleto',
     },
     {
       title: 'Cargo',
@@ -228,7 +228,7 @@ function Relaciones() {
       <h2 className="font-bold text-2xl mb-4">ZONA DE RELACIONES</h2>
       <div className="w-full max-w-screen-lg flex flex-col gap-4">
         <Collapse accordion>
-          <Panel header="Grupos" key="2" style={{ backgroundColor: '#ccffcc' }}>
+          <Panel header="Grupos Vs Contrato" key="2" style={{ backgroundColor: '#ccffcc' }}>
             <Input.Search
               placeholder="Buscar por nombre de grupo ✍🏽"
               value={searchTextGrupos}
@@ -241,7 +241,7 @@ function Relaciones() {
               pagination={{ pageSize: 3 }}
             />
           </Panel>
-          <Panel header="Talento Humano (RRHH)" key="3" style={{ backgroundColor: '#ccccff' }}>
+          <Panel header="Talento Humano (RRHH) Vs Grupo" key="3" style={{ backgroundColor: '#ccccff' }}>
             <Input.Search
               placeholder="Buscar por nombre ✍🏽"
               value={searchTextrrhh}
