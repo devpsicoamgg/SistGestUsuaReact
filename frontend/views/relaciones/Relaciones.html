@@ -113,8 +113,8 @@ function Relaciones() {
 
   const handleActualizarGrupoClick = (grupoId, contratoId) => {
     const datosActualizados = {
-      contractId: contratoId
-     
+      contractId: contratoId,
+      contratoGrupoMunicipio: contractData.contractNumber + " - " + contractData.nombreDelContrato
     };
 
    
@@ -228,31 +228,6 @@ function Relaciones() {
     },
   ];
   
-  
-  
-  
-
-  const rrhhColumns = [
-    {
-      title: 'Nombre Completo',
-      dataIndex: 'nombreCompleto',
-      key: 'nombreCompleto',
-    },
-    {
-      title: 'Cargo',
-      dataIndex: 'cargo',
-      key: 'cargo',
-    },
-    {
-      title: 'Acciones',
-      key: 'acciones',
-      render: (text, record) => (
-        <div>
-          {/* Aquí se pueden agregar acciones específicas para RRHH */}
-        </div>
-      ),
-    },
-  ];
 
   const coordinadoresColumns = [
     {
@@ -269,6 +244,28 @@ function Relaciones() {
       title: 'Municipio',
       dataIndex: 'municipality',
       key: 'municipality',
+    },
+    {
+      title: 'Acciones',
+      key: 'acciones',
+      render: (text, record) => (
+        <div>
+          {/* Aquí se pueden agregar acciones específicas para RRHH */}
+        </div>
+      ),
+    },
+  ];
+
+  const rrhhColumns = [
+    {
+      title: 'Nombre Completo',
+      dataIndex: 'nombreCompleto',
+      key: 'nombreCompleto',
+    },
+    {
+      title: 'Cargo',
+      dataIndex: 'cargo',
+      key: 'cargo',
     },
     {
       title: 'Acciones',
@@ -301,7 +298,7 @@ function Relaciones() {
             />
           </Panel>
 
-        <Panel header="Grupos Vs Coordinador" key="2" style={{ backgroundColor: '#ccffgg' }}>
+        <Panel header="Grupos Vs Coordinador" key="2" style={{ backgroundColor: '#DCC38F' }}>
             <Input.Search
               placeholder="Buscar por nombre de colaborador ✍🏽"
               value={searchTextrrhh}
