@@ -120,6 +120,7 @@ function Relaciones() {
   };
 
   const handleActualizarGrupoClick = (grupoId, contratoId) => {
+    notificacionGuardando("Guardando el contrato " + contract.id);
     const contrato = contractData.find(contract => contract.id === contratoId);
     if (!contrato) {
       console.error('Contrato no encontrado');
@@ -151,12 +152,11 @@ function Relaciones() {
   };
 
 
-
-
-  const handleActualizarRRHHClick = (rrHhId, coordinadorId) => {
+  const handleActualizarRRHHClick = (grupoId, coordinadorId, coordinadorNombre) => {
+    notificacionGuardando("Actualizando grupo con la coordinación de: " + coordinadorNombre);
     const datosActualizados = {
       coordinadorId: coordinadorId,
-      
+      coordinadorNombre: coordinadorNombre,
     };
     google.script.run.withSuccessHandler(response => {
       console.log('Respuesta del servidor:', response);
@@ -176,7 +176,7 @@ function Relaciones() {
         icon: 'error'
       });
     })
-    .actualizarGrupo(rrHhId, JSON.stringify(datosActualizados));
+    .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
 
 
@@ -190,10 +190,10 @@ function Relaciones() {
       key: 'groupName',
       render: (text, record) => (
         <Tooltip title={record.groupName}>
-          <span>{record.groupName}</span>
+        <span>{record.groupName}</span>
         </Tooltip>
-      ),
-    },
+        ),
+      },
     {
       title: 'Fecha de Creación',
       dataIndex: 'fechaCreacion',
@@ -213,7 +213,7 @@ function Relaciones() {
         const isEditable = selectedContracts[record.id] !== undefined;
         const selectedValue = isEditable ? selectedContracts[record.id] : (contrato ? contrato.id : undefined);
         const tooltipText = contrato
-          ? `El contrato asociado al grupo es ${contrato.contractNumber} - ${contrato.nombreDelContrato}`
+        ? `El contrato asociado al grupo es ${contrato.contractNumber} - ${contrato.nombreDelContrato}`
           : 'Se debe asociar el grupo a un contrato';
         const tooltipColor = contrato ? 'green' : 'red';
   
@@ -293,12 +293,27 @@ function Relaciones() {
       key: 'acciones',
       render: (text, record, index) => {
         const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
+        const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === selectedRRHH[index]);
+  
+        const handleAgregarClick = () => {
+          if (!record.contratoGrupoMunicipio) {
+            Swal.fire({
+              title: 'Ops ha ocurrido un error!',
+              text: 'Primero debe asociar el grupo a un contrato.',
+              icon: 'error'
+            });
+            return;
+          }
+  
+          handleActualizarRRHHClick(record.id, selectedRRHH[index], selectedCoordinator.nombreCompleto);
+        };
+  
         return (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Select
               style={{ width: 200, marginRight: 8 }}
               placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
-              onChange={value => handleRRHHSelect(record.id, value)}
+              onChange={value => handleRRHHSelect(index, value)}
               value={selectedRRHH[index]}
             >
               {coordinadores.map(coordinador => (
@@ -307,14 +322,13 @@ function Relaciones() {
                 </Select.Option>
               ))}
             </Select>
-            <Button type="primary"
-             onClick={() => handleActualizarRRHHClick(record.id, selectedRRHH[record.id])}>
+            <Button type="primary" onClick={handleAgregarClick}>
               Agregar
             </Button>
           </div>
         );
       },
-    },
+    },    
   ];
   
 
