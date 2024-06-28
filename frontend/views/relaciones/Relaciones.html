@@ -352,6 +352,30 @@ function Relaciones() {
           : 'Se debe asociar el grupo a un coordinador/a';
         const tooltipColor = selectedCoordinator ? 'green' : 'red';
     
+        const handleActualizarRRHHClick = (grupoId, rrhhId, nombreCompleto) => {
+          const datosActualizados = {
+            rrhhId: rrhhId,
+            coordinadorNombre: nombreCompleto
+          };
+          google.script.run.withSuccessHandler(response => {
+            Swal.fire({
+              title: response.titulo,
+              text: response.descripcion,
+              icon: response.icono || 'info',
+              timer: 2000,
+              timerProgressBar: true
+            });
+          })
+          .withFailureHandler(error => {
+            Swal.fire({
+              title: 'Ops ha ocurrido un error!',
+              text: 'Por favor contacte a soporte.',
+              icon: 'error'
+            });
+          })
+          .actualizarRRHH(grupoId, JSON.stringify(datosActualizados));
+        };
+    
         return (
           <div>
             <Tooltip title={tooltipText} color={tooltipColor}>
@@ -375,7 +399,7 @@ function Relaciones() {
                   type="primary"
                   onClick={() => {
                     if (isEditable) {
-                      handleActualizarRRHHClickDos(record.id, selectedRRHH[record.id]);
+                      handleActualizarRRHHClick(record.id, selectedRRHH[record.id], selectedCoordinator.nombreCompleto);
                     } else {
                       setSelectedRRHH(prevState => ({
                         ...prevState,
@@ -391,7 +415,7 @@ function Relaciones() {
             ) : (
               <Button
                 type="primary"
-                onClick={() => handleActualizarRRHHClick(record.id, selectedRRHH[record.id])}
+                onClick={() => handleActualizarRRHHClick(record.id, selectedRRHH[record.id], selectedCoordinator ? selectedCoordinator.nombreCompleto : '')}
                 style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
                 disabled={!selectedRRHH[record.id]}
               >
@@ -401,7 +425,8 @@ function Relaciones() {
           </div>
         );
       },
-    }        
+    }
+            
   ];
   
 
