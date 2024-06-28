@@ -345,7 +345,7 @@ function Relaciones() {
       render: (text, record, index) => {
         const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
         const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === selectedRRHH[index]);
-  
+    
         const handleAgregarClick = () => {
           if (!record.contratoGrupoMunicipio) {
             Swal.fire({
@@ -355,31 +355,38 @@ function Relaciones() {
             });
             return;
           }
-  
+    
           handleActualizarRRHHClick(record.id, selectedRRHH[index], selectedCoordinator.nombreCompleto);
         };
-  
+    
         return (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Select
-              style={{ width: 200, marginRight: 8 }}
-              placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
-              onChange={value => handleRRHHSelect(index, value)}
-              value={selectedRRHH[index]}
+          <div>
+            <Tooltip title={selectedCoordinator ? `Coordinador/a seleccionado/a: ${selectedCoordinator.nombreCompleto}` : 'Seleccionar coordinador/a'}>
+              <Select
+                style={{ width: 200, marginRight: 8 }}
+                placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
+                onChange={value => handleRRHHSelect(index, value)}
+                value={selectedRRHH[index]}
+              >
+                {coordinadores.map(coordinador => (
+                  <Select.Option key={coordinador.id} value={coordinador.id}>
+                    {coordinador.nombreCompleto}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Tooltip>
+            <Button
+              type="primary"
+              onClick={handleAgregarClick}
+              style={{ marginLeft: 8 }}
             >
-              {coordinadores.map(coordinador => (
-                <Select.Option key={coordinador.id} value={coordinador.id}>
-                  {coordinador.nombreCompleto}
-                </Select.Option>
-              ))}
-            </Select>
-            <Button type="primary" onClick={handleAgregarClick}>
-              Agregar
+              {selectedCoordinator ? 'Actualizar Coordinador' : 'Agregar'}
             </Button>
           </div>
         );
       },
-    },    
+    },
+       
   ];
   
 
