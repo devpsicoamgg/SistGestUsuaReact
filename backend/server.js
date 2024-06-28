@@ -7,8 +7,8 @@ const doGet = () =>
       "viewport",
       'width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"'
     )
-    .setTitle("Gestor Pacientes")
-    .setFaviconUrl("https://res.cloudinary.com/dt1aacjqj/image/upload/v1714168483/pngwing.com_4_k9wtdt.png");
+    .setTitle("Gestor Usuarios")
+    .setFaviconUrl("https://res.cloudinary.com/dt1aacjqj/image/upload/v1719550426/klipartz.com_o4apt6.png");
 
 const include = (ruta) =>
   HtmlService.createHtmlOutputFromFile(ruta).getContent();
