@@ -343,61 +343,75 @@ function Relaciones() {
       title: 'Coordinador',
       key: 'acciones',
       render: (text, record) => {
-        // Filtrar los coordinadores del state recursos rrhhData aplicando un filter. 
+        // Filtrar los coordinadores del estado rrhhData aplicando un filter.
         const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
-        // Encuentra el coordinador seleccionado para cada uno de los registros renderizados
-        const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === selectedRRHH[index]);
+        // Encontrar el coordinador seleccionado para el registro actual
+        const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === record.coordinatorId);
         // Determinar si hay un coordinador seleccionado
         const hasCoordinator = Boolean(selectedCoordinator);
+        // Determinar si se puede editar el coordinador (condiciones específicas según tu lógica)
+        const isEditable = record.estado === 'Activo' && hasCoordinator; // Por ejemplo, solo editable si el estado es 'Activo'
+    
+        // Texto y color para el tooltip
+        const tooltipText = hasCoordinator
+          ? `El coordinador asignado es ${selectedCoordinator.nombreCompleto}`
+          : 'Se debe seleccionar un coordinador para este registro';
+        const tooltipColor = hasCoordinator ? 'green' : 'red';
     
         // Función para manejar el click en el botón Agregar/Editar
         const handleAgregarClick = () => {
-          // Validar si el grupo está asociado a un contrato
-          if (!record.contratoGrupoMunicipio) {
+          // Validar cualquier condición necesaria antes de realizar la acción
+          if (!record.contratoId) { // Por ejemplo, verificar si existe un contrato asociado
             Swal.fire({
-              title: 'Ops ha ocurrido un error!',
-              text: 'Primero debe asociar el grupo a un contrato.',
+              title: 'Error',
+              text: 'Primero debe asociar este registro a un contrato.',
               icon: 'error'
             });
             return;
           }
     
-          // Llamar a la función para actualizar los recursos humanos
-          handleActualizarRRHHClick(record.id, selectedRRHH[index], selectedCoordinator ? selectedCoordinator.nombreCompleto : '');
+          // Llamar a la función para actualizar el coordinador
+          handleActualizarCoordinadorClick(record.id, selectedCoordinator ? selectedCoordinator.id : null);
         };
     
         // Función para manejar la selección de un coordinador/a
-        const handleRRHHSelect = (index, value) => {
-          const newSelectedRRHH = [...selectedRRHH];
-          newSelectedRRHH[index] = value;
-          setSelectedRRHH(newSelectedRRHH);
+        const handleCoordinatorSelect = (value) => {
+          handleCoordinatorChange(record.id, value); // Suponiendo que tengas una función para actualizar el estado localmente
         };
     
         return (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {selectedCoordinator ? (
-              <p>{selectedCoordinator.nombreCompleto}</p>
-            ) : (
-              <Select
-                style={{ width: 200, marginRight: 8 }}
-                placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
-                onChange={value => handleRRHHSelect(index, value)}
-                value={selectedRRHH[index] || undefined}
-              >
-                {coordinadores.map(coordinador => (
-                  <Select.Option key={coordinador.id} value={coordinador.id}>
-                    {coordinador.nombreCompleto}
-                  </Select.Option>
-                ))}
-              </Select>
-            )}
-            <Button type="primary" onClick={handleAgregarClick}>
+          <div>
+            <Tooltip title={tooltipText} color={tooltipColor}>
+              {hasCoordinator ? (
+                <p>{selectedCoordinator.nombreCompleto}</p>
+              ) : (
+                <Select
+                  style={{ width: 200, marginRight: 8 }}
+                  placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
+                  onChange={handleCoordinatorSelect}
+                  value={record.coordinatorId || undefined}
+                >
+                  {coordinadores.map(coordinador => (
+                    <Select.Option key={coordinador.id} value={coordinador.id}>
+                      {coordinador.nombreCompleto}
+                    </Select.Option>
+                  ))}
+                </Select>
+              )}
+            </Tooltip>
+            <Button
+              type="primary"
+              onClick={handleAgregarClick}
+              style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
+              disabled={!isEditable}
+            >
               {hasCoordinator ? 'Editar' : 'Agregar'}
             </Button>
           </div>
         );
       },
     }
+    
     
   ];
   
