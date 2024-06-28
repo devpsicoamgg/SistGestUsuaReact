@@ -345,7 +345,8 @@ function Relaciones() {
       render: (text, record, index) => {
         const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
         const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === selectedRRHH[index]);
-  
+        const hasCoordinator = Boolean(selectedCoordinator);
+    
         const handleAgregarClick = () => {
           if (!record.contratoGrupoMunicipio) {
             Swal.fire({
@@ -355,17 +356,23 @@ function Relaciones() {
             });
             return;
           }
-  
+    
           handleActualizarRRHHClick(record.id, selectedRRHH[index], selectedCoordinator.nombreCompleto);
         };
-  
+    
+        const handleRRHHSelect = (index, value) => {
+          const newSelectedRRHH = [...selectedRRHH];
+          newSelectedRRHH[index] = value;
+          setSelectedRRHH(newSelectedRRHH);
+        };
+    
         return (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Select
               style={{ width: 200, marginRight: 8 }}
-              placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
+              placeholder={hasCoordinator ? "Seleccionar coordinador/a 👷🏼‍♂️" : "Agregar coordinador/a 👷🏼‍♂️"}
               onChange={value => handleRRHHSelect(index, value)}
-              value={selectedRRHH[index]}
+              value={selectedRRHH[index] || undefined}
             >
               {coordinadores.map(coordinador => (
                 <Select.Option key={coordinador.id} value={coordinador.id}>
@@ -374,12 +381,12 @@ function Relaciones() {
               ))}
             </Select>
             <Button type="primary" onClick={handleAgregarClick}>
-              Agregar
+              {hasCoordinator ? 'Editar' : 'Agregar'}
             </Button>
           </div>
         );
       },
-    },    
+    } 
   ];
   
 
