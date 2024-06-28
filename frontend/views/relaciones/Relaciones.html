@@ -55,10 +55,14 @@ function Relaciones() {
   const [contractData, setContractData] = useState([]);
   const [gruposData, setGruposData] = useState([]);
   const [rrhhData, setRrhhData] = useState([]);
+  const [filteredGruposData, setFilteredGruposData] = useState([]);
+  const [filteredGruposDataCoordinador, setFilteredGruposDataCoordinador] = useState([]);
+  const [filteredRRHHData, setFilteredRRHHData] = useState([]);
   const [selectedContracts, setSelectedContracts] = useState({});
   const [selectedRRHH, setSelectedRRHH] = useState({});
   const [searchTextGrupos, setSearchTextGrupos] = useState('');
   const [searchTextrrhh, setSearchTextrrhh] = useState('');
+  const [searchTextDosrrhh, setSearchTextDosrrhh] = useState('');
   const history = useHistory();
   const Tooltip = window.antd.Tooltip;
   const { Panel } = Collapse;
@@ -67,7 +71,11 @@ function Relaciones() {
   useEffect(() => {
     obtenerContratos(setContractData);
     obtenerRRHH(setRrhhData);
-    obtenerGrupos(setGruposData);
+    obtenerGrupos((data) => {
+      setGruposData(data);
+      setFilteredGruposData(data);
+      setFilteredGruposDataCoordinador(data);
+    });
   }, []);
 
   const formatFecha = (fecha) => {
@@ -83,24 +91,36 @@ function Relaciones() {
   const handleSearchGrupos = (value) => {
     setSearchTextGrupos(value);
     if (value === '') {
-      obtenerGrupos(setGruposData);
+      setFilteredGruposData(gruposData);
     } else {
       const filteredGrupos = gruposData.filter(grupo =>
         grupo.groupName.toLowerCase().includes(value.toLowerCase())
       );
-      setGruposData(filteredGrupos);
+      setFilteredGruposData(filteredGrupos);
     }
   };
 
   const handleSearchRRHH = (value) => {
     setSearchTextrrhh(value);
     if (value === '') {
-      obtenerRRHH(setRrhhData);
+      setFilteredGruposDataCoordinador(gruposData);
+    } else {
+      const filteredGruposCoordinador = gruposData.filter(grupo =>
+        grupo.coordinadorName && grupo.coordinadorName.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredGruposDataCoordinador(filteredGruposCoordinador);
+    }
+  };
+
+  const handleSearchRRHHDos = (value) => {
+    setSearchTextDosrrhh(value);
+    if (value === '') {
+      setFilteredRRHHData(rrhhData);
     } else {
       const filteredRRHH = rrhhData.filter(rrhh =>
-        rrhh.fullName.toLowerCase().includes(value.toLowerCase())
+        rrhh.nombreCompleto.toLowerCase().includes(value.toLowerCase())
       );
-      setRrhhData(filteredRRHH);
+      setFilteredRRHHData(filteredRRHH);
     }
   };
 
@@ -370,7 +390,7 @@ function Relaciones() {
             />
             <Table
               columns={gruposColumns}
-              dataSource={gruposData.map((data, index) => ({ ...data, key: index }))}
+              dataSource={filteredGruposData.map((data, index) => ({ ...data, key: index }))}
               pagination={{ pageSize: 3 }}
             />
           </Panel>
@@ -384,7 +404,7 @@ function Relaciones() {
             />
             <Table
               columns={coordinadoresColumns}
-              dataSource={gruposData.map((data, index) => ({ ...data, key: index }))}
+              dataSource={filteredGruposDataCoordinador.map((data, index) => ({ ...data, key: index }))}
               pagination={{ pageSize: 3 }}
             />
           </Panel>
@@ -392,8 +412,8 @@ function Relaciones() {
           <Panel header="Talento Humano (RRHH) Vs Grupo" key="3" style={{ backgroundColor: '#ccccff' }}>
             <Input.Search
               placeholder="Buscar por nombre ✍🏽"
-              value={searchTextrrhh}
-              onChange={e => handleSearchRRHH(e.target.value)}
+              value={searchTextDosrrhh}
+              onChange={e => handleSearchRRHHDos(e.target.value)}
               className="mb-2 rounded border border-gray-300"
             />
             <Table
