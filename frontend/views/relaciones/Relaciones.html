@@ -202,6 +202,33 @@ function Relaciones() {
     .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
 
+  const handleActualizarRRHHClickDos = (grupoId, coordinadorId, coordinadorNombre) => {
+    notificacionGuardando("Actualizando grupo con el colaborador " + coordinadorNombre);
+    const datosActualizados = {
+      colaboradorId: coordinadorId,
+      colaboradorNombre: coordinadorNombre,
+    };
+    google.script.run.withSuccessHandler(response => {
+      console.log('Respuesta del servidor:', response);
+      Swal.fire({
+        title: response.titulo,
+        text: response.descripcion,
+        icon: response.icono || 'info',
+        timer: 2000,
+        timerProgressBar: true
+      });
+    })
+    .withFailureHandler(error => {
+      console.error('Error al actualizar grupo:', error);
+      Swal.fire({
+        title: 'Ops ha ocurrido un error!',
+        text: 'Por favor contacte a soporte.',
+        icon: 'error'
+      });
+    })
+    .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
+  };
+
 
 
   
@@ -390,24 +417,24 @@ function Relaciones() {
         const recursoHumano = rrhhData.filter(rrhh => rrhh.cargo !== 'Coordinador/a');
         const selectedColaborador = recursoHumano.find(colaborador => colaborador.id === selectedRRHH[index]);
   
-        const handleAgregarClick = () => {
-          if (!record.contratoGrupoMunicipio) {
+        const handleAgregarClickDos = () => {
+          if (!record.contratoGrupoMunicipio || !record.coordinadorNombre) {
             Swal.fire({
               title: 'Ops ha ocurrido un error!',
-              text: 'Primero debe asociar el grupo a un contrato.',
+              text: 'Primero debe asociar el grupo a un contrato y a un coordinador.',
               icon: 'error'
             });
             return;
           }
   
-          handleActualizarRRHHClick(record.id, selectedRRHH[index], selectedColaborador.nombreCompleto);
+          handleActualizarRRHHClickDos(record.id, selectedRRHH[index], selectedColaborador.nombreCompleto);
         };
   
         return (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Select
               style={{ width: 200, marginRight: 8 }}
-              placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
+              placeholder="Seleccionar colaborador 👷🏼‍♂️"
               onChange={value => handleRRHHSelect(index, value)}
               value={selectedRRHH[index]}
             >
@@ -417,7 +444,7 @@ function Relaciones() {
                 </Select.Option>
               ))}
             </Select>
-            <Button type="primary" onClick={handleAgregarClick}>
+            <Button type="primary" onClick={handleAgregarClickDos}>
               Agregar
             </Button>
           </div>
@@ -460,7 +487,7 @@ function Relaciones() {
             />
           </Panel>
 
-          <Panel header="Talento Humano (RRHH) Vs Grupo" key="3" style={{ backgroundColor: '#ccccff' }}>
+          <Panel header="Grupo Vs Docente" key="3" style={{ backgroundColor: '#ccccff' }}>
             <Input.Search
               placeholder="Buscar por nombre ✍🏽"
               value={searchTextDosrrhh}
