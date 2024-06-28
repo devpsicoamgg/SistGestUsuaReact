@@ -70,12 +70,14 @@ function Relaciones() {
 
   useEffect(() => {
     obtenerContratos(setContractData);
-    obtenerRRHH(setRrhhData);
+    obtenerRRHH((data) => {
+      setRrhhData(data);
+    });
     obtenerGrupos((data) => {
       setGruposData(data);
       setFilteredGruposData(data);
       setFilteredGruposDataCoordinador(data);
-      setFilteredRRHHData(rrhhData);
+      setFilteredRRHHData(data); 
     });
   }, []);
 
@@ -310,7 +312,7 @@ function Relaciones() {
       ),
     },
     {
-      title: 'Acciones',
+      title: 'Coordinador',
       key: 'acciones',
       render: (text, record, index) => {
         const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
@@ -356,24 +358,72 @@ function Relaciones() {
 
   const rrhhColumns = [
     {
-      title: 'Nombre Completo',
-      dataIndex: 'nombreCompleto',
-      key: 'nombreCompleto',
+      title: 'Nombre del Grupo',
+      dataIndex: 'groupName',
+      key: 'groupName',
     },
     {
-      title: 'Cargo',
-      dataIndex: 'cargo',
-      key: 'cargo',
+      title: 'Código Cuentame',
+      dataIndex: 'cuentameCode',
+      key: 'cuentameCode',
     },
     {
-      title: 'Acciones',
-      key: 'acciones',
+      title: 'Contrato Asociado',
+      dataIndex: 'contratoGrupoMunicipio',
+      key: 'contratoGrupoMunicipio',
       render: (text, record) => (
-        <div>
-          {/* Aquí se pueden agregar acciones específicas para RRHH */}
-        </div>
+        record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
       ),
     },
+    {
+      title: 'Coordinador/a',
+      dataIndex: 'coordinadorNombre',
+      key: 'coordinadorNombre',
+      render: (text, record) => (
+        record.coordinadorNombre ? record.coordinadorNombre : '(Sin coordinador asociado)'
+      ),
+    },
+    {
+      title: 'RRHH',
+      key: 'acciones',
+      render: (text, record, index) => {
+        const recursoHumano = rrhhData.filter(rrhh => rrhh.cargo !== 'Coordinador/a');
+        const selectedColaborador = recursoHumano.find(colaborador => colaborador.id === selectedRRHH[index]);
+  
+        const handleAgregarClick = () => {
+          if (!record.contratoGrupoMunicipio) {
+            Swal.fire({
+              title: 'Ops ha ocurrido un error!',
+              text: 'Primero debe asociar el grupo a un contrato.',
+              icon: 'error'
+            });
+            return;
+          }
+  
+          handleActualizarRRHHClick(record.id, selectedRRHH[index], selectedColaborador.nombreCompleto);
+        };
+  
+        return (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Select
+              style={{ width: 200, marginRight: 8 }}
+              placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
+              onChange={value => handleRRHHSelect(index, value)}
+              value={selectedRRHH[index]}
+            >
+              {recursoHumano.map(coordinador => (
+                <Select.Option key={coordinador.id} value={coordinador.id}>
+                  {coordinador.nombreCompleto}
+                </Select.Option>
+              ))}
+            </Select>
+            <Button type="primary" onClick={handleAgregarClick}>
+              Agregar
+            </Button>
+          </div>
+        );
+      },
+    },    
   ];
 
   return (
@@ -396,7 +446,7 @@ function Relaciones() {
             />
           </Panel>
 
-        <Panel header="Grupos Vs Coordinador" key="2" style={{ backgroundColor: '#DCC38F' }}>
+        <Panel header="Grupos Vs Coordinador" key="2" style={{ backgroundColor: '#C1DC8F' }}>
             <Input.Search
               placeholder="Buscar por nombre de colaborador ✍🏽"
               value={searchTextrrhh}
