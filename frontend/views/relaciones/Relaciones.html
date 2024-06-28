@@ -177,7 +177,7 @@ function Relaciones() {
 
 
   const handleActualizarRRHHClick = (grupoId, coordinadorId, coordinadorNombre) => {
-    notificacionGuardando("Actualizando grupo con la coordinación de: " + coordinadorNombre);
+    notificacionGuardando("Actualizando grupo con coordinador/a " + coordinadorNombre);
     const datosActualizados = {
       coordinadorId: coordinadorId,
       coordinadorNombre: coordinadorNombre,
@@ -342,12 +342,17 @@ function Relaciones() {
     {
       title: 'Coordinador',
       key: 'acciones',
-      render: (text, record, index) => {
+      render: (text, record) => {
+        // Filtrar los coordinadores del state recursos rrhhData aplicando un filter. 
         const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
+        // Encuentra el coordinador seleccionado para cada uno de los registros renderizados
         const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === selectedRRHH[index]);
+        // Determinar si hay un coordinador seleccionado
         const hasCoordinator = Boolean(selectedCoordinator);
-  
+    
+        // Función para manejar el click en el botón Agregar/Editar
         const handleAgregarClick = () => {
+          // Validar si el grupo está asociado a un contrato
           if (!record.contratoGrupoMunicipio) {
             Swal.fire({
               title: 'Ops ha ocurrido un error!',
@@ -356,16 +361,18 @@ function Relaciones() {
             });
             return;
           }
-  
+    
+          // Llamar a la función para actualizar los recursos humanos
           handleActualizarRRHHClick(record.id, selectedRRHH[index], selectedCoordinator ? selectedCoordinator.nombreCompleto : '');
         };
-  
+    
+        // Función para manejar la selección de un coordinador/a
         const handleRRHHSelect = (index, value) => {
           const newSelectedRRHH = [...selectedRRHH];
           newSelectedRRHH[index] = value;
           setSelectedRRHH(newSelectedRRHH);
         };
-  
+    
         return (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             {selectedCoordinator ? (
@@ -390,7 +397,8 @@ function Relaciones() {
           </div>
         );
       },
-    } 
+    }
+    
   ];
   
 
