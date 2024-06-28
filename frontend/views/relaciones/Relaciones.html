@@ -143,12 +143,13 @@ function Relaciones() {
   };
 
   const handleActualizarGrupoClick = (grupoId, contratoId) => {
-    notificacionGuardando("Guardando el contrato " + `${contrato.contractNumber} - ${contrato.nombreDelContrato}`);
     const contrato = contractData.find(contract => contract.id === contratoId);
     if (!contrato) {
       console.error('Contrato no encontrado');
       return;
     }
+    const notificacionMensaje = `Guardando el contrato número ${contrato.contractNumber} - ${contrato.nombreDelContrato}`;
+    notificacionGuardando(notificacionMensaje);
     const datosActualizados = {
       contractId: contratoId,
       contratoGrupoMunicipio: `${contrato.contractNumber} - ${contrato.nombreDelContrato}`
