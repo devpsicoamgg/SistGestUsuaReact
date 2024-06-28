@@ -360,12 +360,6 @@ function Relaciones() {
         // Determinar si se puede editar el coordinador (condiciones específicas según tu lógica)
         const isEditable = record.estado === 'Activo'; // Ajustar según tus condiciones
   
-        // Texto y color para el tooltip
-        const tooltipText = hasCoordinator
-          ? `El coordinador asignado es ${selectedCoordinator.nombreCompleto}`
-          : 'Se debe seleccionar un coordinador para este registro';
-        const tooltipColor = hasCoordinator ? 'green' : 'red';
-  
         // Función para manejar el click en el botón Agregar/Editar
         const handleAgregarClick = () => {
           // Validar cualquier condición necesaria antes de realizar la acción
@@ -384,12 +378,12 @@ function Relaciones() {
   
         // Función para manejar la selección de un coordinador/a
         const handleCoordinatorSelect = (value) => {
-          handleCoordinatorChange(record.id, value); 
+          handleCoordinatorChange(record.id, value); // Asegúrate de que esta función actualice correctamente el estado selectedCoordinators
         };
   
         return (
           <div>
-            <Tooltip title={tooltipText} color={tooltipColor}>
+            <Tooltip title={hasCoordinator ? `El coordinador asignado es ${selectedCoordinator.nombreCompleto}` : 'Se debe seleccionar un coordinador para este registro'} color={hasCoordinator ? 'green' : 'red'}>
               {hasCoordinator ? (
                 <p>{selectedCoordinator.nombreCompleto}</p>
               ) : (
@@ -410,8 +404,8 @@ function Relaciones() {
             <Button
               type="primary"
               onClick={handleAgregarClick}
-              style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
-              disabled={!hasCoordinator} 
+              style={{ marginTop: 8, backgroundColor: isEditable && hasCoordinator ? '#1890ff' : '#fff', color: isEditable && hasCoordinator ? '#fff' : '#000' }}
+              disabled={!isEditable} // Deshabilitar si no está en estado editable
             >
               {hasCoordinator ? 'Editar' : 'Agregar'}
             </Button>
@@ -419,6 +413,7 @@ function Relaciones() {
         );
       },
     }
+  
     
   ];
   
