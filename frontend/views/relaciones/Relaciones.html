@@ -124,7 +124,7 @@ function Relaciones() {
       setFilteredRRHHData(filteredRRHH);
     }
   };
-
+  
   const handleContractSelect = (groupId, value) => {
     setSelectedContracts(prevState => ({
       ...prevState,
@@ -419,7 +419,7 @@ function Relaciones() {
             />
             <Table
               columns={rrhhColumns}
-              dataSource={filteredRRHHData.map((data, index) => ({ ...data, key: index }))}
+              dataSource={rrhhData.map((data, index) => ({ ...data, key: index }))}
               pagination={{ pageSize: 3 }}
             />
           </Panel>
