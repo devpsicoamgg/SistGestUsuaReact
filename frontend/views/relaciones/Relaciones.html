@@ -75,6 +75,7 @@ function Relaciones() {
       setGruposData(data);
       setFilteredGruposData(data);
       setFilteredGruposDataCoordinador(data);
+      setFilteredRRHHData(data);
     });
   }, []);
 
@@ -106,7 +107,7 @@ function Relaciones() {
       setFilteredGruposDataCoordinador(gruposData);
     } else {
       const filteredGruposCoordinador = gruposData.filter(grupo =>
-        grupo.coordinadorName && grupo.coordinadorName.toLowerCase().includes(value.toLowerCase())
+        grupo.groupName.toLowerCase().includes(value.toLowerCase())
       );
       setFilteredGruposDataCoordinador(filteredGruposCoordinador);
     }
@@ -418,7 +419,7 @@ function Relaciones() {
             />
             <Table
               columns={rrhhColumns}
-              dataSource={rrhhData.map((data, index) => ({ ...data, key: index }))}
+              dataSource={filteredRRHHData.map((data, index) => ({ ...data, key: index }))}
               pagination={{ pageSize: 3 }}
             />
           </Panel>
