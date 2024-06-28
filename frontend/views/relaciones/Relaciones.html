@@ -75,7 +75,7 @@ function Relaciones() {
       setGruposData(data);
       setFilteredGruposData(data);
       setFilteredGruposDataCoordinador(data);
-      setFilteredRRHHData(data);
+      setFilteredRRHHData(rrhhData);
     });
   }, []);
 
@@ -419,7 +419,7 @@ function Relaciones() {
             />
             <Table
               columns={rrhhColumns}
-              dataSource={rrhhData.map((data, index) => ({ ...data, key: index }))}
+              dataSource={filteredRRHHData.map((data, index) => ({ ...data, key: index }))}
               pagination={{ pageSize: 3 }}
             />
           </Panel>
