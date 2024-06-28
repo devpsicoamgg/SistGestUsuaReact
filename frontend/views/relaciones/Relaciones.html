@@ -358,14 +358,14 @@ function Relaciones() {
         // Determinar si hay un coordinador seleccionado
         const hasCoordinator = Boolean(selectedCoordinator);
         // Determinar si se puede editar el coordinador (condiciones específicas según tu lógica)
-        const isEditable = record.estado === 'Activo' && hasCoordinator; // Por ejemplo, solo editable si el estado es 'Activo'
-    
+        const isEditable = record.estado === 'Activo'; // Ajustar según tus condiciones
+  
         // Texto y color para el tooltip
         const tooltipText = hasCoordinator
           ? `El coordinador asignado es ${selectedCoordinator.nombreCompleto}`
           : 'Se debe seleccionar un coordinador para este registro';
         const tooltipColor = hasCoordinator ? 'green' : 'red';
-    
+  
         // Función para manejar el click en el botón Agregar/Editar
         const handleAgregarClick = () => {
           // Validar cualquier condición necesaria antes de realizar la acción
@@ -377,16 +377,16 @@ function Relaciones() {
             });
             return;
           }
-    
+  
           // Llamar a la función para actualizar el coordinador
           handleActualizarRRHHClick(record.id, selectedCoordinator ? selectedCoordinator.id : null);
         };
-    
+  
         // Función para manejar la selección de un coordinador/a
         const handleCoordinatorSelect = (value) => {
-          handleCoordinatorChange(record.id, value); // Suponiendo que tengas una función para actualizar el estado localmente
+          handleCoordinatorChange(record.id, value); 
         };
-    
+  
         return (
           <div>
             <Tooltip title={tooltipText} color={tooltipColor}>
@@ -411,7 +411,7 @@ function Relaciones() {
               type="primary"
               onClick={handleAgregarClick}
               style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
-              disabled={!isEditable}
+              disabled={!hasCoordinator} 
             >
               {hasCoordinator ? 'Editar' : 'Agregar'}
             </Button>
@@ -419,7 +419,6 @@ function Relaciones() {
         );
       },
     }
-    
     
   ];
   
