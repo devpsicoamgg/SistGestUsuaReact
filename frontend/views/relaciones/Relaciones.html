@@ -59,6 +59,7 @@ function Relaciones() {
   const [filteredGruposDataCoordinador, setFilteredGruposDataCoordinador] = useState([]);
   const [filteredRRHHData, setFilteredRRHHData] = useState([]);
   const [selectedContracts, setSelectedContracts] = useState({});
+  const [selectedCoordinators, setSelectedCoordinators] = useState({});
   const [selectedRRHH, setSelectedRRHH] = useState({});
   const [searchTextGrupos, setSearchTextGrupos] = useState('');
   const [searchTextrrhh, setSearchTextrrhh] = useState('');
@@ -131,6 +132,13 @@ function Relaciones() {
     setSelectedContracts(prevState => ({
       ...prevState,
       [groupId]: value
+    }));
+  };
+
+  const handleCoordinatorChange = (recordId, coordinatorId) => {
+    setSelectedCoordinators(prevState => ({
+      ...prevState,
+      [recordId]: coordinatorId,
     }));
   };
 
@@ -371,7 +379,7 @@ function Relaciones() {
           }
     
           // Llamar a la función para actualizar el coordinador
-          handleActualizarCoordinadorClick(record.id, selectedCoordinator ? selectedCoordinator.id : null);
+          handleActualizarRRHHClick(record.id, selectedCoordinator ? selectedCoordinator.id : null);
         };
     
         // Función para manejar la selección de un coordinador/a
