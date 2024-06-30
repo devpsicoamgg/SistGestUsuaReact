@@ -351,8 +351,7 @@ function Relaciones() {
       key: 'acciones',
       render: (text, record, index) => {
         const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
-        const selectedCoordinatorId = selectedRRHH[record.groupId];
-        const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === selectedCoordinatorId);
+        const selectedCoordinatorId = selectedRRHH[index];
     
         const handleAgregarClick = () => {
           if (!record.contratoGrupoMunicipio) {
@@ -364,15 +363,15 @@ function Relaciones() {
             return;
           }
     
+          const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === selectedCoordinatorId);
           const selectedCoordinatorName = selectedCoordinator ? selectedCoordinator.nombreCompleto : '';
-          handleActualizarRRHHClick(record.groupId, selectedCoordinatorId, selectedCoordinatorName);
+          handleActualizarRRHHClick(record.id, selectedCoordinatorId, selectedCoordinatorName);
         };
     
-        const handleRRHHSelect = (groupId, value) => {
-          setSelectedRRHH(prevSelected => ({
-            ...prevSelected,
-            [groupId]: value,
-          }));
+        const handleRRHHSelect = (index, value) => {
+          const newSelectedRRHH = [...selectedRRHH];
+          newSelectedRRHH[index] = value;
+          setSelectedRRHH(newSelectedRRHH);
         };
     
         return (
@@ -380,7 +379,7 @@ function Relaciones() {
             <Select
               style={{ width: 200, marginRight: 8 }}
               placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
-              onChange={value => handleRRHHSelect(record.groupId, value)}
+              onChange={value => handleRRHHSelect(index, value)}
               value={selectedCoordinatorId || undefined}
             >
               {coordinadores.map(coordinador => (
@@ -390,12 +389,12 @@ function Relaciones() {
               ))}
             </Select>
             <Button type="primary" onClick={handleAgregarClick}>
-              {selectedCoordinatorId ? 'Editar' : 'Agregar'}
+              Agregar
             </Button>
           </div>
         );
       },
-    }
+    }     
   ];
   
   const rrhhColumns = [
