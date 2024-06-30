@@ -83,8 +83,10 @@ const Relaciones = () => {
   const [rrhhData, setRRHHData] = useState([]); // Lista de recursos humanos
   const [filteredGruposData, setFilteredGruposData] = useState([]); // Lista de grupos filtrados (Grupos Vs Contrato)
   const [filteredGruposDataCoordinador, setFilteredGruposDataCoordinador] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
+  const [filteredGruposDataAuxAdmin, setFilteredGruposDataAuxAdmin] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
   const [selectedContracts, setSelectedContracts] = useState({}); // Contratos seleccionados para cada grupo
   const [selectedContractsCoordinador, setSelectedContractsCoordinador] = useState({}); // Contratos seleccionados para cada grupo (Grupos Vs Coordinador)
+  const [selectedContractsAuxAdministrativo, setSelectedContractsAuxAdministrativo] = useState({});
   const [searchTextGrupos, setSearchTextGrupos] = useState(''); // Texto de búsqueda para grupos
   const [searchTextDocente, setSearchTextDocente] = useState(''); // Texto de búsqueda para docentes
   const Tooltip = window.antd.Tooltip;
@@ -98,12 +100,13 @@ const Relaciones = () => {
       setGruposData(data);
       setFilteredGruposData(data);
       setFilteredGruposDataCoordinador(data);
+      setFilteredGruposDataAuxAdmin(data);
     });
     obtenerRRHH(setRRHHData);
   }, []);
 
   const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
-  console.log(coordinadores, "coordi");
+  const auxAdministrativos = rrhhData.filter(rrhh => rrhh.cargo === 'Aux. Administrativo');
 
   // Formatear fecha en formato dd/MMM/yyyy
   const formatFecha = (fecha) => {
@@ -135,6 +138,13 @@ const Relaciones = () => {
     }));
   };
 
+  const handleContractSelectAuxAdministrativo = (grupoId, value) => {
+    setSelectedContractsAuxAdministrativo(prevState => ({
+      ...prevState,
+      [grupoId]: value
+    }));
+  };
+  
   // Actualizar el grupo con el contrato seleccionado (Grupos Vs Contrato)
   const handleActualizarGrupoClick = (grupoId, contratoId) => {
     const contrato = contractData.find(contract => contract.id === contratoId);
@@ -170,17 +180,50 @@ const Relaciones = () => {
   };
 
   // Actualizar el grupo con el contrato seleccionado (Grupos Vs Coordinador)
-  const handleActualizarGrupoClickCoordinador = (grupoId, contratoId) => {
-    const contrato = contractData.find(contract => contract.id === contratoId);
-    if (!contrato) {
-      console.error('Contrato no encontrado');
+  const handleActualizarGrupoClickCoordinador = (grupoId, coordinadorId) => {
+    const coordinador = coordinadores.find(coordinador => coordinador.id === coordinadorId);
+    if (!coordinador) {
+      console.error('Coordinador no encontrado');
       return;
     }
-    const notificacionMensaje = `Guardando el contrato número ${contrato.contractNumber} - ${contrato.nombreDelContrato}`;
+    const notificacionMensaje = `Guardando el coordinador ${coordinador.nombreCompleto}`;
     notificacionGuardando(notificacionMensaje);
     const datosActualizados = {
-      contractId: contratoId,
-      contratoGrupoMunicipio: `${contrato.contractNumber} - ${contrato.nombreDelContrato}`
+      coordinadorId: coordinadorId,
+      coordinadorNombre: `${coordinador.nombreCompleto}`
+    };
+    google.script.run.withSuccessHandler(response => {
+      console.log('Respuesta del servidor:', response);
+      Swal.fire({
+        title: response.titulo,
+        text: response.descripcion,
+        icon: response.icono || 'info',
+        timer: 2000,
+        timerProgressBar: true
+      });
+    })
+    .withFailureHandler(error => {
+      console.error('Error al actualizar grupo:', error);
+      Swal.fire({
+        title: 'Ops ha ocurrido un error!',
+        text: 'Por favor contacte a soporte.',
+        icon: 'error'
+      });
+    })
+    .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
+  };
+
+  const handleActualizarGrupoClickAuxAdministrativo = (grupoId, auxAdministrativoId) => {
+    const auxAdministrativo = auxAdministrativos.find(aux => aux.id === auxAdministrativoId);
+    if (!auxAdministrativo) {
+      console.error('Aux. Administrativo no encontrado');
+      return;
+    }
+    const notificacionMensaje = `Guardando el Aux. Administrativo ${auxAdministrativo.nombreCompleto}`;
+    notificacionGuardando(notificacionMensaje);
+    const datosActualizados = {
+      auxAdministrativoId: auxAdministrativoId,
+      auxAdministrativoNombre: `${auxAdministrativo.nombreCompleto}`
     };
     google.script.run.withSuccessHandler(response => {
       console.log('Respuesta del servidor:', response);
@@ -315,10 +358,12 @@ const Relaciones = () => {
       key: 'selectCoordinador',
       render: (text, record) => {
         const coordinador = record.coordinadorId ? coordinadores.find(coordinador => coordinador.id === record.coordinadorId) : null;
+        console.log("record.coordinadorId ", record.coordinadorId );
+        console.log("record.coordinadorId ", record.coordinadorId );
         const isEditable = selectedContractsCoordinador[record.id] !== undefined;
         const selectedValue = isEditable ? selectedContractsCoordinador[record.id] : (coordinador ? coordinador.id : undefined);
         const tooltipText = coordinador
-          ? `El coordinador asociado al grupo es ${coordinador.nombre}`
+          ? `El coordinador asociado al grupo es ${coordinador.nombreCompleto}`
           : 'Se debe asociar el grupo a un coordinador';
         const tooltipColor = coordinador ? 'green' : 'red';
 
@@ -374,6 +419,92 @@ const Relaciones = () => {
     },
 ];
 
+
+// Columna con lógica específica para Aux. Administrativo
+const auxAdministrativoColumns = [
+  {
+    title: 'Nombre del Grupo',
+    dataIndex: 'groupName',
+    key: 'groupName',
+  },
+  {
+    title: 'Código Cuentame',
+    dataIndex: 'cuentameCode',
+    key: 'cuentameCode',
+  },
+  {
+    title: 'Contrato Asociado',
+    dataIndex: 'contratoGrupoMunicipio',
+    key: 'contratoGrupoMunicipio',
+    render: (text, record) => (
+      record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
+    ),
+  },
+  {
+    title: 'Seleccionar Aux. Administrativo',
+    key: 'selectAuxAdministrativo',
+    render: (text, record) => {
+      const auxAdministrativo = record.auxAdministrativoId ? auxAdministrativos.find(aux => aux.id === record.auxAdministrativoId) : null;
+      const isEditable = selectedContractsAuxAdministrativo[record.id] !== undefined;
+      const selectedValue = isEditable ? selectedContractsAuxAdministrativo[record.id] : (auxAdministrativo ? auxAdministrativo.id : undefined);
+      const tooltipText = auxAdministrativo
+        ? `El Aux. Administrativo asociado al grupo es ${auxAdministrativo.nombreCompleto}`
+        : 'Se debe asociar el grupo a un Aux. Administrativo';
+      const tooltipColor = auxAdministrativo ? 'green' : 'red';
+
+      return (
+        <div>
+          <Tooltip title={tooltipText} color={tooltipColor}>
+            <Select
+              placeholder="Selecciona Aux. Administrativo 📄"
+              style={{ width: 200 }}
+              onChange={value => handleContractSelectAuxAdministrativo(record.id, value)}
+              value={selectedValue}
+              disabled={auxAdministrativo && !isEditable}
+            >
+              {auxAdministrativos.map(aux => (
+                <Select.Option key={aux.id} value={aux.id}>
+                  {`${aux.nombreCompleto}`}
+                </Select.Option>
+              ))}
+            </Select>
+          </Tooltip>
+          {auxAdministrativo ? (
+            <Tooltip title={tooltipText} color={tooltipColor}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (isEditable) {
+                    handleActualizarGrupoClickAuxAdministrativo(record.id, selectedContractsAuxAdministrativo[record.id]);
+                  } else {
+                    setSelectedContractsAuxAdministrativo(prevState => ({
+                      ...prevState,
+                      [record.id]: record.auxAdministrativoId
+                    }));
+                  }
+                }}
+                style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
+              >
+                {isEditable ? 'Actualizar' : 'Editar'}
+              </Button>
+            </Tooltip>
+          ) : (
+            <Button
+              type="primary"
+              onClick={() => handleActualizarGrupoClickAuxAdministrativo(record.id, selectedContractsAuxAdministrativo[record.id])}
+              style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
+              disabled={!selectedContractsAuxAdministrativo[record.id]}
+            >
+              Actualizar
+            </Button>
+          )}
+        </div>
+      );
+    },
+  },
+];
+
+
   return (
     <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
       <h2 className="font-bold text-2xl mb-4">ZONA DE RELACIONES</h2>
@@ -406,6 +537,22 @@ const Relaciones = () => {
               pagination={{ pageSize: 3 }}
             />
           </Panel>
+
+          <Panel header="Grupos Vs Aux. Administrativo" key="2" style={{ backgroundColor: '#ccffff' }}>
+            <Input.Search
+              placeholder="Buscar por nombre de auxiliar administrativo ✍🏽"
+              value={searchTextDocente}
+              onChange={e => handleSearchDocente(e.target.value)}
+              className="mb-2 rounded border border-gray-300"
+            />
+            <Table
+              columns={auxAdministrativoColumns}
+              dataSource={filteredGruposDataAuxAdmin.map((data, index) => ({ ...data, key: index }))}
+              pagination={{ pageSize: 3 }}
+            />
+          </Panel>
+
+
         </Collapse>
       </div>
     </div>
