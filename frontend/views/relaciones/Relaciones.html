@@ -42,6 +42,9 @@ const obtenerGrupos = (setGruposData) => {
         const grupos = JSON.parse(res);
         grupos.sort((a, b) => (a.nombreGrupo > b.nombreGrupo) ? 1 : -1);
         setGruposData(grupos);
+        setFilteredGruposData(grupos);
+        setFilteredGruposDataCoordinador(grupos);
+        setFilteredRRHHData(grupos); 
         Swal.close();
       } catch (error) {
         console.error('Error parsing JSON:', error);
@@ -59,7 +62,6 @@ function Relaciones() {
   const [filteredGruposDataCoordinador, setFilteredGruposDataCoordinador] = useState([]);
   const [filteredRRHHData, setFilteredRRHHData] = useState([]);
   const [selectedContracts, setSelectedContracts] = useState({});
-  const [selectedCoordinators, setSelectedCoordinators] = useState({});
   const [selectedRRHH, setSelectedRRHH] = useState({});
   const [searchTextGrupos, setSearchTextGrupos] = useState('');
   const [searchTextrrhh, setSearchTextrrhh] = useState('');
@@ -135,17 +137,10 @@ function Relaciones() {
     }));
   };
 
-  const handleCoordinatorChange = (recordId, coordinatorId) => {
-    setSelectedCoordinators(prevState => ({
-      ...prevState,
-      [recordId]: coordinatorId,
-    }));
-  };
-
-  const handleRRHHSelect = (index, value) => {
+  const handleRRHHSelect = (coordinadorId, value) => {
     setSelectedRRHH(prevSelected => {
       const updatedSelected = [...prevSelected];
-      updatedSelected[index] = value;
+      updatedSelected[coordinadorId] = value;
       return updatedSelected;
     });
   };
@@ -185,7 +180,7 @@ function Relaciones() {
 
 
   const handleActualizarRRHHClick = (grupoId, coordinadorId, coordinadorNombre) => {
-    notificacionGuardando("Actualizando grupo con coordinador/a " + coordinadorNombre);
+    notificacionGuardando("Actualizando grupo con la coordinación de: " + coordinadorNombre);
     const datosActualizados = {
       coordinadorId: coordinadorId,
       coordinadorNombre: coordinadorNombre,
@@ -211,11 +206,11 @@ function Relaciones() {
     .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
 
-  const handleActualizarRRHHClickDos = (grupoId, coordinadorId, coordinadorNombre) => {
-    notificacionGuardando("Actualizando grupo con el colaborador " + coordinadorNombre);
+  const handleActualizarRRHHClickDos = (grupoId, docenteId, docenteNombre) => {
+    notificacionGuardando("Actualizando grupo con el docente " + docenteNombre);
     const datosActualizados = {
-      colaboradorId: coordinadorId,
-      colaboradorNombre: coordinadorNombre,
+      colaboradorId: docenteId,
+      colaboradorNombre: docenteNombre,
     };
     google.script.run.withSuccessHandler(response => {
       console.log('Respuesta del servidor:', response);
@@ -237,10 +232,6 @@ function Relaciones() {
     })
     .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
-
-
-
-  
 
   const gruposColumns = [
     {
@@ -350,75 +341,57 @@ function Relaciones() {
     {
       title: 'Coordinador',
       key: 'acciones',
-      render: (text, record) => {
-        // Filtrar los coordinadores del estado rrhhData aplicando un filter.
+      render: (text, record, index) => {
         const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
-        // Encontrar el coordinador seleccionado para el registro actual
-        const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === record.coordinatorId);
-        // Determinar si hay un coordinador seleccionado
+        const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === selectedRRHH[index]);
         const hasCoordinator = Boolean(selectedCoordinator);
-        // Determinar si se puede editar el coordinador (condiciones específicas según tu lógica)
-        const isEditable = record.estado === 'Activo'; // Ajustar según tus condiciones
   
-        // Función para manejar el click en el botón Agregar/Editar
         const handleAgregarClick = () => {
-          // Validar cualquier condición necesaria antes de realizar la acción
-          if (!record.contratoId) { // Por ejemplo, verificar si existe un contrato asociado
+          if (!record.contratoGrupoMunicipio) {
             Swal.fire({
-              title: 'Error',
-              text: 'Primero debe asociar este registro a un contrato.',
+              title: 'Ops ha ocurrido un error!',
+              text: 'Primero debe asociar el grupo a un contrato.',
               icon: 'error'
             });
             return;
           }
   
-          // Llamar a la función para actualizar el coordinador
-          handleActualizarRRHHClick(record.id, selectedCoordinator ? selectedCoordinator.id : null);
+          handleActualizarRRHHClick(record.id, selectedRRHH[index], selectedCoordinator ? selectedCoordinator.nombreCompleto : '');
         };
   
-        // Función para manejar la selección de un coordinador/a
-        const handleCoordinatorSelect = (value) => {
-          handleCoordinatorChange(record.id, value); // Asegúrate de que esta función actualice correctamente el estado selectedCoordinators
+        const handleRRHHSelect = (index, value) => {
+          const newSelectedRRHH = [...selectedRRHH];
+          newSelectedRRHH[index] = value;
+          setSelectedRRHH(newSelectedRRHH);
         };
   
         return (
-          <div>
-            <Tooltip title={hasCoordinator ? `El coordinador asignado es ${selectedCoordinator.nombreCompleto}` : 'Se debe seleccionar un coordinador para este registro'} color={hasCoordinator ? 'green' : 'red'}>
-              {hasCoordinator ? (
-                <p>{selectedCoordinator.nombreCompleto}</p>
-              ) : (
-                <Select
-                  style={{ width: 200, marginRight: 8 }}
-                  placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
-                  onChange={handleCoordinatorSelect}
-                  value={record.coordinatorId || undefined}
-                >
-                  {coordinadores.map(coordinador => (
-                    <Select.Option key={coordinador.id} value={coordinador.id}>
-                      {coordinador.nombreCompleto}
-                    </Select.Option>
-                  ))}
-                </Select>
-              )}
-            </Tooltip>
-            <Button
-              type="primary"
-              onClick={handleAgregarClick}
-              style={{ marginTop: 8, backgroundColor: isEditable && hasCoordinator ? '#1890ff' : '#fff', color: isEditable && hasCoordinator ? '#fff' : '#000' }}
-              disabled={!isEditable} // Deshabilitar si no está en estado editable
-            >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {selectedCoordinator ? (
+              <p>{selectedCoordinator.nombreCompleto}</p>
+            ) : (
+              <Select
+                style={{ width: 200, marginRight: 8 }}
+                placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
+                onChange={value => handleRRHHSelect(index, value)}
+                value={selectedRRHH[index] || undefined}
+              >
+                {coordinadores.map(coordinador => (
+                  <Select.Option key={coordinador.id} value={coordinador.id}>
+                    {coordinador.nombreCompleto}
+                  </Select.Option>
+                ))}
+              </Select>
+            )}
+            <Button type="primary" onClick={handleAgregarClick}>
               {hasCoordinator ? 'Editar' : 'Agregar'}
             </Button>
           </div>
         );
       },
-    }
-  
-    
+    } 
   ];
   
-
-
   const rrhhColumns = [
     {
       title: 'Nombre del Grupo',
@@ -446,47 +419,47 @@ function Relaciones() {
         record.coordinadorNombre ? record.coordinadorNombre : '(Sin coordinador asociado)'
       ),
     },
-    {
-      title: 'RRHH',
-      key: 'acciones',
-      render: (text, record, index) => {
-        const recursoHumano = rrhhData.filter(rrhh => rrhh.cargo !== 'Coordinador/a');
-        const selectedColaborador = recursoHumano.find(colaborador => colaborador.id === selectedRRHH[index]);
-  
-        const handleAgregarClickDos = () => {
-          if (!record.contratoGrupoMunicipio || !record.coordinadorNombre) {
-            Swal.fire({
-              title: 'Ops ha ocurrido un error!',
-              text: 'Primero debe asociar el grupo a un contrato y a un coordinador.',
-              icon: 'error'
-            });
-            return;
-          }
-  
-          handleActualizarRRHHClickDos(record.id, selectedRRHH[index], selectedColaborador.nombreCompleto);
-        };
-  
-        return (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Select
-              style={{ width: 200, marginRight: 8 }}
-              placeholder="Seleccionar colaborador 👷🏼‍♂️"
-              onChange={value => handleRRHHSelect(index, value)}
-              value={selectedRRHH[index]}
-            >
-              {recursoHumano.map(coordinador => (
-                <Select.Option key={coordinador.id} value={coordinador.id}>
-                  {coordinador.nombreCompleto}
-                </Select.Option>
-              ))}
-            </Select>
-            <Button type="primary" onClick={handleAgregarClickDos}>
-              Agregar
-            </Button>
-          </div>
-        );
-      },
-    } 
+     {
+    title: 'RRHH',
+    key: 'acciones',
+    render: (text, record, index) => {
+      const recursoHumano = rrhhData.filter(rrhh => rrhh.cargo !== 'Coordinador/a');
+      const selectedColaborador = recursoHumano.find(colaborador => colaborador.id === selectedRRHH[index]);
+
+      const handleAgregarClickDos = () => {
+        if (!record.contratoGrupoMunicipio || !record.coordinadorNombre) {
+          Swal.fire({
+            title: 'Ops ha ocurrido un error!',
+            text: 'Primero debe asociar el grupo a un contrato y a un coordinador.',
+            icon: 'error'
+          });
+          return;
+        }
+
+        handleActualizarRRHHClickDos(record.id, selectedRRHH[index], selectedColaborador.nombreCompleto);
+      };
+
+      return (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Select
+            style={{ width: 200, marginRight: 8 }}
+            placeholder="Seleccionar colaborador 👷🏼‍♂️"
+            onChange={value => handleRRHHSelect(index, value)}
+            value={selectedRRHH[index]}
+          >
+            {recursoHumano.map(coordinador => (
+              <Select.Option key={coordinador.id} value={coordinador.id}>
+                {coordinador.nombreCompleto}
+              </Select.Option>
+            ))}
+          </Select>
+          <Button type="primary" onClick={handleAgregarClickDos}>
+            Agregar
+          </Button>
+        </div>
+      );
+    },
+  } 
   ];
 
   return (
