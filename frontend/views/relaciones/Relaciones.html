@@ -89,6 +89,7 @@ const Relaciones = () => {
   const [selectedContractsAuxAdministrativo, setSelectedContractsAuxAdministrativo] = useState({});
   const [searchTextGrupos, setSearchTextGrupos] = useState(''); // Texto de búsqueda para grupos
   const [searchTextDocente, setSearchTextDocente] = useState(''); // Texto de búsqueda para docentes
+  const [searchTextAuxAdmin, setSearchTextAuxAdmin] = useState(''); // Texto de búsqueda para docentes
   const Tooltip = window.antd.Tooltip;
   const { Panel } = Collapse;
   const { Option } = window.antd.Select;
@@ -135,14 +136,27 @@ const Relaciones = () => {
     const handleSearchCoordinador = (value) => {
       setSearchTextDocente(value);
       if (value === '') {
-        setFilteredGruposData(gruposData);
+        setFilteredGruposDataCoordinador(gruposData);
       } else {
-        const filteredGrupos = gruposData.filter(grupo =>
+        const filteredGruposCoordinador = gruposData.filter(grupo =>
           grupo.groupName.toLowerCase().includes(value.toLowerCase())
         );
-        setFilteredGruposData(filteredGrupos);
+        setFilteredGruposDataCoordinador(filteredGruposCoordinador);
       }
     };
+
+        // Filtrar grupos según el texto de búsqueda (Grupos Vs Contrato)
+        const handleSearchAuxAdmin = (value) => {
+          searchTextAuxAdmin(value);
+          if (value === '') {
+            setFilteredGruposData(gruposData);
+          } else {
+            const filteredGrupos = gruposData.filter(grupo =>
+              grupo.groupName.toLowerCase().includes(value.toLowerCase())
+            );
+            setFilteredGruposData(filteredGrupos);
+          }
+        };
 
 
   const handleContractSelectCoordinador = (groupId, value) => {
@@ -555,8 +569,8 @@ const auxAdministrativoColumns = [
           <Panel header="Grupos Vs Aux. Administrativo" key="3" style={{ backgroundColor: '#ccffff' }}>
             <Input.Search
              placeholder="Buscar por nombre de grupo ✍🏽"
-             value={searchTextGrupos}
-             onChange={e => handleSearchGrupos(e.target.value)}
+             value={searchTextAuxAdmin}
+             onChange={e => handleSearchAuxAdmin(e.target.value)}
              className="mb-2 rounded border border-gray-300"
             />
             <Table
