@@ -334,7 +334,7 @@ const Relaciones = () => {
               >
                 {coordinadores.map(coordinador => (
                   <Select.Option key={coordinador.id} value={coordinador.id}>
-                    {`${coordinador.nombre}`}
+                    {`${coordinador.coordinadorNombre}`}
                   </Select.Option>
                 ))}
               </Select>
@@ -355,7 +355,7 @@ const Relaciones = () => {
                   }}
                   style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
                 >
-                  {isEditable ? 'Actualizar Grupo' : 'Editar'}
+                  {isEditable ? 'Actualizar coordinador' : 'Editar'}
                 </Button>
               </Tooltip>
             ) : (
@@ -365,7 +365,7 @@ const Relaciones = () => {
                 style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
                 disabled={!selectedContractsCoordinador[record.id]}
               >
-                Actualizar Grupo
+                Actualizar coordinador
               </Button>
             )}
           </div>
@@ -375,8 +375,9 @@ const Relaciones = () => {
 ];
 
   return (
-    <div className="App">
-      <div className="container mx-auto mt-4 p-4 bg-white rounded-lg shadow-lg">
+    <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
+      <h2 className="font-bold text-2xl mb-4">ZONA DE RELACIONES</h2>
+      <div className="w-full max-w-screen-lg flex flex-col gap-4">
         <Collapse accordion>
           <Panel header="Grupos Vs Contrato" key="1" style={{ backgroundColor: '#ccffcc' }}>
             <Input.Search
