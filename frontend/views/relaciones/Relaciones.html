@@ -326,7 +326,7 @@ const Relaciones = () => {
           <div>
             <Tooltip title={tooltipText} color={tooltipColor}>
               <Select
-                placeholder="Seleccionar coordinador 📄"
+                placeholder="Selecciona coordinador 📄"
                 style={{ width: 200 }}
                 onChange={value => handleContractSelectCoordinador(record.id, value)}
                 value={selectedValue}
@@ -334,7 +334,7 @@ const Relaciones = () => {
               >
                 {coordinadores.map(coordinador => (
                   <Select.Option key={coordinador.id} value={coordinador.id}>
-                    {`${coordinador.coordinadorNombre}`}
+                    {`${coordinador.nombreCompleto}`}
                   </Select.Option>
                 ))}
               </Select>
