@@ -131,6 +131,19 @@ const Relaciones = () => {
     }
   };
 
+    // Filtrar grupos según el texto de búsqueda (Grupos Vs Contrato)
+    const handleSearchCoordinador = (value) => {
+      setSearchTextDocente(value);
+      if (value === '') {
+        setFilteredGruposData(gruposData);
+      } else {
+        const filteredGrupos = gruposData.filter(grupo =>
+          grupo.groupName.toLowerCase().includes(value.toLowerCase())
+        );
+        setFilteredGruposData(filteredGrupos);
+      }
+    };
+
 
   const handleContractSelectCoordinador = (groupId, value) => {
     setSelectedContractsCoordinador(prevState => ({
@@ -528,8 +541,8 @@ const auxAdministrativoColumns = [
           <Panel header="Grupos Vs Coordinador" key="2" style={{ backgroundColor: '#ccffff' }}>
             <Input.Search
               placeholder="Buscar por nombre de grupo ✍🏽"
-              value={searchTextGrupos}
-              onChange={e => handleSearchGrupos(e.target.value)}
+              value={searchTextDocente}
+              onChange={e => handleSearchCoordinador(e.target.value)}
               className="mb-2 rounded border border-gray-300"
             />
             <Table
