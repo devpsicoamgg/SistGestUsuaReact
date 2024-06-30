@@ -131,7 +131,7 @@ const Relaciones = () => {
     }
   };
 
-  
+
   const handleContractSelectCoordinador = (groupId, value) => {
     setSelectedContractsCoordinador(prevState => ({
       ...prevState,
@@ -527,9 +527,9 @@ const auxAdministrativoColumns = [
 
           <Panel header="Grupos Vs Coordinador" key="2" style={{ backgroundColor: '#ccffff' }}>
             <Input.Search
-              placeholder="Buscar por nombre de colaborador ✍🏽"
-              value={searchTextDocente}
-              onChange={e => handleSearchDocente(e.target.value)}
+              placeholder="Buscar por nombre de grupo ✍🏽"
+              value={searchTextGrupos}
+              onChange={e => handleSearchGrupos(e.target.value)}
               className="mb-2 rounded border border-gray-300"
             />
             <Table
@@ -541,10 +541,10 @@ const auxAdministrativoColumns = [
 
           <Panel header="Grupos Vs Aux. Administrativo" key="3" style={{ backgroundColor: '#ccffff' }}>
             <Input.Search
-              placeholder="Buscar por nombre de auxiliar administrativo ✍🏽"
-              value={searchTextDocente}
-              onChange={e => handleSearchDocente(e.target.value)}
-              className="mb-2 rounded border border-gray-300"
+             placeholder="Buscar por nombre de grupo ✍🏽"
+             value={searchTextGrupos}
+             onChange={e => handleSearchGrupos(e.target.value)}
+             className="mb-2 rounded border border-gray-300"
             />
             <Table
               columns={auxAdministrativoColumns}
