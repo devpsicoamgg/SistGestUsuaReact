@@ -1,13 +1,21 @@
 //<script type="text/jsx">
 
+// Función para obtener los contratos del servidor y establecerlos en el estado
 const obtenerContratos = (setContractData) => {
+  // Mostrar una notificación mientras se obtienen los datos
   notificacionObteniendoDatos("Obteniendo la información de contratos desde el servidor");
+  
+  // Llamada a la función de Google Apps Script para obtener la lista de contratos
   google.script.run
     .withSuccessHandler(res => {
       try {
+        // Parsear la respuesta JSON
         const contratos = JSON.parse(res);
+        // Ordenar los contratos alfabéticamente por nombre
         contratos.sort((a, b) => (a.nombreDelContrato > b.nombreDelContrato) ? 1 : -1);
+        // Establecer los contratos en el estado
         setContractData(contratos);
+        // Cerrar la notificación de carga
         Swal.close();
       } catch (error) {
         console.error('Error parsing JSON:', error);
@@ -17,34 +25,22 @@ const obtenerContratos = (setContractData) => {
     .listarContratos();
 };
 
-const obtenerRRHH = (setRrhhData) => {
-  notificacionObteniendoDatos("Obteniendo lista de RRHH desde el servidor");
-  google.script.run
-    .withSuccessHandler(res => {
-      try {
-        const rrhh = JSON.parse(res);
-        rrhh.sort((a, b) => (a.nombreCompleto > b.nombreCompleto) ? 1 : -1);
-        setRrhhData(rrhh);
-        Swal.close();
-      } catch (error) {
-        console.error('Error parsing JSON:', error);
-        Swal.close();
-      }
-    })
-    .listarRRHH();
-};
-
+// Función para obtener los grupos del servidor y establecerlos en el estado
 const obtenerGrupos = (setGruposData) => {
+  // Mostrar una notificación mientras se obtienen los datos
   notificacionObteniendoDatos("Obteniendo lista de grupos desde el servidor");
+  
+  // Llamada a la función de Google Apps Script para obtener la lista de grupos
   google.script.run
     .withSuccessHandler(res => {
       try {
+        // Parsear la respuesta JSON
         const grupos = JSON.parse(res);
+        // Ordenar los grupos alfabéticamente por nombre
         grupos.sort((a, b) => (a.nombreGrupo > b.nombreGrupo) ? 1 : -1);
+        // Establecer los grupos en el estado
         setGruposData(grupos);
-        setFilteredGruposData(grupos);
-        setFilteredGruposDataCoordinador(grupos);
-        setFilteredRRHHData(grupos); 
+        // Cerrar la notificación de carga
         Swal.close();
       } catch (error) {
         console.error('Error parsing JSON:', error);
@@ -54,36 +50,61 @@ const obtenerGrupos = (setGruposData) => {
     .listarGrupos();
 };
 
-function Relaciones() {
-  const [contractData, setContractData] = useState([]);
-  const [gruposData, setGruposData] = useState([]);
-  const [rrhhData, setRrhhData] = useState([]);
-  const [filteredGruposData, setFilteredGruposData] = useState([]);
-  const [filteredGruposDataCoordinador, setFilteredGruposDataCoordinador] = useState([]);
-  const [filteredRRHHData, setFilteredRRHHData] = useState([]);
-  const [selectedContracts, setSelectedContracts] = useState({});
-  const [selectedRRHH, setSelectedRRHH] = useState({});
-  const [searchTextGrupos, setSearchTextGrupos] = useState('');
-  const [searchTextrrhh, setSearchTextrrhh] = useState('');
-  const [searchTextDosrrhh, setSearchTextDosrrhh] = useState('');
-  const history = useHistory();
+// Función para obtener los recursos humanos del servidor y establecerlos en el estado
+const obtenerRRHH = (setRRHHData) => {
+  // Mostrar una notificación mientras se obtienen los datos
+  notificacionObteniendoDatos("Obteniendo lista de recursos humanos desde el servidor");
+  
+  // Llamada a la función de Google Apps Script para obtener la lista de recursos humanos
+  google.script.run
+    .withSuccessHandler(res => {
+      try {
+        // Parsear la respuesta JSON
+        const rrhh = JSON.parse(res);
+        // Ordenar los recursos humanos alfabéticamente por nombre
+        rrhh.sort((a, b) => (a.nombre > b.nombre) ? 1 : -1);
+        // Establecer los recursos humanos en el estado
+        setRRHHData(rrhh);
+        // Cerrar la notificación de carga
+        Swal.close();
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+        Swal.close();
+      }
+    })
+    .listarRRHH();
+};
+
+// Componente principal de Relaciones
+const Relaciones = () => {
+  // Definir los estados del componente
+  const [contractData, setContractData] = useState([]); // Lista de contratos
+  const [gruposData, setGruposData] = useState([]); // Lista de grupos
+  const [rrhhData, setRRHHData] = useState([]); // Lista de recursos humanos
+  const [filteredGruposData, setFilteredGruposData] = useState([]); // Lista de grupos filtrados (Grupos Vs Contrato)
+  const [filteredGruposDataCoordinador, setFilteredGruposDataCoordinador] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
+  const [selectedContracts, setSelectedContracts] = useState({}); // Contratos seleccionados para cada grupo
+  const [selectedContractsCoordinador, setSelectedContractsCoordinador] = useState({}); // Contratos seleccionados para cada grupo (Grupos Vs Coordinador)
+  const [searchTextGrupos, setSearchTextGrupos] = useState(''); // Texto de búsqueda para grupos
+  const [searchTextDocente, setSearchTextDocente] = useState(''); // Texto de búsqueda para docentes
   const Tooltip = window.antd.Tooltip;
   const { Panel } = Collapse;
   const { Option } = window.antd.Select;
 
+  // Usar efecto para cargar contratos, grupos y recursos humanos al montar el componente
   useEffect(() => {
     obtenerContratos(setContractData);
-    obtenerRRHH((data) => {
-      setRrhhData(data);
-    });
     obtenerGrupos((data) => {
       setGruposData(data);
       setFilteredGruposData(data);
       setFilteredGruposDataCoordinador(data);
-      setFilteredRRHHData(data); 
     });
+    obtenerRRHH(setRRHHData);
   }, []);
 
+  const coordinadores = rrhhData.filter(rrhh => rrhh.role === 'Coordinador/a');
+
+  // Formatear fecha en formato dd/MMM/yyyy
   const formatFecha = (fecha) => {
     const date = new Date(fecha);
     const day = String(date.getDate()).padStart(2, '0');
@@ -93,7 +114,7 @@ function Relaciones() {
     return `${day}/${month}/${year}`;
   };
 
-
+  // Filtrar grupos según el texto de búsqueda (Grupos Vs Contrato)
   const handleSearchGrupos = (value) => {
     setSearchTextGrupos(value);
     if (value === '') {
@@ -106,45 +127,14 @@ function Relaciones() {
     }
   };
 
-  const handleSearchRRHH = (value) => {
-    setSearchTextrrhh(value);
-    if (value === '') {
-      setFilteredGruposDataCoordinador(gruposData);
-    } else {
-      const filteredGruposCoordinador = gruposData.filter(grupo =>
-        grupo.groupName.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredGruposDataCoordinador(filteredGruposCoordinador);
-    }
-  };
-
-  const handleSearchRRHHDos = (value) => {
-    setSearchTextDosrrhh(value);
-    if (value === '') {
-      setFilteredRRHHData(rrhhData);
-    } else {
-      const filteredRRHH = rrhhData.filter(rrhh =>
-        rrhh.nombreCompleto.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredRRHHData(filteredRRHH);
-    }
-  };
-  
-  const handleContractSelect = (groupId, value) => {
-    setSelectedContracts(prevState => ({
+  const handleContractSelectCoordinador = (groupId, value) => {
+    setSelectedContractsCoordinador(prevState => ({
       ...prevState,
       [groupId]: value
     }));
   };
 
-  const handleRRHHSelect = (coordinadorId, value) => {
-    setSelectedRRHH(prevSelected => {
-      const updatedSelected = [...prevSelected];
-      updatedSelected[coordinadorId] = value;
-      return updatedSelected;
-    });
-  };
-
+  // Actualizar el grupo con el contrato seleccionado (Grupos Vs Contrato)
   const handleActualizarGrupoClick = (grupoId, contratoId) => {
     const contrato = contractData.find(contract => contract.id === contratoId);
     if (!contrato) {
@@ -178,12 +168,18 @@ function Relaciones() {
     .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
 
-
-  const handleActualizarRRHHClick = (grupoId, coordinadorId, coordinadorNombre) => {
-    notificacionGuardando("Actualizando grupo con la coordinación de: " + coordinadorNombre);
+  // Actualizar el grupo con el contrato seleccionado (Grupos Vs Coordinador)
+  const handleActualizarGrupoClickCoordinador = (grupoId, contratoId) => {
+    const contrato = contractData.find(contract => contract.id === contratoId);
+    if (!contrato) {
+      console.error('Contrato no encontrado');
+      return;
+    }
+    const notificacionMensaje = `Guardando el contrato número ${contrato.contractNumber} - ${contrato.nombreDelContrato}`;
+    notificacionGuardando(notificacionMensaje);
     const datosActualizados = {
-      coordinadorId: coordinadorId,
-      coordinadorNombre: coordinadorNombre,
+      contractId: contratoId,
+      contratoGrupoMunicipio: `${contrato.contractNumber} - ${contrato.nombreDelContrato}`
     };
     google.script.run.withSuccessHandler(response => {
       console.log('Respuesta del servidor:', response);
@@ -206,33 +202,7 @@ function Relaciones() {
     .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
 
-  const handleActualizarRRHHClickDos = (grupoId, docenteId, docenteNombre) => {
-    notificacionGuardando("Actualizando grupo con el docente " + docenteNombre);
-    const datosActualizados = {
-      colaboradorId: docenteId,
-      colaboradorNombre: docenteNombre,
-    };
-    google.script.run.withSuccessHandler(response => {
-      console.log('Respuesta del servidor:', response);
-      Swal.fire({
-        title: response.titulo,
-        text: response.descripcion,
-        icon: response.icono || 'info',
-        timer: 2000,
-        timerProgressBar: true
-      });
-    })
-    .withFailureHandler(error => {
-      console.error('Error al actualizar grupo:', error);
-      Swal.fire({
-        title: 'Ops ha ocurrido un error!',
-        text: 'Por favor contacte a soporte.',
-        icon: 'error'
-      });
-    })
-    .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
-  };
-
+  // Definir las columnas de la tabla de grupos (Grupos Vs Contrato)
   const gruposColumns = [
     {
       title: 'Nombre del Grupo',
@@ -240,10 +210,10 @@ function Relaciones() {
       key: 'groupName',
       render: (text, record) => (
         <Tooltip title={record.groupName}>
-        <span>{record.groupName}</span>
+          <span>{record.groupName}</span>
         </Tooltip>
-        ),
-      },
+      ),
+    },
     {
       title: 'Fecha de Creación',
       dataIndex: 'fechaCreacion',
@@ -263,10 +233,10 @@ function Relaciones() {
         const isEditable = selectedContracts[record.id] !== undefined;
         const selectedValue = isEditable ? selectedContracts[record.id] : (contrato ? contrato.id : undefined);
         const tooltipText = contrato
-        ? `El contrato asociado al grupo es ${contrato.contractNumber} - ${contrato.nombreDelContrato}`
+          ? `El contrato asociado al grupo es ${contrato.contractNumber} - ${contrato.nombreDelContrato}`
           : 'Se debe asociar el grupo a un contrato';
         const tooltipColor = contrato ? 'green' : 'red';
-  
+
         return (
           <div>
             <Tooltip title={tooltipText} color={tooltipColor}>
@@ -286,22 +256,22 @@ function Relaciones() {
             </Tooltip>
             {contrato ? (
               <Tooltip title={tooltipText} color={tooltipColor}>
-              <Button
-                type="primary"
-                onClick={() => {
-                  if (isEditable) {
-                    handleActualizarGrupoClick(record.id, selectedContracts[record.id]);
-                  } else {
-                    setSelectedContracts(prevState => ({
-                      ...prevState,
-                      [record.id]: record.contractId
-                    }));
-                  }
-                }}
-                style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
-              >
-                {isEditable ? 'Actualizar Grupo' : 'Editar'}
-              </Button>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    if (isEditable) {
+                      handleActualizarGrupoClick(record.id, selectedContracts[record.id]);
+                    } else {
+                      setSelectedContracts(prevState => ({
+                        ...prevState,
+                        [record.id]: record.contractId
+                      }));
+                    }
+                  }}
+                  style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
+                >
+                  {isEditable ? 'Actualizar Grupo' : 'Editar'}
+                </Button>
               </Tooltip>
             ) : (
               <Button
@@ -318,8 +288,9 @@ function Relaciones() {
       },
     },
   ];
-  
-  const coordinadoresColumns = [
+
+  // Definir las columnas de la tabla de grupos (Grupos Vs Coordinador)
+  const gruposCoordinadorColumns = [
     {
       title: 'Nombre del Grupo',
       dataIndex: 'groupName',
@@ -339,142 +310,74 @@ function Relaciones() {
       ),
     },
     {
-      title: 'Coordinador Asociado',
-      dataIndex: 'coordinadorNombre',
-      key: 'coordinadorNombre',
-      render: (text, record) => (
-        record.coordinadorNombre ? record.coordinadorNombre : '(Sin coordinador asociado)'
-      ),
-    },
-    {
-      title: 'Coordinador',
-      key: 'acciones',
-      render: (text, record, index) => {
-        const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
-        const selectedCoordinatorId = selectedRRHH[index];
-    
-        const handleAgregarClick = () => {
-          if (!record.contratoGrupoMunicipio) {
-            Swal.fire({
-              title: 'Ops ha ocurrido un error!',
-              text: 'Primero debe asociar el grupo a un contrato.',
-              icon: 'error'
-            });
-            return;
-          }
-    
-          const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === selectedCoordinatorId);
-          const selectedCoordinatorName = selectedCoordinator ? selectedCoordinator.nombreCompleto : '';
-          handleActualizarRRHHClick(record.id, selectedCoordinatorId, selectedCoordinatorName);
-        };
-    
-        const handleRRHHSelect = (index, value) => {
-          const newSelectedRRHH = [...selectedRRHH];
-          newSelectedRRHH[index] = value;
-          setSelectedRRHH(newSelectedRRHH);
-        };
-    
+      title: 'Seleccionar Coordinador',
+      key: 'selectCoordinador',
+      render: (text, record) => {
+        const coordinador = record.coordinadorId ? coordinadores.find(coordinador => coordinador.id === record.coordinadorId) : null;
+        const isEditable = selectedContractsCoordinador[record.id] !== undefined;
+        const selectedValue = isEditable ? selectedContractsCoordinador[record.id] : (coordinador ? coordinador.id : undefined);
+        const tooltipText = coordinador
+          ? `El coordinador asociado al grupo es ${coordinador.nombre}`
+          : 'Se debe asociar el grupo a un coordinador';
+        const tooltipColor = coordinador ? 'green' : 'red';
+
         return (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Select
-              style={{ width: 200, marginRight: 8 }}
-              placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
-              onChange={value => handleRRHHSelect(index, value)}
-              value={selectedCoordinatorId || undefined}
-            >
-              {coordinadores.map(coordinador => (
-                <Select.Option key={coordinador.id} value={coordinador.id}>
-                  {coordinador.nombreCompleto}
-                </Select.Option>
-              ))}
-            </Select>
-            <Button type="primary" onClick={handleAgregarClick}>
-              Agregar
-            </Button>
+          <div>
+            <Tooltip title={tooltipText} color={tooltipColor}>
+              <Select
+                placeholder="Seleccionar coordinador 📄"
+                style={{ width: 200 }}
+                onChange={value => handleContractSelectCoordinador(record.id, value)}
+                value={selectedValue}
+                disabled={coordinador && !isEditable}
+              >
+                {coordinadores.map(coordinador => (
+                  <Select.Option key={coordinador.id} value={coordinador.id}>
+                    {`${coordinador.nombre}`}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Tooltip>
+            {coordinador ? (
+              <Tooltip title={tooltipText} color={tooltipColor}>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    if (isEditable) {
+                      handleActualizarGrupoClickCoordinador(record.id, selectedContractsCoordinador[record.id]);
+                    } else {
+                      setSelectedContractsCoordinador(prevState => ({
+                        ...prevState,
+                        [record.id]: record.coordinadorId
+                      }));
+                    }
+                  }}
+                  style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
+                >
+                  {isEditable ? 'Actualizar Grupo' : 'Editar'}
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                type="primary"
+                onClick={() => handleActualizarGrupoClickCoordinador(record.id, selectedContractsCoordinador[record.id])}
+                style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
+                disabled={!selectedContractsCoordinador[record.id]}
+              >
+                Actualizar Grupo
+              </Button>
+            )}
           </div>
         );
       },
-    }
-    
-  ];
-  
-  const rrhhColumns = [
-    {
-      title: 'Nombre del Grupo',
-      dataIndex: 'groupName',
-      key: 'groupName',
     },
-    {
-      title: 'Código Cuentame',
-      dataIndex: 'cuentameCode',
-      key: 'cuentameCode',
-    },
-    {
-      title: 'Contrato Asociado',
-      dataIndex: 'contratoGrupoMunicipio',
-      key: 'contratoGrupoMunicipio',
-      render: (text, record) => (
-        record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
-      ),
-    },
-    {
-      title: 'Coordinador/a',
-      dataIndex: 'coordinadorNombre',
-      key: 'coordinadorNombre',
-      render: (text, record) => (
-        record.coordinadorNombre ? record.coordinadorNombre : '(Sin coordinador asociado)'
-      ),
-    },
-     {
-    title: 'RRHH',
-    key: 'acciones',
-    render: (text, record, index) => {
-      const recursoHumano = rrhhData.filter(rrhh => rrhh.cargo !== 'Coordinador/a');
-      const selectedColaborador = recursoHumano.find(colaborador => colaborador.id === selectedRRHH[index]);
-
-      const handleAgregarClickDos = () => {
-        if (!record.contratoGrupoMunicipio || !record.coordinadorNombre) {
-          Swal.fire({
-            title: 'Ops ha ocurrido un error!',
-            text: 'Primero debe asociar el grupo a un contrato y a un coordinador.',
-            icon: 'error'
-          });
-          return;
-        }
-
-        handleActualizarRRHHClickDos(record.id, selectedRRHH[index], selectedColaborador.nombreCompleto);
-      };
-
-      return (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Select
-            style={{ width: 200, marginRight: 8 }}
-            placeholder="Seleccionar colaborador 👷🏼‍♂️"
-            onChange={value => handleRRHHSelect(index, value)}
-            value={selectedRRHH[index]}
-          >
-            {recursoHumano.map(coordinador => (
-              <Select.Option key={coordinador.id} value={coordinador.id}>
-                {coordinador.nombreCompleto}
-              </Select.Option>
-            ))}
-          </Select>
-          <Button type="primary" onClick={handleAgregarClickDos}>
-            Agregar
-          </Button>
-        </div>
-      );
-    },
-  } 
-  ];
+];
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
-      <h2 className="font-bold text-2xl mb-4">ZONA DE RELACIONES</h2>
-      <div className="w-full max-w-screen-lg flex flex-col gap-4">
+    <div className="App">
+      <div className="container mx-auto mt-4 p-4 bg-white rounded-lg shadow-lg">
         <Collapse accordion>
-
-        <Panel header="Grupos Vs Contrato" key="1" style={{ backgroundColor: '#ccffcc' }}>
+          <Panel header="Grupos Vs Contrato" key="1" style={{ backgroundColor: '#ccffcc' }}>
             <Input.Search
               placeholder="Buscar por nombre de grupo ✍🏽"
               value={searchTextGrupos}
@@ -488,30 +391,16 @@ function Relaciones() {
             />
           </Panel>
 
-        <Panel header="Grupos Vs Coordinador" key="2" style={{ backgroundColor: '#C1DC8F' }}>
+          <Panel header="Grupos Vs Coordinador" key="2" style={{ backgroundColor: '#ccffff' }}>
             <Input.Search
               placeholder="Buscar por nombre de colaborador ✍🏽"
-              value={searchTextrrhh}
-              onChange={e => handleSearchRRHH(e.target.value)}
+              value={searchTextDocente}
+              onChange={e => handleSearchDocente(e.target.value)}
               className="mb-2 rounded border border-gray-300"
             />
             <Table
-              columns={coordinadoresColumns}
+              columns={gruposCoordinadorColumns}
               dataSource={filteredGruposDataCoordinador.map((data, index) => ({ ...data, key: index }))}
-              pagination={{ pageSize: 3 }}
-            />
-          </Panel>
-
-          <Panel header="Grupo Vs Docente" key="3" style={{ backgroundColor: '#ccccff' }}>
-            <Input.Search
-              placeholder="Buscar por nombre ✍🏽"
-              value={searchTextDosrrhh}
-              onChange={e => handleSearchRRHHDos(e.target.value)}
-              className="mb-2 rounded border border-gray-300"
-            />
-            <Table
-              columns={rrhhColumns}
-              dataSource={filteredRRHHData.map((data, index) => ({ ...data, key: index }))}
               pagination={{ pageSize: 3 }}
             />
           </Panel>
@@ -519,7 +408,6 @@ function Relaciones() {
       </div>
     </div>
   );
-}
-
+};
 
 //</script>
