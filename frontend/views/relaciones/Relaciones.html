@@ -102,7 +102,8 @@ const Relaciones = () => {
     obtenerRRHH(setRRHHData);
   }, []);
 
-  const coordinadores = rrhhData.filter(rrhh => rrhh.role === 'Coordinador/a');
+  const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
+  console.log(coordinadores, "coordi");
 
   // Formatear fecha en formato dd/MMM/yyyy
   const formatFecha = (fecha) => {
