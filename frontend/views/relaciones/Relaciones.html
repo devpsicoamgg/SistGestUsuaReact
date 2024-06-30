@@ -34,7 +34,7 @@ const obtenerRRHH = (setRrhhData) => {
     .listarRRHH();
 };
 
-const obtenerGrupos = (setGruposData, setFilteredGruposData, setFilteredGruposDataCoordinador, setFilteredRRHHData) => {
+const obtenerGrupos = (setGruposData) => {
   notificacionObteniendoDatos("Obteniendo lista de grupos desde el servidor");
   google.script.run
     .withSuccessHandler(res => {
@@ -44,7 +44,7 @@ const obtenerGrupos = (setGruposData, setFilteredGruposData, setFilteredGruposDa
         setGruposData(grupos);
         setFilteredGruposData(grupos);
         setFilteredGruposDataCoordinador(grupos);
-        setFilteredRRHHData(grupos);
+        setFilteredRRHHData(grupos); 
         Swal.close();
       } catch (error) {
         console.error('Error parsing JSON:', error);
@@ -67,12 +67,21 @@ function Relaciones() {
   const [searchTextrrhh, setSearchTextrrhh] = useState('');
   const [searchTextDosrrhh, setSearchTextDosrrhh] = useState('');
   const history = useHistory();
+  const Tooltip = window.antd.Tooltip;
   const { Panel } = Collapse;
+  const { Option } = window.antd.Select;
 
   useEffect(() => {
     obtenerContratos(setContractData);
-    obtenerRRHH(setRrhhData);
-    obtenerGrupos(setGruposData, setFilteredGruposData, setFilteredGruposDataCoordinador, setFilteredRRHHData);
+    obtenerRRHH((data) => {
+      setRrhhData(data);
+    });
+    obtenerGrupos((data) => {
+      setGruposData(data);
+      setFilteredGruposData(data);
+      setFilteredGruposDataCoordinador(data);
+      setFilteredRRHHData(data); 
+    });
   }, []);
 
   const formatFecha = (fecha) => {
@@ -83,6 +92,7 @@ function Relaciones() {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
+
 
   const handleSearchGrupos = (value) => {
     setSearchTextGrupos(value);
@@ -127,10 +137,10 @@ function Relaciones() {
     }));
   };
 
-  const handleRRHHSelect = (index, value) => {
+  const handleRRHHSelect = (coordinadorId, value) => {
     setSelectedRRHH(prevSelected => {
       const updatedSelected = [...prevSelected];
-      updatedSelected[index] = value;
+      updatedSelected[coordinadorId] = value;
       return updatedSelected;
     });
   };
@@ -229,193 +239,284 @@ function Relaciones() {
       dataIndex: 'groupName',
       key: 'groupName',
       render: (text, record) => (
-        <Tooltip title={`ID del Grupo: ${record.groupId}`}>
-          <span>{text}</span>
+        <Tooltip title={record.groupName}>
+        <span>{record.groupName}</span>
         </Tooltip>
-      ),
+        ),
+      },
+    {
+      title: 'Fecha de Creación',
+      dataIndex: 'fechaCreacion',
+      key: 'fechaCreacion',
+      render: (text, record) => formatFecha(record.fechaCreacion),
     },
     {
-      title: 'Descripción del Grupo',
-      dataIndex: 'descripcion',
-      key: 'descripcion',
+      title: 'Código Cuentame',
+      dataIndex: 'cuentameCode',
+      key: 'cuentameCode',
     },
     {
-      title: 'Contrato asignado',
-      dataIndex: 'contratoGrupoMunicipio',
-      key: 'contratoGrupoMunicipio',
-    },
-    {
-      title: 'Actualizar Contrato',
-      key: 'actualizarContrato',
-      render: (text, record) => (
-        <Select
-          placeholder="Seleccione un contrato"
-          value={selectedContracts[record.groupId]}
-          onChange={value => handleContractSelect(record.groupId, value)}
-          style={{ width: '200px' }}
-        >
-          {contractData.map(contract => (
-            <Select.Option key={contract.id} value={contract.id}>
-              {contract.contractNumber} - {contract.nombreDelContrato}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
-    },
-    {
-      title: 'Acción',
-      key: 'action',
-      render: (text, record) => (
-        <Button onClick={() => handleActualizarGrupoClick(record.groupId, selectedContracts[record.groupId])}>
-          Actualizar
-        </Button>
-      ),
+      title: 'Contrato',
+      key: 'contractInfo',
+      render: (text, record) => {
+        const contrato = record.contractId ? contractData.find(contract => contract.id === record.contractId) : null;
+        const isEditable = selectedContracts[record.id] !== undefined;
+        const selectedValue = isEditable ? selectedContracts[record.id] : (contrato ? contrato.id : undefined);
+        const tooltipText = contrato
+        ? `El contrato asociado al grupo es ${contrato.contractNumber} - ${contrato.nombreDelContrato}`
+          : 'Se debe asociar el grupo a un contrato';
+        const tooltipColor = contrato ? 'green' : 'red';
+  
+        return (
+          <div>
+            <Tooltip title={tooltipText} color={tooltipColor}>
+              <Select
+                placeholder="Seleccionar contrato 📄"
+                style={{ width: 200 }}
+                onChange={value => handleContractSelect(record.id, value)}
+                value={selectedValue}
+                disabled={contrato && !isEditable}
+              >
+                {contractData.map(contract => (
+                  <Select.Option key={contract.id} value={contract.id}>
+                    {`${contract.contractNumber} - ${contract.nombreDelContrato}`}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Tooltip>
+            {contrato ? (
+              <Tooltip title={tooltipText} color={tooltipColor}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (isEditable) {
+                    handleActualizarGrupoClick(record.id, selectedContracts[record.id]);
+                  } else {
+                    setSelectedContracts(prevState => ({
+                      ...prevState,
+                      [record.id]: record.contractId
+                    }));
+                  }
+                }}
+                style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
+              >
+                {isEditable ? 'Actualizar Grupo' : 'Editar'}
+              </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                type="primary"
+                onClick={() => handleActualizarGrupoClick(record.id, selectedContracts[record.id])}
+                style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
+                disabled={!selectedContracts[record.id]}
+              >
+                Actualizar Grupo
+              </Button>
+            )}
+          </div>
+        );
+      },
     },
   ];
-
+  
+  const coordinadoresColumns = [
+    {
+      title: 'Nombre del Grupo',
+      dataIndex: 'groupName',
+      key: 'groupName',
+    },
+    {
+      title: 'Código Cuentame',
+      dataIndex: 'cuentameCode',
+      key: 'cuentameCode',
+    },
+    {
+      title: 'Contrato Asociado',
+      dataIndex: 'contratoGrupoMunicipio',
+      key: 'contratoGrupoMunicipio',
+      render: (text, record) => (
+        record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
+      ),
+    },
+    {
+      title: 'Coordinador Asociado',
+      dataIndex: 'coordinadorNombre',
+      key: 'coordinadorNombre',
+      render: (text, record) => (
+        record.coordinadorNombre ? record.coordinadorNombre : '(Sin coordinador asociado)'
+      ),
+    },
+    {
+      title: 'Coordinador',
+      key: 'acciones',
+      render: (text, record, index) => {
+        const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
+        const selectedCoordinatorId = selectedRRHH[index];
+    
+        const handleAgregarClick = () => {
+          if (!record.contratoGrupoMunicipio) {
+            Swal.fire({
+              title: 'Ops ha ocurrido un error!',
+              text: 'Primero debe asociar el grupo a un contrato.',
+              icon: 'error'
+            });
+            return;
+          }
+    
+          const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === selectedCoordinatorId);
+          const selectedCoordinatorName = selectedCoordinator ? selectedCoordinator.nombreCompleto : '';
+          handleActualizarRRHHClick(record.id, selectedCoordinatorId, selectedCoordinatorName);
+        };
+    
+        const handleRRHHSelect = (index, value) => {
+          const newSelectedRRHH = [...selectedRRHH];
+          newSelectedRRHH[index] = value;
+          setSelectedRRHH(newSelectedRRHH);
+        };
+    
+        return (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Select
+              style={{ width: 200, marginRight: 8 }}
+              placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
+              onChange={value => handleRRHHSelect(index, value)}
+              value={selectedCoordinatorId || undefined}
+            >
+              {coordinadores.map(coordinador => (
+                <Select.Option key={coordinador.id} value={coordinador.id}>
+                  {coordinador.nombreCompleto}
+                </Select.Option>
+              ))}
+            </Select>
+            <Button type="primary" onClick={handleAgregarClick}>
+              Agregar
+            </Button>
+          </div>
+        );
+      },
+    }
+    
+  ];
+  
   const rrhhColumns = [
     {
       title: 'Nombre del Grupo',
       dataIndex: 'groupName',
       key: 'groupName',
+    },
+    {
+      title: 'Código Cuentame',
+      dataIndex: 'cuentameCode',
+      key: 'cuentameCode',
+    },
+    {
+      title: 'Contrato Asociado',
+      dataIndex: 'contratoGrupoMunicipio',
+      key: 'contratoGrupoMunicipio',
       render: (text, record) => (
-        <Tooltip title={`ID del Grupo: ${record.groupId}`}>
-          <span>{text}</span>
-        </Tooltip>
+        record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
       ),
     },
     {
-      title: 'Descripción del Grupo',
-      dataIndex: 'descripcion',
-      key: 'descripcion',
-    },
-    {
-      title: 'Coordinador Asignado',
+      title: 'Coordinador/a',
       dataIndex: 'coordinadorNombre',
       key: 'coordinadorNombre',
-    },
-    {
-      title: 'Actualizar Coordinador',
-      key: 'actualizarCoordinador',
       render: (text, record) => (
-        <Select
-          placeholder="Seleccione RRHH"
-          value={selectedRRHH[record.groupId]}
-          onChange={value => handleRRHHSelect(record.groupId, value)}
-          style={{ width: '200px' }}
-        >
-          {rrhhData.map(rrhh => (
-            <Select.Option key={rrhh.id} value={rrhh.id}>
-              {rrhh.nombreCompleto}
-            </Select.Option>
-          ))}
-        </Select>
+        record.coordinadorNombre ? record.coordinadorNombre : '(Sin coordinador asociado)'
       ),
     },
-    {
-      title: 'Acción',
-      key: 'action',
-      render: (text, record) => (
-        <Button onClick={() => handleActualizarRRHHClick(record.groupId, selectedRRHH[record.groupId], rrhhData.find(rrhh => rrhh.id === selectedRRHH[record.groupId])?.nombreCompleto)}>
-          Actualizar
-        </Button>
-      ),
-    },
-  ];
+     {
+    title: 'RRHH',
+    key: 'acciones',
+    render: (text, record, index) => {
+      const recursoHumano = rrhhData.filter(rrhh => rrhh.cargo !== 'Coordinador/a');
+      const selectedColaborador = recursoHumano.find(colaborador => colaborador.id === selectedRRHH[index]);
 
-  const rrhhDosColumns = [
-    {
-      title: 'Nombre del Grupo',
-      dataIndex: 'groupName',
-      key: 'groupName',
-      render: (text, record) => (
-        <Tooltip title={`ID del Grupo: ${record.groupId}`}>
-          <span>{text}</span>
-        </Tooltip>
-      ),
+      const handleAgregarClickDos = () => {
+        if (!record.contratoGrupoMunicipio || !record.coordinadorNombre) {
+          Swal.fire({
+            title: 'Ops ha ocurrido un error!',
+            text: 'Primero debe asociar el grupo a un contrato y a un coordinador.',
+            icon: 'error'
+          });
+          return;
+        }
+
+        handleActualizarRRHHClickDos(record.id, selectedRRHH[index], selectedColaborador.nombreCompleto);
+      };
+
+      return (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Select
+            style={{ width: 200, marginRight: 8 }}
+            placeholder="Seleccionar colaborador 👷🏼‍♂️"
+            onChange={value => handleRRHHSelect(index, value)}
+            value={selectedRRHH[index]}
+          >
+            {recursoHumano.map(coordinador => (
+              <Select.Option key={coordinador.id} value={coordinador.id}>
+                {coordinador.nombreCompleto}
+              </Select.Option>
+            ))}
+          </Select>
+          <Button type="primary" onClick={handleAgregarClickDos}>
+            Agregar
+          </Button>
+        </div>
+      );
     },
-    {
-      title: 'Descripción del Grupo',
-      dataIndex: 'descripcion',
-      key: 'descripcion',
-    },
-    {
-      title: 'Docente Asignado',
-      dataIndex: 'colaboradorNombre',
-      key: 'colaboradorNombre',
-    },
-    {
-      title: 'Actualizar Docente',
-      key: 'actualizarDocente',
-      render: (text, record) => (
-        <Select
-          placeholder="Seleccione RRHH"
-          value={selectedRRHH[record.groupId]}
-          onChange={value => handleRRHHSelect(record.groupId, value)}
-          style={{ width: '200px' }}
-        >
-          {rrhhData.map(rrhh => (
-            <Select.Option key={rrhh.id} value={rrhh.id}>
-              {rrhh.nombreCompleto}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
-    },
-    {
-      title: 'Acción',
-      key: 'action',
-      render: (text, record) => (
-        <Button onClick={() => handleActualizarRRHHClickDos(record.groupId, selectedRRHH[record.groupId], rrhhData.find(rrhh => rrhh.id === selectedRRHH[record.groupId])?.nombreCompleto)}>
-          Actualizar
-        </Button>
-      ),
-    },
+  } 
   ];
 
   return (
-    <div className="site-collapse-custom-collapse">
-      <Collapse defaultActiveKey={['1', '2', '3']}>
-        <Panel header="Relaciones: Contratos - Grupos" key="1">
-          <Input.Search
-            placeholder="Buscar Grupo"
-            value={searchTextGrupos}
-            onChange={e => handleSearchGrupos(e.target.value)}
-            style={{ marginBottom: 16 }}
-          />
-          <Table
-            dataSource={filteredGruposData}
-            columns={gruposColumns}
-            rowKey="groupId"
-          />
-        </Panel>
-        <Panel header="Relaciones: Coordinadores - Grupos" key="2">
-          <Input.Search
-            placeholder="Buscar Grupo"
-            value={searchTextrrhh}
-            onChange={e => handleSearchRRHH(e.target.value)}
-            style={{ marginBottom: 16 }}
-          />
-          <Table
-            dataSource={filteredGruposDataCoordinador}
-            columns={rrhhColumns}
-            rowKey="groupId"
-          />
-        </Panel>
-        <Panel header="Relaciones: Docentes - Grupos" key="3">
-          <Input.Search
-            placeholder="Buscar Grupo"
-            value={searchTextDosrrhh}
-            onChange={e => handleSearchRRHHDos(e.target.value)}
-            style={{ marginBottom: 16 }}
-          />
-          <Table
-            dataSource={filteredRRHHData}
-            columns={rrhhDosColumns}
-            rowKey="groupId"
-          />
-        </Panel>
-      </Collapse>
+    <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
+      <h2 className="font-bold text-2xl mb-4">ZONA DE RELACIONES</h2>
+      <div className="w-full max-w-screen-lg flex flex-col gap-4">
+        <Collapse accordion>
+
+        <Panel header="Grupos Vs Contrato" key="1" style={{ backgroundColor: '#ccffcc' }}>
+            <Input.Search
+              placeholder="Buscar por nombre de grupo ✍🏽"
+              value={searchTextGrupos}
+              onChange={e => handleSearchGrupos(e.target.value)}
+              className="mb-2 rounded border border-gray-300"
+            />
+            <Table
+              columns={gruposColumns}
+              dataSource={filteredGruposData.map((data, index) => ({ ...data, key: index }))}
+              pagination={{ pageSize: 3 }}
+            />
+          </Panel>
+
+        <Panel header="Grupos Vs Coordinador" key="2" style={{ backgroundColor: '#C1DC8F' }}>
+            <Input.Search
+              placeholder="Buscar por nombre de colaborador ✍🏽"
+              value={searchTextrrhh}
+              onChange={e => handleSearchRRHH(e.target.value)}
+              className="mb-2 rounded border border-gray-300"
+            />
+            <Table
+              columns={coordinadoresColumns}
+              dataSource={filteredGruposDataCoordinador.map((data, index) => ({ ...data, key: index }))}
+              pagination={{ pageSize: 3 }}
+            />
+          </Panel>
+
+          <Panel header="Grupo Vs Docente" key="3" style={{ backgroundColor: '#ccccff' }}>
+            <Input.Search
+              placeholder="Buscar por nombre ✍🏽"
+              value={searchTextDosrrhh}
+              onChange={e => handleSearchRRHHDos(e.target.value)}
+              className="mb-2 rounded border border-gray-300"
+            />
+            <Table
+              columns={rrhhColumns}
+              dataSource={filteredRRHHData.map((data, index) => ({ ...data, key: index }))}
+              pagination={{ pageSize: 3 }}
+            />
+          </Panel>
+        </Collapse>
+      </div>
     </div>
   );
 }
