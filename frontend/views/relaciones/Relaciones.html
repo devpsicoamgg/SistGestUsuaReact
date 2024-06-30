@@ -351,9 +351,9 @@ function Relaciones() {
       key: 'acciones',
       render: (text, record, index) => {
         const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
-        const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === selectedRRHH[index]);
-        const hasCoordinator = Boolean(selectedCoordinator);
-  
+        const selectedCoordinatorId = selectedRRHH[record.groupId];
+        const selectedCoordinator = coordinadores.find(coordinador => coordinador.id === selectedCoordinatorId);
+    
         const handleAgregarClick = () => {
           if (!record.contratoGrupoMunicipio) {
             Swal.fire({
@@ -363,41 +363,39 @@ function Relaciones() {
             });
             return;
           }
-  
-          handleActualizarRRHHClick(record.id, selectedRRHH[index], selectedCoordinator ? selectedCoordinator.nombreCompleto : '');
+    
+          const selectedCoordinatorName = selectedCoordinator ? selectedCoordinator.nombreCompleto : '';
+          handleActualizarRRHHClick(record.groupId, selectedCoordinatorId, selectedCoordinatorName);
         };
-  
-        const handleRRHHSelect = (index, value) => {
-          const newSelectedRRHH = [...selectedRRHH];
-          newSelectedRRHH[index] = value;
-          setSelectedRRHH(newSelectedRRHH);
+    
+        const handleRRHHSelect = (groupId, value) => {
+          setSelectedRRHH(prevSelected => ({
+            ...prevSelected,
+            [groupId]: value,
+          }));
         };
-  
+    
         return (
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            {selectedCoordinator ? (
-              <p>{selectedCoordinator.nombreCompleto}</p>
-            ) : (
-              <Select
-                style={{ width: 200, marginRight: 8 }}
-                placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
-                onChange={value => handleRRHHSelect(index, value)}
-                value={selectedRRHH[index] || undefined}
-              >
-                {coordinadores.map(coordinador => (
-                  <Select.Option key={coordinador.id} value={coordinador.id}>
-                    {coordinador.nombreCompleto}
-                  </Select.Option>
-                ))}
-              </Select>
-            )}
+            <Select
+              style={{ width: 200, marginRight: 8 }}
+              placeholder="Seleccionar coordinador/a 👷🏼‍♂️"
+              onChange={value => handleRRHHSelect(record.groupId, value)}
+              value={selectedCoordinatorId || undefined}
+            >
+              {coordinadores.map(coordinador => (
+                <Select.Option key={coordinador.id} value={coordinador.id}>
+                  {coordinador.nombreCompleto}
+                </Select.Option>
+              ))}
+            </Select>
             <Button type="primary" onClick={handleAgregarClick}>
-              {hasCoordinator ? 'Editar' : 'Agregar'}
+              {selectedCoordinatorId ? 'Editar' : 'Agregar'}
             </Button>
           </div>
         );
       },
-    } 
+    }
   ];
   
   const rrhhColumns = [
