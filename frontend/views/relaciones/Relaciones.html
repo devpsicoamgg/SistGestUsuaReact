@@ -332,18 +332,18 @@ function Relaciones() {
     },
     {
       title: 'Contrato Asociado',
-      dataIndex: 'coordinadorNombre',
-      key: 'coordinadorNombre',
+      dataIndex: 'contratoGrupoMunicipio',
+      key: 'contratoGrupoMunicipio',
       render: (text, record) => (
         record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
       ),
     },
     {
       title: 'Coordinador Asociado',
-      dataIndex: 'contratoGrupoMunicipio',
-      key: 'contratoGrupoMunicipio',
+      dataIndex: 'coordinadorNombre',
+      key: 'coordinadorNombre',
       render: (text, record) => (
-        record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin coordinador asociado)'
+        record.coordinadorNombre ? record.coordinadorNombre : '(Sin coordinador asociado)'
       ),
     },
     {
