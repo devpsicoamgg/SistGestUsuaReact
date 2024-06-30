@@ -355,7 +355,7 @@ const Relaciones = () => {
                   }}
                   style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
                 >
-                  {isEditable ? 'Actualizar coordinador' : 'Editar'}
+                  {isEditable ? 'Actualizar' : 'Editar'}
                 </Button>
               </Tooltip>
             ) : (
@@ -365,7 +365,7 @@ const Relaciones = () => {
                 style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
                 disabled={!selectedContractsCoordinador[record.id]}
               >
-                Actualizar coordinador
+                Actualizar
               </Button>
             )}
           </div>
