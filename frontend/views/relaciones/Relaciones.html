@@ -609,69 +609,88 @@ const psicoSocialColumns = [
       record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
     ),
   },
-  {
-    title: 'Seleccionar PsicoSocial',
-    key: 'selectPsicoSocial',
-    render: (text, record) => {
-      const auxAdministrativo = record.auxAdministrativoId ? auxAdministrativos.find(aux => aux.id === record.auxAdministrativoId) : null;
-      const isEditable = selectedContractsAuxAdministrativo[record.id] !== undefined;
-      const selectedValue = isEditable ? selectedContractsAuxAdministrativo[record.id] : (auxAdministrativo ? auxAdministrativo.id : undefined);
-      const tooltipText = auxAdministrativo
-        ? `El Aux. Administrativo asociado al grupo es ${auxAdministrativo.nombreCompleto}`
-        : 'Se debe asociar el grupo a un Aux. Administrativo';
-      const tooltipColor = auxAdministrativo ? 'green' : 'red';
-
-      return (
-        <div>
-          <Tooltip title={tooltipText} color={tooltipColor}>
-            <Select
-              placeholder="Selecciona Aux. Administrativo 📄"
-              style={{ width: 200 }}
-              onChange={value => handleContractSelectAuxAdministrativo(record.id, value)}
-              value={selectedValue}
-              disabled={auxAdministrativo && !isEditable}
-            >
-              {auxAdministrativos.map(aux => (
-                <Select.Option key={aux.id} value={aux.id}>
-                  {`${aux.nombreCompleto}`}
-                </Select.Option>
-              ))}
-            </Select>
-          </Tooltip>
-          {auxAdministrativo ? (
+  const gruposPsicoSocialColumns = [
+    {
+      title: 'Nombre del Grupo',
+      dataIndex: 'groupName',
+      key: 'groupName',
+    },
+    {
+      title: 'Código Cuentame',
+      dataIndex: 'cuentameCode',
+      key: 'cuentameCode',
+    },
+    {
+      title: 'Contrato Asociado',
+      dataIndex: 'contratoGrupoMunicipio',
+      key: 'contratoGrupoMunicipio',
+      render: (text, record) => (
+        record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
+      ),
+    },
+    {
+      title: 'Seleccionar PsicoSocial',
+      key: 'selectPsicoSocial',
+      render: (text, record) => {
+        const psicoSocial = record.psicoSocId ? apoyoPsicosocial.find(psicoSoc => psicoSoc.id === record.psicoSocId) : null;
+        const isEditable = selectedContractsApoyoPsicosocial[record.id] !== undefined;
+        const selectedValue = isEditable ? selectedContractsApoyoPsicosocial[record.id] : (psicoSocial ? psicoSocial.id : undefined);
+        const tooltipText = psicoSocial
+          ? `El psicosocial asociado al grupo es ${psicoSocial.nombreCompleto}`
+          : 'Se debe asociar el grupo a un psicosocial';
+        const tooltipColor = psicoSocial ? 'green' : 'red';
+  
+        return (
+          <div>
             <Tooltip title={tooltipText} color={tooltipColor}>
+              <Select
+                placeholder="Selecciona PsicoSocial 📄"
+                style={{ width: 200 }}
+                onChange={value => handleContractSelectPsicoSocial(record.id, value)}
+                value={selectedValue}
+                disabled={psicoSocial && !isEditable}
+              >
+                {apoyoPsicosocial.map(psicoSoc => (
+                  <Select.Option key={psicoSoc.id} value={psicoSoc.id}>
+                    {`${psicoSoc.nombreCompleto}`}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Tooltip>
+            {psicoSocial ? (
+              <Tooltip title={tooltipText} color={tooltipColor}>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    if (isEditable) {
+                      handleActualizarGrupoClickPsicoSocial(record.id, selectedContractsApoyoPsicosocial[record.id]);
+                    } else {
+                      setSelectedContractsApoyoPsicosocial(prevState => ({
+                        ...prevState,
+                        [record.id]: record.psicoSocId
+                      }));
+                    }
+                  }}
+                  style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
+                >
+                  {isEditable ? 'Actualizar' : 'Editar'}
+                </Button>
+              </Tooltip>
+            ) : (
               <Button
                 type="primary"
-                onClick={() => {
-                  if (isEditable) {
-                    handleActualizarGrupoClickAuxAdministrativo(record.id, selectedContractsAuxAdministrativo[record.id]);
-                  } else {
-                    setSelectedContractsAuxAdministrativo(prevState => ({
-                      ...prevState,
-                      [record.id]: record.auxAdministrativoId
-                    }));
-                  }
-                }}
-                style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
+                onClick={() => handleActualizarGrupoClickPsicoSocial(record.id, selectedContractsApoyoPsicosocial[record.id])}
+                style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
+                disabled={!selectedContractsApoyoPsicosocial[record.id]}
               >
-                {isEditable ? 'Actualizar' : 'Editar'}
+                Actualizar
               </Button>
-            </Tooltip>
-          ) : (
-            <Button
-              type="primary"
-              onClick={() => handleActualizarGrupoClickAuxAdministrativo(record.id, selectedContractsAuxAdministrativo[record.id])}
-              style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
-              disabled={!selectedContractsAuxAdministrativo[record.id]}
-            >
-              Actualizar
-            </Button>
-          )}
-        </div>
-      );
+            )}
+          </div>
+        );
+      },
     },
-  },
-];
+  ];
 
 
   return (
