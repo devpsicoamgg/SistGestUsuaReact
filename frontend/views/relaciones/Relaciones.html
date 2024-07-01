@@ -84,12 +84,15 @@ const Relaciones = () => {
   const [filteredGruposData, setFilteredGruposData] = useState([]); // Lista de grupos filtrados (Grupos Vs Contrato)
   const [filteredGruposDataCoordinador, setFilteredGruposDataCoordinador] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
   const [filteredGruposDataAuxAdmin, setFilteredGruposDataAuxAdmin] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
+  const [filteredGruposDataApoyoPsicosocial, setFilteredGruposDataApoyoPsicosocial] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
   const [selectedContracts, setSelectedContracts] = useState({}); // Contratos seleccionados para cada grupo
   const [selectedContractsCoordinador, setSelectedContractsCoordinador] = useState({}); // Contratos seleccionados para cada grupo (Grupos Vs Coordinador)
   const [selectedContractsAuxAdministrativo, setSelectedContractsAuxAdministrativo] = useState({});
+  const [selectedContractsApoyoPsicosocial, setSelectedContractsApoyoPsicosocial] = useState({});
   const [searchTextGrupos, setSearchTextGrupos] = useState(''); // Texto de búsqueda para grupos
   const [searchTextDocente, setSearchTextDocente] = useState(''); // Texto de búsqueda para docentes
   const [searchTextAuxAdmin, setSearchTextAuxAdmin] = useState(''); // Texto de búsqueda para docentes
+  const [searchTextApoyoPsicosocial, setSearchTextApoyoPsicosocial] = useState(''); // Texto de búsqueda para docentes
   const Tooltip = window.antd.Tooltip;
   const { Panel } = Collapse;
   const { Option } = window.antd.Select;
@@ -102,12 +105,14 @@ const Relaciones = () => {
       setFilteredGruposData(data);
       setFilteredGruposDataCoordinador(data);
       setFilteredGruposDataAuxAdmin(data);
+      setFilteredGruposDataApoyoPsicosocial(data);
     });
     obtenerRRHH(setRRHHData);
   }, []);
 
   const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
   const auxAdministrativos = rrhhData.filter(rrhh => rrhh.cargo === 'Aux. Administrativo');
+  const apoyoPsicosocial = rrhhData.filter(rrhh => rrhh.cargo === 'Aux. Administrativo');
 
   // Formatear fecha en formato dd/MMM/yyyy
   const formatFecha = (fecha) => {
@@ -158,6 +163,18 @@ const Relaciones = () => {
           }
         };
 
+        const handleSearchPsicoSocial = (value) => {
+          setSearchTextApoyoPsicosocial(value);
+          if (value === '') {
+            setFilteredGruposDataApoyoPsicosocial(gruposData);
+          } else {
+            const filteredGrupos = gruposData.filter(grupo =>
+              grupo.groupName.toLowerCase().includes(value.toLowerCase())
+            );
+            setFilteredGruposDataApoyoPsicosocial(filteredGrupos);
+          }
+        };
+
 
   const handleContractSelectCoordinador = (groupId, value) => {
     setSelectedContractsCoordinador(prevState => ({
@@ -168,6 +185,13 @@ const Relaciones = () => {
 
   const handleContractSelectAuxAdministrativo = (grupoId, value) => {
     setSelectedContractsAuxAdministrativo(prevState => ({
+      ...prevState,
+      [grupoId]: value
+    }));
+  };
+
+  const handleContractSelectPsicoSocial = (grupoId, value) => {
+    setSelectedContractsApoyoPsicosocial(prevState => ({
       ...prevState,
       [grupoId]: value
     }));
@@ -252,6 +276,39 @@ const Relaciones = () => {
     const datosActualizados = {
       auxAdministrativoId: auxAdministrativoId,
       auxAdministrativoNombre: `${auxAdministrativo.nombreCompleto}`
+    };
+    google.script.run.withSuccessHandler(response => {
+      console.log('Respuesta del servidor:', response);
+      Swal.fire({
+        title: response.titulo,
+        text: response.descripcion,
+        icon: response.icono || 'info',
+        timer: 2000,
+        timerProgressBar: true
+      });
+    })
+    .withFailureHandler(error => {
+      console.error('Error al actualizar grupo:', error);
+      Swal.fire({
+        title: 'Ops ha ocurrido un error!',
+        text: 'Por favor contacte a soporte.',
+        icon: 'error'
+      });
+    })
+    .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
+  };
+
+  const handleActualizarGrupoClickPsicoSocial = (grupoId, psicoSocId) => {
+    const psicoSocial = apoyoPsicosocial.find(psicoSoc => psicoSoc.id === psicoSocId);
+    if (!psicoSocial) {
+      console.error('PsicoSocial no encontrado');
+      return;
+    }
+    const notificacionMensaje = `Guardando el psicosocial ${psicoSocial.nombreCompleto}`;
+    notificacionGuardando(notificacionMensaje);
+    const datosActualizados = {
+      psicoSocId: psicoSocId,
+      psicoSocNombre: `${psicoSocial.nombreCompleto}`
     };
     google.script.run.withSuccessHandler(response => {
       console.log('Respuesta del servidor:', response);
@@ -532,6 +589,90 @@ const auxAdministrativoColumns = [
   },
 ];
 
+// Columna con lógica específica para Aux. Administrativo
+const psicoSocialColumns = [
+  {
+    title: 'Nombre del Grupo',
+    dataIndex: 'groupName',
+    key: 'groupName',
+  },
+  {
+    title: 'Código Cuentame',
+    dataIndex: 'cuentameCode',
+    key: 'cuentameCode',
+  },
+  {
+    title: 'Contrato Asociado',
+    dataIndex: 'contratoGrupoMunicipio',
+    key: 'contratoGrupoMunicipio',
+    render: (text, record) => (
+      record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
+    ),
+  },
+  {
+    title: 'Seleccionar PsicoSocial',
+    key: 'selectPsicoSocial',
+    render: (text, record) => {
+      const auxAdministrativo = record.auxAdministrativoId ? auxAdministrativos.find(aux => aux.id === record.auxAdministrativoId) : null;
+      const isEditable = selectedContractsAuxAdministrativo[record.id] !== undefined;
+      const selectedValue = isEditable ? selectedContractsAuxAdministrativo[record.id] : (auxAdministrativo ? auxAdministrativo.id : undefined);
+      const tooltipText = auxAdministrativo
+        ? `El Aux. Administrativo asociado al grupo es ${auxAdministrativo.nombreCompleto}`
+        : 'Se debe asociar el grupo a un Aux. Administrativo';
+      const tooltipColor = auxAdministrativo ? 'green' : 'red';
+
+      return (
+        <div>
+          <Tooltip title={tooltipText} color={tooltipColor}>
+            <Select
+              placeholder="Selecciona Aux. Administrativo 📄"
+              style={{ width: 200 }}
+              onChange={value => handleContractSelectAuxAdministrativo(record.id, value)}
+              value={selectedValue}
+              disabled={auxAdministrativo && !isEditable}
+            >
+              {auxAdministrativos.map(aux => (
+                <Select.Option key={aux.id} value={aux.id}>
+                  {`${aux.nombreCompleto}`}
+                </Select.Option>
+              ))}
+            </Select>
+          </Tooltip>
+          {auxAdministrativo ? (
+            <Tooltip title={tooltipText} color={tooltipColor}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (isEditable) {
+                    handleActualizarGrupoClickAuxAdministrativo(record.id, selectedContractsAuxAdministrativo[record.id]);
+                  } else {
+                    setSelectedContractsAuxAdministrativo(prevState => ({
+                      ...prevState,
+                      [record.id]: record.auxAdministrativoId
+                    }));
+                  }
+                }}
+                style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
+              >
+                {isEditable ? 'Actualizar' : 'Editar'}
+              </Button>
+            </Tooltip>
+          ) : (
+            <Button
+              type="primary"
+              onClick={() => handleActualizarGrupoClickAuxAdministrativo(record.id, selectedContractsAuxAdministrativo[record.id])}
+              style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
+              disabled={!selectedContractsAuxAdministrativo[record.id]}
+            >
+              Actualizar
+            </Button>
+          )}
+        </div>
+      );
+    },
+  },
+];
+
 
   return (
     <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
@@ -576,6 +717,20 @@ const auxAdministrativoColumns = [
             <Table
               columns={auxAdministrativoColumns}
               dataSource={filteredGruposDataAuxAdmin.map((data, index) => ({ ...data, key: index }))}
+              pagination={{ pageSize: 3 }}
+            />
+          </Panel>
+
+          <Panel header="Grupos Vs PsicoSocial" key="4" style={{ backgroundColor: '#f0ccff' }}>
+            <Input.Search
+             placeholder="Buscar por nombre de grupo ✍🏽"
+             value={searchTextApoyoPsicosocial}
+             onChange={e => handleSearchPsicoSocial(e.target.value)}
+             className="mb-2 rounded border border-gray-300"
+            />
+            <Table
+              columns={psicoSocialColumns}
+              dataSource={filteredGruposDataApoyoPsicosocial.map((data, index) => ({ ...data, key: index }))}
               pagination={{ pageSize: 3 }}
             />
           </Panel>
