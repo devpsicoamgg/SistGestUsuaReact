@@ -112,7 +112,7 @@ const Relaciones = () => {
 
   const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
   const auxAdministrativos = rrhhData.filter(rrhh => rrhh.cargo === 'Aux. Administrativo');
-  const apoyoPsicosocial = rrhhData.filter(rrhh => rrhh.cargo === 'Aux. Administrativo');
+  const apoyoPsicosocial = rrhhData.filter(rrhh => rrhh.cargo === 'Apoyo psicosocial');
 
   // Formatear fecha en formato dd/MMM/yyyy
   const formatFecha = (fecha) => {
@@ -590,25 +590,7 @@ const auxAdministrativoColumns = [
 ];
 
 // Columna con lógica específica para Aux. Administrativo
-const psicoSocialColumns = [
-  {
-    title: 'Nombre del Grupo',
-    dataIndex: 'groupName',
-    key: 'groupName',
-  },
-  {
-    title: 'Código Cuentame',
-    dataIndex: 'cuentameCode',
-    key: 'cuentameCode',
-  },
-  {
-    title: 'Contrato Asociado',
-    dataIndex: 'contratoGrupoMunicipio',
-    key: 'contratoGrupoMunicipio',
-    render: (text, record) => (
-      record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
-    ),
-  },
+
   const gruposPsicoSocialColumns = [
     {
       title: 'Nombre del Grupo',
