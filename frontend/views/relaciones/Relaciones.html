@@ -147,14 +147,14 @@ const Relaciones = () => {
 
         // Filtrar grupos según el texto de búsqueda (Grupos Vs Contrato)
         const handleSearchAuxAdmin = (value) => {
-          searchTextAuxAdmin(value);
+          setSearchTextAuxAdmin(value);
           if (value === '') {
-            setFilteredGruposData(gruposData);
+            setFilteredGruposDataAuxAdmin(gruposData);
           } else {
             const filteredGrupos = gruposData.filter(grupo =>
               grupo.groupName.toLowerCase().includes(value.toLowerCase())
             );
-            setFilteredGruposData(filteredGrupos);
+            setFilteredGruposDataAuxAdmin(filteredGrupos);
           }
         };
 
