@@ -85,19 +85,22 @@ const Relaciones = () => {
   const [filteredGruposDataCoordinador, setFilteredGruposDataCoordinador] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
   const [filteredGruposDataAuxAdmin, setFilteredGruposDataAuxAdmin] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
   const [filteredGruposDataApoyoPsicosocial, setFilteredGruposDataApoyoPsicosocial] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
+  const [filteredGruposDataNutricionista, setFilteredGruposDataNutricionista] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
   const [selectedContracts, setSelectedContracts] = useState({}); // Contratos seleccionados para cada grupo
   const [selectedContractsCoordinador, setSelectedContractsCoordinador] = useState({}); // Contratos seleccionados para cada grupo (Grupos Vs Coordinador)
   const [selectedContractsAuxAdministrativo, setSelectedContractsAuxAdministrativo] = useState({});
   const [selectedContractsApoyoPsicosocial, setSelectedContractsApoyoPsicosocial] = useState({});
+  const [selectedContractsNutricionista, setSelectedContractsApoyoNutricionista] = useState({});
   const [searchTextGrupos, setSearchTextGrupos] = useState(''); // Texto de búsqueda para grupos
   const [searchTextDocente, setSearchTextDocente] = useState(''); // Texto de búsqueda para docentes
   const [searchTextAuxAdmin, setSearchTextAuxAdmin] = useState(''); // Texto de búsqueda para docentes
   const [searchTextApoyoPsicosocial, setSearchTextApoyoPsicosocial] = useState(''); // Texto de búsqueda para docentes
+  const [searchTextNutricionista, setSearchTextNutricionista] = useState(''); // Texto de búsqueda para docentes
   const Tooltip = window.antd.Tooltip;
   const { Panel } = Collapse;
   const { Option } = window.antd.Select;
 
-  // Usar efecto para cargar contratos, grupos y recursos humanos al montar el componente
+  // useEffect para cargar contratos, grupos y rrhh al montar el componente
   useEffect(() => {
     obtenerContratos(setContractData);
     obtenerGrupos((data) => {
@@ -106,6 +109,7 @@ const Relaciones = () => {
       setFilteredGruposDataCoordinador(data);
       setFilteredGruposDataAuxAdmin(data);
       setFilteredGruposDataApoyoPsicosocial(data);
+      setFilteredGruposDataNutricionista(data);
     });
     obtenerRRHH(setRRHHData);
   }, []);
@@ -113,8 +117,9 @@ const Relaciones = () => {
   const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
   const auxAdministrativos = rrhhData.filter(rrhh => rrhh.cargo === 'Aux. Administrativo');
   const apoyoPsicosocial = rrhhData.filter(rrhh => rrhh.cargo === 'Apoyo psicosocial');
+  const nutricionista = rrhhData.filter(rrhh => rrhh.cargo === 'Nutricionista');
 
-  // Formatear fecha en formato dd/MMM/yyyy
+  // formato que deja 04/Jul/2024
   const formatFecha = (fecha) => {
     const date = new Date(fecha);
     const day = String(date.getDate()).padStart(2, '0');
@@ -124,7 +129,7 @@ const Relaciones = () => {
     return `${day}/${month}/${year}`;
   };
 
-  // Filtrar grupos según el texto de búsqueda (Grupos Vs Contrato)
+  // SearchGrupos (Grupos Vs Contrato)
   const handleSearchGrupos = (value) => {
     setSearchTextGrupos(value);
     if (value === '') {
@@ -137,7 +142,7 @@ const Relaciones = () => {
     }
   };
 
-    // Filtrar grupos según el texto de búsqueda (Grupos Vs Contrato)
+    // SearchGrupos (Grupos Vs Coordinador)
     const handleSearchCoordinador = (value) => {
       setSearchTextDocente(value);
       if (value === '') {
@@ -150,8 +155,8 @@ const Relaciones = () => {
       }
     };
 
-        // Filtrar grupos según el texto de búsqueda (Grupos Vs Contrato)
-        const handleSearchAuxAdmin = (value) => {
+   // SearchGrupos (Grupos Vs AuxAdmin)
+   const handleSearchAuxAdmin = (value) => {
           setSearchTextAuxAdmin(value);
           if (value === '') {
             setFilteredGruposDataAuxAdmin(gruposData);
@@ -163,7 +168,8 @@ const Relaciones = () => {
           }
         };
 
-        const handleSearchPsicoSocial = (value) => {
+// SearchGrupos (Grupos Vs PsicoSocial)
+  const handleSearchPsicoSocial = (value) => {
           setSearchTextApoyoPsicosocial(value);
           if (value === '') {
             setFilteredGruposDataApoyoPsicosocial(gruposData);
@@ -176,6 +182,20 @@ const Relaciones = () => {
         };
 
 
+// SearchGrupos (Grupos Vs PsicoSocial)
+  const handleSearchNutricionista = (value) => {
+    setSearchTextNutricionista(value);
+    if (value === '') {
+      setFilteredGruposDataNutricionista(gruposData);
+    } else {
+      const filteredGrupos = gruposData.filter(grupo =>
+        grupo.groupName.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredGruposDataNutricionista(filteredGrupos);
+    }
+  };
+
+//manejo de estados en el select. 
   const handleContractSelectCoordinador = (groupId, value) => {
     setSelectedContractsCoordinador(prevState => ({
       ...prevState,
@@ -183,6 +203,7 @@ const Relaciones = () => {
     }));
   };
 
+  //manejo de estados en el select. 
   const handleContractSelectAuxAdministrativo = (grupoId, value) => {
     setSelectedContractsAuxAdministrativo(prevState => ({
       ...prevState,
@@ -190,6 +211,7 @@ const Relaciones = () => {
     }));
   };
 
+  //manejo de estados en el select. 
   const handleContractSelectPsicoSocial = (grupoId, value) => {
     setSelectedContractsApoyoPsicosocial(prevState => ({
       ...prevState,
