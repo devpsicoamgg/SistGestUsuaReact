@@ -182,7 +182,7 @@ const Relaciones = () => {
         };
 
 
-// SearchGrupos (Grupos Vs PsicoSocial)
+// SearchGrupos (Grupos Vs Nutri)
   const handleSearchNutricionista = (value) => {
     setSearchTextNutricionista(value);
     if (value === '') {
@@ -218,6 +218,14 @@ const Relaciones = () => {
       [grupoId]: value
     }));
   };
+
+    //manejo de estados en el select. 
+    const handleContractSelectNutricionista = (grupoId, value) => {
+      setSelectedContractsNutricionista(prevState => ({
+        ...prevState,
+        [grupoId]: value
+      }));
+    };
   
   // Actualizar el grupo con el contrato seleccionado (Grupos Vs Contrato)
   const handleActualizarGrupoClick = (grupoId, contratoId) => {
