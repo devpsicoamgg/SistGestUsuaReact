@@ -367,7 +367,7 @@ const handleActualizarGrupoClickNutricionista = (grupoId, nutricionistaId) => {
       console.error('Nutricionista no encontrado');
       return;
     }
-    const notificacionMensaje = `Guardando el nutricionsita ${nutricionista.nombreCompleto}`;
+    const notificacionMensaje = `Guardando el nutricionista ${nutricionista.nombreCompleto}`;
     notificacionGuardando(notificacionMensaje);
     const datosActualizados = {
       psicoSocId: psicoSocId,
@@ -567,7 +567,6 @@ const handleActualizarGrupoClickNutricionista = (grupoId, nutricionistaId) => {
     },
 ];
 
-
 // Columna con lógica específica para Aux. Administrativo
 const auxAdministrativoColumns = [
   {
@@ -737,6 +736,91 @@ const auxAdministrativoColumns = [
     },
   ];
 
+  const nutricionistaColumns = [
+    {
+      title: 'Nombre del Grupo',
+      dataIndex: 'groupName',
+      key: 'groupName',
+    },
+    {
+      title: 'Código Cuentame',
+      dataIndex: 'cuentameCode',
+      key: 'cuentameCode',
+    },
+    {
+      title: 'Contrato Asociado',
+      dataIndex: 'contratoGrupoMunicipio',
+      key: 'contratoGrupoMunicipio',
+      render: (text, record) => (
+        record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
+      ),
+    },
+    {
+      title: 'Seleccionar Nutricionista',
+      key: 'selectNutricionista',
+      render: (text, record) => {
+        const nutricionista = record.nutricionistaId ? nutricionistas.find(nutri => nutri.id === record.nutricionistaId) : null;
+        const isEditable = selectedContractsNutricionista[record.id] !== undefined;
+        const selectedValue = isEditable ? selectedContractsNutricionista[record.id] : (nutricionista ? nutricionista.id : undefined);
+        const tooltipText = nutricionista
+          ? `El nutricionista asociado al grupo es ${nutricionista.nombreCompleto}`
+          : 'Se debe asociar el grupo a un nutricionista';
+        const tooltipColor = nutricionista ? 'green' : 'red';
+  
+        return (
+          <div>
+            <Tooltip title={tooltipText} color={tooltipColor}>
+              <Select
+                placeholder="Selecciona Nutricionista 📄"
+                style={{ width: 200 }}
+                onChange={value => handleContractSelectNutricionista(record.id, value)}
+                value={selectedValue}
+                disabled={nutricionista && !isEditable}
+              >
+                {nutricionistas.map(nutri => (
+                  <Select.Option key={nutri.id} value={nutri.id}>
+                    {`${nutri.nombreCompleto}`}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Tooltip>
+            {nutricionista ? (
+              <Tooltip title={tooltipText} color={tooltipColor}>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    if (isEditable) {
+                      handleActualizarGrupoClickNutricionista(record.id, selectedContractsNutricionista[record.id]);
+                    } else {
+                      setSelectedContractsNutricionista(prevState => ({
+                        ...prevState,
+                        [record.id]: record.nutricionistaId
+                      }));
+                    }
+                  }}
+                  style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
+                >
+                  {isEditable ? 'Actualizar' : 'Editar'}
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                type="primary"
+                onClick={() => handleActualizarGrupoClickNutricionista(record.id, selectedContractsNutricionista[record.id])}
+                style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
+                disabled={!selectedContractsNutricionista[record.id]}
+              >
+                Actualizar
+              </Button>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
+  
+
 
   return (
     <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
@@ -795,6 +879,20 @@ const auxAdministrativoColumns = [
             <Table
               columns={gruposPsicoSocialColumns}
               dataSource={filteredGruposDataApoyoPsicosocial.map((data, index) => ({ ...data, key: index }))}
+              pagination={{ pageSize: 3 }}
+            />
+          </Panel>
+
+          <Panel header="Grupos Vs Nutricionista" key="5" style={{ backgroundColor: '#ffffcc' }}>
+            <Input.Search
+             placeholder="Buscar por nombre de grupo ✍🏽"
+             value={searchTextNutricionista}
+             onChange={e => handleSearchNutricionista(e.target.value)}
+             className="mb-2 rounded border border-gray-300"
+            />
+            <Table
+              columns={nutricionistaColumns}
+              dataSource={filteredGruposDataNutricionista.map((data, index) => ({ ...data, key: index }))}
               pagination={{ pageSize: 3 }}
             />
           </Panel>
