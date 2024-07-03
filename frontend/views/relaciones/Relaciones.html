@@ -90,7 +90,7 @@ const Relaciones = () => {
   const [selectedContractsCoordinador, setSelectedContractsCoordinador] = useState({}); // Contratos seleccionados para cada grupo (Grupos Vs Coordinador)
   const [selectedContractsAuxAdministrativo, setSelectedContractsAuxAdministrativo] = useState({});
   const [selectedContractsApoyoPsicosocial, setSelectedContractsApoyoPsicosocial] = useState({});
-  const [selectedContractsNutricionista, setSelectedContractsApoyoNutricionista] = useState({});
+  const [selectedContractsNutricionista, setSelectedNutricionista] = useState({});
   const [searchTextGrupos, setSearchTextGrupos] = useState(''); // Texto de búsqueda para grupos
   const [searchTextDocente, setSearchTextDocente] = useState(''); // Texto de búsqueda para docentes
   const [searchTextAuxAdmin, setSearchTextAuxAdmin] = useState(''); // Texto de búsqueda para docentes
@@ -117,7 +117,7 @@ const Relaciones = () => {
   const coordinadores = rrhhData.filter(rrhh => rrhh.cargo === 'Coordinador/a');
   const auxAdministrativos = rrhhData.filter(rrhh => rrhh.cargo === 'Aux. Administrativo');
   const apoyoPsicosocial = rrhhData.filter(rrhh => rrhh.cargo === 'Apoyo psicosocial');
-  const nutricionista = rrhhData.filter(rrhh => rrhh.cargo === 'Nutricionista');
+  const nutricionistas = rrhhData.filter(rrhh => rrhh.cargo === 'Nutricionista');
 
   // formato que deja 04/Jul/2024
   const formatFecha = (fecha) => {
@@ -183,17 +183,17 @@ const Relaciones = () => {
 
 
 // SearchGrupos (Grupos Vs Nutri)
-  const handleSearchNutricionista = (value) => {
-    setSearchTextNutricionista(value);
-    if (value === '') {
-      setFilteredGruposDataNutricionista(gruposData);
-    } else {
-      const filteredGrupos = gruposData.filter(grupo =>
-        grupo.groupName.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredGruposDataNutricionista(filteredGrupos);
-    }
-  };
+const handleSearchNutricionista = (value) => {
+  setSearchTextNutricionista(value);
+  if (value === '') {
+    setFilteredGruposDataNutricionista(gruposData);
+  } else {
+    const filteredGrupos = gruposData.filter(grupo =>
+      grupo.groupName.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredGruposDataNutricionista(filteredGrupos);
+  }
+};
 
 //manejo de estados en el select. 
   const handleContractSelectCoordinador = (groupId, value) => {
@@ -219,13 +219,13 @@ const Relaciones = () => {
     }));
   };
 
-    //manejo de estados en el select. 
-    const handleContractSelectNutricionista = (grupoId, value) => {
-      setSelectedContractsNutricionista(prevState => ({
-        ...prevState,
-        [grupoId]: value
-      }));
-    };
+// manejo de estados en el select. 
+const handleContractSelectNutricionista = (grupoId, value) => {
+  setSelectedContractsNutricionista(prevState => ({
+    ...prevState,
+    [grupoId]: value
+  }));
+};
   
   // Actualizar el grupo con el contrato seleccionado (Grupos Vs Contrato)
   const handleActualizarGrupoClick = (grupoId, contratoId) => {
@@ -361,8 +361,8 @@ const Relaciones = () => {
     .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
 
-const handleActualizarGrupoClickNutricionista = (grupoId, nutricionistaId) => {
-    const nutricionista = nutricionista.find(nutri => nutri.id === nutricionistaId);
+  const handleActualizarGrupoClickNutricionista = (grupoId, nutricionistaId) => {
+    const nutricionista = nutricionistas.find(nutri => nutri.id === nutricionistaId); // Cambié el nombre a nutricionistas
     if (!nutricionista) {
       console.error('Nutricionista no encontrado');
       return;
@@ -652,7 +652,6 @@ const auxAdministrativoColumns = [
 ];
 
 // Columna con lógica específica para Aux. Administrativo
-
   const gruposPsicoSocialColumns = [
     {
       title: 'Nombre del Grupo',
@@ -736,6 +735,7 @@ const auxAdministrativoColumns = [
     },
   ];
 
+  // Columna con lógica específica para nutri
   const nutricionistaColumns = [
     {
       title: 'Nombre del Grupo',
@@ -759,7 +759,7 @@ const auxAdministrativoColumns = [
       title: 'Seleccionar Nutricionista',
       key: 'selectNutricionista',
       render: (text, record) => {
-        const nutricionista = record.nutricionistaId ? nutricionista.find(nutri => nutri.id === record.nutricionistaId) : null;
+        const nutricionista = record.nutricionistaId ? nutricionistas.find(nutri => nutri.id === record.nutricionistaId) : null; // Cambié el nombre a nutricionistas
         const isEditable = selectedContractsNutricionista[record.id] !== undefined;
         const selectedValue = isEditable ? selectedContractsNutricionista[record.id] : (nutricionista ? nutricionista.id : undefined);
         const tooltipText = nutricionista
@@ -777,7 +777,7 @@ const auxAdministrativoColumns = [
                 value={selectedValue}
                 disabled={nutricionista && !isEditable}
               >
-                {nutricionista.map(nutri => (
+                {nutricionistas.map(nutri => ( // Cambié el nombre a nutricionistas
                   <Select.Option key={nutri.id} value={nutri.id}>
                     {`${nutri.nombreCompleto}`}
                   </Select.Option>
@@ -818,6 +818,7 @@ const auxAdministrativoColumns = [
       },
     },
   ];
+  
 
   
 
@@ -883,19 +884,20 @@ const auxAdministrativoColumns = [
             />
           </Panel>
 
-          <Panel header="Grupos Vs Nutricionista" key="5" style={{ backgroundColor: '#ffffcc' }}>
-            <Input.Search
-             placeholder="Buscar por nombre de grupo ✍🏽"
-             value={searchTextNutricionista}
-             onChange={e => handleSearchNutricionista(e.target.value)}
-             className="mb-2 rounded border border-gray-300"
-            />
-            <Table
-              columns={nutricionistaColumns}
-              dataSource={filteredGruposDataNutricionista.map((data, index) => ({ ...data, key: index }))}
-              pagination={{ pageSize: 3 }}
-            />
-          </Panel>
+         
+            <Panel header="Grupos Vs Nutricionista" key="5" style={{ backgroundColor: '#ffffcc' }}>
+              <Input.Search
+                placeholder="Buscar por nombre de grupo ✍🏽"
+                value={searchTextNutricionista}
+                onChange={e => handleSearchNutricionista(e.target.value)}
+                className="mb-2 rounded border border-gray-300"
+              />
+              <Table
+                columns={nutricionistaColumns}
+                dataSource={filteredGruposDataNutricionista.map((data, index) => ({ ...data, key: index }))}
+                pagination={{ pageSize: 3 }}
+              />
+            </Panel>
 
 
         </Collapse>
