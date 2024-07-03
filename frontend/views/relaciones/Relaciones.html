@@ -759,7 +759,7 @@ const auxAdministrativoColumns = [
       title: 'Seleccionar Nutricionista',
       key: 'selectNutricionista',
       render: (text, record) => {
-        const nutricionista = record.nutricionistaId ? nutricionistas.find(nutri => nutri.id === record.nutricionistaId) : null;
+        const nutricionista = record.nutricionistaId ? nutricionista.find(nutri => nutri.id === record.nutricionistaId) : null;
         const isEditable = selectedContractsNutricionista[record.id] !== undefined;
         const selectedValue = isEditable ? selectedContractsNutricionista[record.id] : (nutricionista ? nutricionista.id : undefined);
         const tooltipText = nutricionista
@@ -777,7 +777,7 @@ const auxAdministrativoColumns = [
                 value={selectedValue}
                 disabled={nutricionista && !isEditable}
               >
-                {nutricionistas.map(nutri => (
+                {nutricionista.map(nutri => (
                   <Select.Option key={nutri.id} value={nutri.id}>
                     {`${nutri.nombreCompleto}`}
                   </Select.Option>
