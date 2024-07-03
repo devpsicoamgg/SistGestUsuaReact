@@ -361,6 +361,39 @@ const Relaciones = () => {
     .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
 
+const handleActualizarGrupoClickNutricionista = (grupoId, nutricionistaId) => {
+    const nutricionista = nutricionista.find(nutri => nutri.id === nutricionistaId);
+    if (!nutricionista) {
+      console.error('Nutricionista no encontrado');
+      return;
+    }
+    const notificacionMensaje = `Guardando el nutricionsita ${nutricionista.nombreCompleto}`;
+    notificacionGuardando(notificacionMensaje);
+    const datosActualizados = {
+      psicoSocId: psicoSocId,
+      psicoSocNombre: `${psicoSocial.nombreCompleto}`
+    };
+    google.script.run.withSuccessHandler(response => {
+      console.log('Respuesta del servidor:', response);
+      Swal.fire({
+        title: response.titulo,
+        text: response.descripcion,
+        icon: response.icono || 'info',
+        timer: 2000,
+        timerProgressBar: true
+      });
+    })
+    .withFailureHandler(error => {
+      console.error('Error al actualizar grupo:', error);
+      Swal.fire({
+        title: 'Ops ha ocurrido un error!',
+        text: 'Por favor contacte a soporte.',
+        icon: 'error'
+      });
+    })
+    .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
+  };
+
   // Definir las columnas de la tabla de grupos (Grupos Vs Contrato)
   const gruposColumns = [
     {
