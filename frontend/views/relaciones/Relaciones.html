@@ -86,19 +86,16 @@ const Relaciones = () => {
   const [filteredGruposDataAuxAdmin, setFilteredGruposDataAuxAdmin] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
   const [filteredGruposDataApoyoPsicosocial, setFilteredGruposDataApoyoPsicosocial] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
   const [filteredGruposDataNutricionista, setFilteredGruposDataNutricionista] = useState([]); // Lista de grupos filtrados (Grupos Vs Coordinador)
-  const [filteredGruposDataApoyoNutricional, setFilteredGruposDataApoyoNutricional] = useState([]); // Lista de grupos filtrados (Grupos Vs Apoyo Nutricional)
   const [selectedContracts, setSelectedContracts] = useState({}); // Contratos seleccionados para cada grupo
   const [selectedContractsCoordinador, setSelectedContractsCoordinador] = useState({}); // Contratos seleccionados para cada grupo (Grupos Vs Coordinador)
   const [selectedContractsAuxAdministrativo, setSelectedContractsAuxAdministrativo] = useState({});
   const [selectedContractsApoyoPsicosocial, setSelectedContractsApoyoPsicosocial] = useState({});
   const [selectedContractsNutricionista, setSelectedContractsNutricionista] = useState({});
-  const [selectedContractsApoyoNutricional, setSelectedContractsApoyoNutricional] = useState({});
   const [searchTextGrupos, setSearchTextGrupos] = useState(''); // Texto de búsqueda para grupos
   const [searchTextDocente, setSearchTextDocente] = useState(''); // Texto de búsqueda para docentes
   const [searchTextAuxAdmin, setSearchTextAuxAdmin] = useState(''); // Texto de búsqueda para docentes
   const [searchTextApoyoPsicosocial, setSearchTextApoyoPsicosocial] = useState(''); // Texto de búsqueda para docentes
   const [searchTextNutricionista, setSearchTextNutricionista] = useState(''); // Texto de búsqueda para docentes
-  const [searchTextApoyoNutricional, setSearchTextApoyoNutricional] = useState(''); // Texto de búsqueda para Apoyo Nutricional
   const Tooltip = window.antd.Tooltip;
   const { Panel } = Collapse;
   const { Option } = window.antd.Select;
@@ -113,8 +110,6 @@ const Relaciones = () => {
       setFilteredGruposDataAuxAdmin(data);
       setFilteredGruposDataApoyoPsicosocial(data);
       setFilteredGruposDataNutricionista(data);
-      setFilteredGruposDataNutricionista(data);
-      setFilteredGruposDataApoyoNutricional(data); 
     });
     obtenerRRHH(setRRHHData);
   }, []);
@@ -123,7 +118,6 @@ const Relaciones = () => {
   const auxAdministrativos = rrhhData.filter(rrhh => rrhh.cargo === 'Aux. Administrativo');
   const apoyoPsicosocial = rrhhData.filter(rrhh => rrhh.cargo === 'Apoyo psicosocial');
   const nutricionistas = rrhhData.filter(rrhh => rrhh.cargo === 'Nutricionista');
-  const apoyoNutricional = rrhhData.filter(rrhh => rrhh.cargo === 'Apoyo nutricional');
 
   // formato que deja 04/Jul/2024
   const formatFecha = (fecha) => {
@@ -187,6 +181,7 @@ const Relaciones = () => {
           }
         };
 
+
 // SearchGrupos (Grupos Vs Nutri)
 const handleSearchNutricionista = (value) => {
   setSearchTextNutricionista(value);
@@ -197,19 +192,6 @@ const handleSearchNutricionista = (value) => {
       grupo.groupName.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredGruposDataNutricionista(filteredGrupos);
-  }
-};
-
-// SearchGrupos (Grupos Vs Apoyo Nutricional)
-const handleSearchApoyoNutricional = (value) => {
-  setSearchTextApoyoNutricional(value);
-  if (value === '') {
-    setFilteredGruposDataApoyoNutricional(gruposData);
-  } else {
-    const filteredGrupos = gruposData.filter(grupo =>
-      grupo.groupName.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredGruposDataApoyoNutricional(filteredGrupos);
   }
 };
 
@@ -240,14 +222,6 @@ const handleSearchApoyoNutricional = (value) => {
 // manejo de estados en el select. 
 const handleContractSelectNutricionista = (grupoId, value) => {
   setSelectedContractsNutricionista(prevState => ({
-    ...prevState,
-    [grupoId]: value
-  }));
-};
-
-// manejo de estados en el select.
-const handleContractSelectApoyoNutricional = (grupoId, value) => {
-  setSelectedContractsApoyoNutricional(prevState => ({
     ...prevState,
     [grupoId]: value
   }));
@@ -397,7 +371,7 @@ const handleContractSelectApoyoNutricional = (grupoId, value) => {
     notificacionGuardando(notificacionMensaje);
     const datosActualizados = {
       nutricionistaId: nutricionistaId,
-      nutricionistaNombre: `${nutricionista.nombreCompleto}`
+      psicoSocNombre: `${nutricionista.nombreCompleto}`
     };
     google.script.run.withSuccessHandler(response => {
       console.log('Respuesta del servidor:', response);
@@ -419,40 +393,6 @@ const handleContractSelectApoyoNutricional = (grupoId, value) => {
     })
     .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
-
-  const handleActualizarGrupoClickApoyoNutricional = (grupoId, apoyoNutricionalId) => {
-    const apoyoNutricionalSelected = apoyoNutricional.find(apoyo => apoyo.id === apoyoNutricionalId);
-    if (!apoyoNutricionalSelected) {
-      console.error('Apoyo Nutricional no encontrado');
-      return;
-    }
-    const notificacionMensaje = `Guardando el apoyo nutricional ${apoyoNutricionalSelected.nombreCompleto}`;
-    notificacionGuardando(notificacionMensaje);
-    const datosActualizados = {
-      apoyoNutricionalId: apoyoNutricionalId,
-      apoyoNutricionalNombre: `${apoyoNutricionalSelected.nombreCompleto}`
-    };
-    google.script.run.withSuccessHandler(response => {
-      console.log('Respuesta del servidor:', response);
-      Swal.fire({
-        title: response.titulo,
-        text: response.descripcion,
-        icon: response.icono || 'info',
-        timer: 2000,
-        timerProgressBar: true
-      });
-    })
-    .withFailureHandler(error => {
-      console.error('Error al actualizar grupo:', error);
-      Swal.fire({
-        title: 'Ops ha ocurrido un error!',
-        text: 'Por favor contacte a soporte.',
-        icon: 'error'
-      });
-    })
-    .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
-  };
-  
 
   // Definir las columnas de la tabla de grupos (Grupos Vs Contrato)
   const gruposColumns = [
@@ -879,89 +819,6 @@ const auxAdministrativoColumns = [
     },
   ];
 
-  const apoyoNutricionalColumns = [
-    {
-      title: 'Nombre del Grupo',
-      dataIndex: 'groupName',
-      key: 'groupName',
-    },
-    {
-      title: 'Código Cuentame',
-      dataIndex: 'cuentameCode',
-      key: 'cuentameCode',
-    },
-    {
-      title: 'Contrato Asociado',
-      dataIndex: 'contratoGrupoMunicipio',
-      key: 'contratoGrupoMunicipio',
-      render: (text, record) => (
-        record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
-      ),
-    },
-    {
-      title: 'Seleccionar Apoyo Nutricional',
-      key: 'selectApoyoNutricional',
-      render: (text, record) => {
-        const apoyoNutricional = record.apoyoNutricionalId ? apoyoNutricional.find(apoyo => apoyo.id === record.apoyoNutricionalId) : null;
-        const isEditable = selectedContractsApoyoNutricional[record.id] !== undefined;
-        const selectedValue = isEditable ? selectedContractsApoyoNutricional[record.id] : (apoyoNutricional ? apoyoNutricional.id : undefined);
-        const tooltipText = apoyoNutricional
-          ? `El apoyo nutricional asociado al grupo es ${apoyoNutricional.nombreCompleto}`
-          : 'Se debe asociar el grupo a un apoyo nutricional';
-        const tooltipColor = apoyoNutricional ? 'green' : 'red';
-  
-        return (
-          <div>
-            <Tooltip title={tooltipText} color={tooltipColor}>
-              <Select
-                placeholder="Selecciona Apoyo Nutricional 📄"
-                style={{ width: 200 }}
-                onChange={value => handleContractSelectApoyoNutricional(record.id, value)}
-                value={selectedValue}
-                disabled={apoyoNutricional && !isEditable}
-              >
-                {apoyoNutricional.map(apoyo => (
-                  <Select.Option key={apoyo.id} value={apoyo.id}>
-                    {`${apoyo.nombreCompleto}`}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Tooltip>
-            {apoyoNutricional ? (
-              <Tooltip title={tooltipText} color={tooltipColor}>
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    if (isEditable) {
-                      handleActualizarGrupoClickApoyoNutricional(record.id, selectedContractsApoyoNutricional[record.id]);
-                    } else {
-                      setSelectedContractsApoyoNutricional(prevState => ({
-                        ...prevState,
-                        [record.id]: record.apoyoNutricionalId
-                      }));
-                    }
-                  }}
-                  style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
-                >
-                  {isEditable ? 'Actualizar' : 'Editar'}
-                </Button>
-              </Tooltip>
-            ) : (
-              <Button
-                type="primary"
-                onClick={() => handleActualizarGrupoClickApoyoNutricional(record.id, selectedContractsApoyoNutricional[record.id])}
-                style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
-                disabled={!selectedContractsApoyoNutricional[record.id]}
-              >
-                Actualizar
-              </Button>
-            )}
-          </div>
-        );
-      },
-    },
-  ];
-
   return (
     <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
       <h2 className="font-bold text-2xl mb-4">ZONA DE RELACIONES</h2>
@@ -1037,20 +894,6 @@ const auxAdministrativoColumns = [
                 pagination={{ pageSize: 3 }}
               />
             </Panel>
-
-            <Panel header="Grupos Vs Apoyo Nutricional" key="5" style={{ backgroundColor: '#ffffcc' }}>
-  <Input.Search
-    placeholder="Buscar por nombre de grupo ✍🏽"
-    value={searchTextApoyoNutricional}
-    onChange={e => handleSearchApoyoNutricional(e.target.value)}
-    className="mb-2 rounded border border-gray-300"
-  />
-  <Table
-    columns={apoyoNutricionalColumns}
-    dataSource={filteredGruposDataApoyoNutricional.map((data, index) => ({ ...data, key: index }))}
-    pagination={{ pageSize: 3 }}
-  />
-</Panel>
 
 
         </Collapse>
