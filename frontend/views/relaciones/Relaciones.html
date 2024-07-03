@@ -90,7 +90,7 @@ const Relaciones = () => {
   const [selectedContractsCoordinador, setSelectedContractsCoordinador] = useState({}); // Contratos seleccionados para cada grupo (Grupos Vs Coordinador)
   const [selectedContractsAuxAdministrativo, setSelectedContractsAuxAdministrativo] = useState({});
   const [selectedContractsApoyoPsicosocial, setSelectedContractsApoyoPsicosocial] = useState({});
-  const [selectedContractsNutricionista, setSelectedNutricionista] = useState({});
+  const [selectedContractsNutricionista, setSelectedContractsNutricionista] = useState({});
   const [searchTextGrupos, setSearchTextGrupos] = useState(''); // Texto de búsqueda para grupos
   const [searchTextDocente, setSearchTextDocente] = useState(''); // Texto de búsqueda para docentes
   const [searchTextAuxAdmin, setSearchTextAuxAdmin] = useState(''); // Texto de búsqueda para docentes
@@ -370,8 +370,8 @@ const handleContractSelectNutricionista = (grupoId, value) => {
     const notificacionMensaje = `Guardando el nutricionista ${nutricionista.nombreCompleto}`;
     notificacionGuardando(notificacionMensaje);
     const datosActualizados = {
-      psicoSocId: psicoSocId,
-      psicoSocNombre: `${psicoSocial.nombreCompleto}`
+      nutricionistaId: nutricionistaId,
+      psicoSocNombre: `${nutricionista.nombreCompleto}`
     };
     google.script.run.withSuccessHandler(response => {
       console.log('Respuesta del servidor:', response);
