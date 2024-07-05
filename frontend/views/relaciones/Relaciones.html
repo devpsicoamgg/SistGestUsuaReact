@@ -268,12 +268,96 @@ const Relaciones = () => {
 
 
 
+const cargoColumns = [
+  {
+    title: 'Nombre del Grupo',
+    dataIndex: 'groupName',
+    key: 'groupName',
+  },
+  {
+    title: 'Código Cuentame',
+    dataIndex: 'cuentameCode',
+    key: 'cuentameCode',
+  },
+  {
+    title: 'Contrato Asociado',
+    dataIndex: 'contratoGrupoMunicipio',
+    key: 'contratoGrupoMunicipio',
+    render: (text, record) => (
+      record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
+    ),
+  },
+  {
+    title: `Seleccionar ${selectedCargo}`,
+    key: 'selectCargo',
+    render: (text, record) => {
+      const selectedRRHH = record[`${selectedCargo.toLowerCase().replace(' ', '')}Id`] ? rrhhByCargo.find(rrhh => rrhh.id === record[`${selectedCargo.toLowerCase().replace(' ', '')}Id`]) : null;
+      const isEditable = selectedContracts[record.id] !== undefined;
+      const selectedValue = isEditable ? selectedContracts[record.id] : (selectedRRHH ? selectedRRHH.id : undefined);
+      const tooltipText = selectedRRHH
+        ? `El ${selectedCargo.toLowerCase()} asociado al grupo es ${selectedRRHH.nombreCompleto}`
+        : `Se debe asociar el grupo a un ${selectedCargo.toLowerCase()}`;
+      const tooltipColor = selectedRRHH ? 'green' : 'red';
+
+      return (
+        <div>
+          <Tooltip title={tooltipText} color={tooltipColor}>
+            <Select
+              placeholder={`Selecciona ${selectedCargo} 📄`}
+              style={{ width: 200 }}
+              onChange={value => handleContractSelect(record.id, value)}
+              value={selectedValue}
+              disabled={selectedRRHH && !isEditable}
+            >
+              {rrhhByCargo.map(rrhh => (
+                <Select.Option key={rrhh.id} value={rrhh.id}>
+                  {`${rrhh.nombreCompleto}`}
+                </Select.Option>
+              ))}
+            </Select>
+          </Tooltip>
+          {selectedRRHH ? (
+            <Tooltip title={tooltipText} color={tooltipColor}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (isEditable) {
+                    handleActualizarGrupoClick(record.id, selectedContracts[record.id]);
+                  } else {
+                    setSelectedContracts(prevState => ({
+                      ...prevState,
+                      [record.id]: record[`${selectedCargo.toLowerCase().replace(' ', '')}Id`]
+                    }));
+                  }
+                }}
+                style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
+              >
+                {isEditable ? 'Actualizar' : 'Editar'}
+              </Button>
+            </Tooltip>
+          ) : (
+            <Button
+              type="primary"
+              onClick={() => handleActualizarGrupoClick(record.id, selectedContracts[record.id])}
+              style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
+              disabled={!selectedContracts[record.id]}
+            >
+              Actualizar
+            </Button>
+          )}
+        </div>
+      );
+    },
+  },
+];
+
+
   return (
     <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
       <h2 className="font-bold text-2xl mb-4">ZONA DE RELACIONES</h2>
       <div className="w-full max-w-screen-lg flex flex-col gap-4">
         <Collapse accordion>
-          <Panel header="Grupos Vs Contrato" key="1" style={{ backgroundColor: '#e6f2ff' }}>
+          <Panel header="Grupos Vs Contrato" key="1" style={{ backgroundColor: '#f0ccff' }}>
             <Input.Search
               placeholder="Buscar por nombre de grupo ✍🏽"
               value={searchTextGrupos}
