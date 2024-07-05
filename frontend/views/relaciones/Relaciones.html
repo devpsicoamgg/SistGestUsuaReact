@@ -85,7 +85,7 @@ const Relaciones = () => {
   const [selectedContracts, setSelectedContracts] = useState({}); // Contratos seleccionados para cada grupo
   const [searchTextGrupos, setSearchTextGrupos] = useState(''); // Texto de búsqueda para grupos
   const [searchText, setSearchText] = useState(''); // Texto de búsqueda para el cargo seleccionado
-  const [selectedCargo, setSelectedCargo] = useState('Coordinador/a');   
+  const [selectedCargo, setSelectedCargo] = useState('');   
   const Tooltip = window.antd.Tooltip;
   const { Panel } = Collapse;
   const { Option } = window.antd.Select;
@@ -375,7 +375,7 @@ const cargoColumns = [
               <div style={{ textAlign: 'center', marginBottom: 16 }}>
                 <Select
                   placeholder="Selecciona Cargo"
-                  style={{ width: 200, marginBottom: 16, backgroundColor: '#f0f5ff', border: '1px solid #91d5ff', borderRadius: 5 }}
+                  style={{ width: 400, backgroundColor: '#f0f5ff', border: '1px solid #91d5ff', borderRadius: 5 }}
                   onChange={handleCargoChange}
                   value={selectedCargo}
                 >
