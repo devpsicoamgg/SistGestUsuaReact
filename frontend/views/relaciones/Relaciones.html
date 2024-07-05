@@ -372,32 +372,35 @@ const cargoColumns = [
           </Panel>
 
           <Panel header="Grupos Cargos" key="6" style={{ backgroundColor: '#e6f2ff' }}>
-          <div>
-            <Select
-              placeholder="Selecciona Cargo"
-              style={{ width: 200, marginBottom: 16 }}
-              onChange={handleCargoChange}
-              value={selectedCargo}
-            >
-              {cargos.map(cargo => (
-                <Select.Option key={cargo} value={cargo}>
-                  {cargo}
-                </Select.Option>
-              ))}
-            </Select>
-            <Input.Search
-              placeholder="Buscar por nombre de grupo ✍🏽"
-              value={searchText}
-              onChange={e => handleSearch(e.target.value)}
-              className="mb-2 rounded border border-gray-300"
-            />
-            <Table
-              columns={cargoColumns}
-              dataSource={filteredGruposData.map((data, index) => ({ ...data, key: index }))}
-              pagination={{ pageSize: 3 }}
-            />
-          </div>
-          </Panel>
+              <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                <Select
+                  placeholder="Selecciona Cargo"
+                  style={{ width: 200, marginBottom: 16, backgroundColor: '#f0f5ff', border: '1px solid #91d5ff', borderRadius: 5 }}
+                  onChange={handleCargoChange}
+                  value={selectedCargo}
+                >
+                  {cargos.map(cargo => (
+                    <Select.Option key={cargo} value={cargo}>
+                      {cargo}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <Input.Search
+                  placeholder="Buscar por nombre de grupo ✍🏽"
+                  value={searchText}
+                  onChange={e => handleSearch(e.target.value)}
+                  className="mb-2 rounded border border-gray-300"
+                />
+                <Table
+                  columns={cargoColumns}
+                  dataSource={filteredGruposData.map((data, index) => ({ ...data, key: index }))}
+                  pagination={{ pageSize: 3 }}
+                />
+              </div>
+            </Panel>
+
 
         </Collapse>
       </div>
