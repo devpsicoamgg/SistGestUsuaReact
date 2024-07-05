@@ -96,8 +96,6 @@ const Relaciones = () => {
   const [searchTextAuxAdmin, setSearchTextAuxAdmin] = useState(''); // Texto de búsqueda para docentes
   const [searchTextApoyoPsicosocial, setSearchTextApoyoPsicosocial] = useState(''); // Texto de búsqueda para docentes
   const [searchTextNutricionista, setSearchTextNutricionista] = useState(''); // Texto de búsqueda para docentes
-  const [searchText, setSearchText] = useState(''); // Texto de búsqueda para el cargo seleccionado
-  const [selectedCargo, setSelectedCargo] = useState('Coordinador/a');   
   const Tooltip = window.antd.Tooltip;
   const { Panel } = Collapse;
   const { Option } = window.antd.Select;
@@ -120,8 +118,6 @@ const Relaciones = () => {
   const auxAdministrativos = rrhhData.filter(rrhh => rrhh.cargo === 'Aux. Administrativo');
   const apoyoPsicosocial = rrhhData.filter(rrhh => rrhh.cargo === 'Apoyo psicosocial');
   const nutricionistas = rrhhData.filter(rrhh => rrhh.cargo === 'Nutricionista');
-  const rrhhByCargo = rrhhData.filter(rrhh => rrhh.cargo === selectedCargo);
-
 
   // formato que deja 04/Jul/2024
   const formatFecha = (fecha) => {
@@ -131,37 +127,6 @@ const Relaciones = () => {
     const month = monthNames[date.getMonth()];
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
-  };
-
-  const handleCargoChange = (value) => {
-    setSelectedCargo(value);
-    handleSearch('');
-  };
-
-  const cargos = [
-    'Coordinador/a',
-    'Aux. Administrativo',
-    'Apoyo psicosocial',
-    'Apoyo nutricional',
-  ];
-
-  const handleSearch = (value) => {
-    setSearchText(value);
-    if (value === '') {
-      setFilteredGruposData(gruposData);
-    } else {
-      const filteredGrupos = gruposData.filter(grupo =>
-        grupo.groupName.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredGruposData(filteredGrupos);
-    }
-  };
-
-  const handleContractSelect = (grupoId, value) => {
-    setSelectedContracts(prevState => ({
-      ...prevState,
-      [grupoId]: value
-    }));
   };
 
   // SearchGrupos (Grupos Vs Contrato)
@@ -263,17 +228,17 @@ const handleContractSelectNutricionista = (grupoId, value) => {
 };
   
   // Actualizar el grupo con el contrato seleccionado (Grupos Vs Contrato)
-  const handleActualizarGrupoClick = (grupoId, rrhhId) => {
-    const selectedRRHH = rrhhData.find(rrhh => rrhh.id === rrhhId);
-    if (!selectedRRHH) {
-      console.error('RRHH no encontrado');
+  const handleActualizarGrupoClick = (grupoId, contratoId) => {
+    const contrato = contractData.find(contract => contract.id === contratoId);
+    if (!contrato) {
+      console.error('Contrato no encontrado');
       return;
     }
-    const notificacionMensaje = `Guardando el ${selectedCargo.toLowerCase()} ${selectedRRHH.nombreCompleto}`;
+    const notificacionMensaje = `Guardando el contrato número ${contrato.contractNumber} - ${contrato.nombreDelContrato}`;
     notificacionGuardando(notificacionMensaje);
     const datosActualizados = {
-      [`${selectedCargo.toLowerCase().replace(' ', '')}Id`]: rrhhId,
-      [`${selectedCargo.toLowerCase().replace(' ', '')}Nombre`]: `${selectedRRHH.nombreCompleto}`
+      contractId: contratoId,
+      contratoGrupoMunicipio: `${contrato.contractNumber} - ${contrato.nombreDelContrato}`
     };
     google.script.run.withSuccessHandler(response => {
       console.log('Respuesta del servidor:', response);
@@ -295,7 +260,6 @@ const handleContractSelectNutricionista = (grupoId, value) => {
     })
     .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
-
 
   // Actualizar el grupo con el contrato seleccionado (Grupos Vs Coordinador)
   const handleActualizarGrupoClickCoordinador = (grupoId, coordinadorId) => {
@@ -855,90 +819,6 @@ const auxAdministrativoColumns = [
     },
   ];
 
-  const cargoColumns = [
-    {
-      title: 'Nombre del Grupo',
-      dataIndex: 'groupName',
-      key: 'groupName',
-    },
-    {
-      title: 'Código Cuentame',
-      dataIndex: 'cuentameCode',
-      key: 'cuentameCode',
-    },
-    {
-      title: 'Contrato Asociado',
-      dataIndex: 'contratoGrupoMunicipio',
-      key: 'contratoGrupoMunicipio',
-      render: (text, record) => (
-        record.contratoGrupoMunicipio ? record.contratoGrupoMunicipio : '(Sin contrato asociado)'
-      ),
-    },
-    {
-      title: `Seleccionar ${selectedCargo}`,
-      key: 'selectCargo',
-      render: (text, record) => {
-        const selectedRRHH = record[`${selectedCargo.toLowerCase().replace(' ', '')}Id`] ? rrhhByCargo.find(rrhh => rrhh.id === record[`${selectedCargo.toLowerCase().replace(' ', '')}Id`]) : null;
-        const isEditable = selectedContracts[record.id] !== undefined;
-        const selectedValue = isEditable ? selectedContracts[record.id] : (selectedRRHH ? selectedRRHH.id : undefined);
-        const tooltipText = selectedRRHH
-          ? `El ${selectedCargo.toLowerCase()} asociado al grupo es ${selectedRRHH.nombreCompleto}`
-          : `Se debe asociar el grupo a un ${selectedCargo.toLowerCase()}`;
-        const tooltipColor = selectedRRHH ? 'green' : 'red';
-
-        return (
-          <div>
-            <Tooltip title={tooltipText} color={tooltipColor}>
-              <Select
-                placeholder={`Selecciona ${selectedCargo} 📄`}
-                style={{ width: 200 }}
-                onChange={value => handleContractSelect(record.id, value)}
-                value={selectedValue}
-                disabled={selectedRRHH && !isEditable}
-              >
-                {rrhhByCargo.map(rrhh => (
-                  <Select.Option key={rrhh.id} value={rrhh.id}>
-                    {`${rrhh.nombreCompleto}`}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Tooltip>
-            {selectedRRHH ? (
-              <Tooltip title={tooltipText} color={tooltipColor}>
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    if (isEditable) {
-                      handleActualizarGrupoClick(record.id, selectedContracts[record.id]);
-                    } else {
-                      setSelectedContracts(prevState => ({
-                        ...prevState,
-                        [record.id]: record[`${selectedCargo.toLowerCase().replace(' ', '')}Id`]
-                      }));
-                    }
-                  }}
-                  style={{ marginTop: 8, backgroundColor: isEditable ? '#1890ff' : '#fff', color: isEditable ? '#fff' : '#000' }}
-                >
-                  {isEditable ? 'Actualizar' : 'Editar'}
-                </Button>
-              </Tooltip>
-            ) : (
-              <Button
-                type="primary"
-                onClick={() => handleActualizarGrupoClick(record.id, selectedContracts[record.id])}
-                style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
-                disabled={!selectedContracts[record.id]}
-              >
-                Actualizar
-              </Button>
-            )}
-          </div>
-        );
-      },
-    },
-  ];
-
-
   return (
     <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
       <h2 className="font-bold text-2xl mb-4">ZONA DE RELACIONES</h2>
@@ -956,34 +836,6 @@ const auxAdministrativoColumns = [
               dataSource={filteredGruposData.map((data, index) => ({ ...data, key: index }))}
               pagination={{ pageSize: 3 }}
             />
-          </Panel>
-
-          <Panel header="Grupos Cargos" key="6" style={{ backgroundColor: '#e6f2ff' }}>
-          <div>
-            <Select
-              placeholder="Selecciona Cargo"
-              style={{ width: 200, marginBottom: 16 }}
-              onChange={handleCargoChange}
-              value={selectedCargo}
-            >
-              {cargos.map(cargo => (
-                <Select.Option key={cargo} value={cargo}>
-                  {cargo}
-                </Select.Option>
-              ))}
-            </Select>
-            <Input.Search
-              placeholder="Buscar por nombre de grupo ✍🏽"
-              value={searchText}
-              onChange={e => handleSearch(e.target.value)}
-              className="mb-2 rounded border border-gray-300"
-            />
-            <Table
-              columns={cargoColumns}
-              dataSource={filteredGruposData.map((data, index) => ({ ...data, key: index }))}
-              pagination={{ pageSize: 3 }}
-            />
-          </div>
           </Panel>
 
           <Panel header="Grupos Vs Coordinador" key="2" style={{ backgroundColor: '#d9ffcc' }}>
