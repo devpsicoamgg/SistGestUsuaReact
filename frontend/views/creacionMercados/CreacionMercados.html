@@ -74,7 +74,7 @@ function CreacionMercados() {
   ];
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', marginTop: '12px' }}>
       {/* Formulario */}
       <div style={{ marginRight: '20px', width: '50%' }}>
         <Form
@@ -134,12 +134,16 @@ function CreacionMercados() {
       <div style={{ width: '50%' }}>
         <Table
           columns={columns}
-          dataSource={productos}
+          dataSource={productos.map((producto, index) => ({
+            ...producto,
+            key: producto.id 
+          }))}
           pagination={false}
           style={{ maxWidth: '100%' }}
         />
       </div>
     </div>
   );
+  
 }  
 // </script>
