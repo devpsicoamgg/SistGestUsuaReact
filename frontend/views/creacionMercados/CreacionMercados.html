@@ -74,14 +74,23 @@ function CreacionMercados() {
   ];
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', marginTop: '25' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', marginTop: '6%' }}>
       {/* Formulario */}
       <div style={{ marginRight: '20px', width: '50%' }}>
         <Form
           form={form}
           onFinish={handleSubmit}
           layout="vertical"
-          style={{ width: '100%', padding: '20px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '8px', backgroundColor: '#f0f2f5', color: '#333', marginBottom: '20px' }}
+          style={{ 
+            width: '100%', 
+            padding: '20px', 
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', 
+            borderRadius: '8px', 
+            backgroundColor: '#BBE274', 
+            color: '#333', 
+            marginBottom: '20px',
+            backgroundColor: '#E3F2FD' 
+          }}
         >
           <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Registro de Producto</h2>
   
@@ -100,9 +109,12 @@ function CreacionMercados() {
             rules={[{ required: true, message: 'Por favor seleccione el grupo alimentario' }]}
           >
             <Select placeholder="Seleccione el Grupo Alimentario">
-              <Select.Option value="Grupo A">Grupo A</Select.Option>
-              <Select.Option value="Grupo B">Grupo B</Select.Option>
-              <Select.Option value="Grupo C">Grupo C</Select.Option>
+              <Select.Option value="CEREALES">CEREALES</Select.Option>
+              <Select.Option value="RAICES, TUBÉRCULOS Y PLÁTANOS">RAICES, TUBÉRCULOS Y PLÁTANOS</Select.Option>
+              <Select.Option value="FRUTAS & VERDURAS">FRUTAS & VERDURAS</Select.Option>
+              <Select.Option value="CARNES, HUEVOS, PECES">CARNES, HUEVOS, PECES</Select.Option>
+              <Select.Option value="LEGUMINOSAS, MEZCLAS VEGETALES">LEGUMINOSAS, MEZCLAS VEGETALES</Select.Option>
+              <Select.Option value="LÁCTEOS & DERIVADOS">LÁCTEOS & DERIVADOS</Select.Option>
             </Select>
           </Form.Item>
   
@@ -131,7 +143,7 @@ function CreacionMercados() {
       </div>
   
       {/* Tabla de productos */}
-      <div style={{ width: '50%' }}>
+      <div style={{ width: '50%', backgroundColor: '#66ff66', padding: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
         <Table
           columns={columns}
           dataSource={productos.map((producto, index) => ({
@@ -143,7 +155,6 @@ function CreacionMercados() {
         />
       </div>
     </div>
-  );
-  
+  );  
 }  
 // </script>
