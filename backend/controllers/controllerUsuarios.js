@@ -85,6 +85,21 @@ function guardarGrupo(groups) {
   }
 }
 
+function guardarMercados(producto) {
+  try {
+    const sheetProductos = obtenerSheet(env_().SH_REGISTRO_PRODUCTOS);
+    Insert(JSON.parse(producto), sheetProductos);
+    return {
+      titulo: "Registro exitoso",
+      descripcion: "El producto ha sido 💾 guardado en la base de datos.",
+    };
+  } catch (error) {
+    return {
+      titulo: "Ops ha ocurrido un error! " + error,
+      descripcion: "Por favor contacte a soporte.",
+    };
+  }
+}
 
 function actualizarClave(username, password, fullName, tipoDoc, doc, tp, reg, imageUrl) {
   try {
@@ -154,6 +169,11 @@ function guardarSesionesSeguimiento(usuario) {
 function listarUsuarios(id = undefined) {
   // return obtenerDatos(env_().SH_REGISTRO_USUARIOS);
   return JSON.stringify(_read(obtenerSheet(env_().SH_REGISTRO_USUARIOS), id));
+}
+
+function listarProductosMercados(id = undefined) {
+  // return obtenerDatos(env_().SH_REGISTRO_USUARIOS);
+  return JSON.stringify(_read(obtenerSheet(env_().SH_REGISTRO_PRODUCTOS), id));
 }
 
 function listarUsuariosSeguimientos(id = undefined) {

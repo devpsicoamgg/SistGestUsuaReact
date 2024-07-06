@@ -1,0 +1,140 @@
+// <script type="text/jsx">
+function CreacionMercados() {
+  const [form] = Form.useForm();
+  const history = useHistory();
+  const [productos, setProductos] = useState([]);
+
+  // Función para guardar un producto
+  const guardarProducto = (producto) => {
+    google.script.run
+      .withSuccessHandler(({ titulo, descripcion }) => {
+        notificacionTareaTerminada(titulo, descripcion);
+        form.resetFields();
+        history.push('/welcome'); // Redirigir a la página deseada después de guardar
+        listarProductos(); // Actualizar la lista de productos después de guardar
+      })
+      .guardarMercados(JSON.stringify(producto)); // Llamar a la función del backend con el producto JSON stringificado
+  };
+
+  // Función para listar productos
+  const listarProductos = () => {
+    google.script.run
+      .withSuccessHandler((productos) => {
+        setProductos(JSON.parse(productos));
+      })
+      .listarProductosMercados(); // Llamar a la función del backend para obtener productos
+  };
+
+  useEffect(() => {
+    listarProductos(); // Cargar productos al montar el componente
+  }, []);
+
+  const handleSubmit = (values) => {
+    const { nombreProducto, grupoAlimentario, presentacion, img } = values;
+    const producto = {
+      id: v4(), // Generar un ID único para el producto
+      fechaCreacion: moment().format('YYYY-MM-DD'), // Fecha de creación del producto
+      nombreProducto,
+      grupoAlimentario,
+      presentacion,
+      img,
+    };
+
+    guardarProducto(producto); // Llamar a la función para guardar el producto
+  };
+
+  const columns = [
+    {
+      title: 'Nombre del Producto',
+      dataIndex: 'nombreProducto',
+      key: 'nombreProducto',
+    },
+    {
+      title: 'Grupo Alimentario',
+      dataIndex: 'grupoAlimentario',
+      key: 'grupoAlimentario',
+    },
+    {
+      title: 'Presentación',
+      dataIndex: 'presentacion',
+      key: 'presentacion',
+    },
+    {
+      title: 'Fecha de Creación',
+      dataIndex: 'fechaCreacion',
+      key: 'fechaCreacion',
+    },
+    {
+      title: 'Acciones',
+      key: 'acciones',
+      render: (text, record) => (
+        <Button type="link" onClick={() => console.log(record)}>Detalles</Button> // Placeholder para acciones adicionales
+      ),
+    },
+  ];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Form
+        form={form}
+        onFinish={handleSubmit}
+        layout="vertical"
+        style={{ width: '80%', maxWidth: '600px', padding: '20px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '8px', backgroundColor: '#f0f2f5', color: '#333', marginBottom: '20px' }}
+      >
+        <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Registro de Producto</h2>
+
+        {/* Campos del formulario */}
+        <Form.Item
+          name="nombreProducto"
+          label="Nombre del Producto"
+          rules={[{ required: true, message: 'Por favor ingrese el nombre del producto' }]}
+        >
+          <Input placeholder="Nombre del Producto" />
+        </Form.Item>
+
+        <Form.Item
+          name="grupoAlimentario"
+          label="Grupo Alimentario"
+          rules={[{ required: true, message: 'Por favor seleccione el grupo alimentario' }]}
+        >
+          <Select placeholder="Seleccione el Grupo Alimentario">
+            <Select.Option value="Grupo A">Grupo A</Select.Option>
+            <Select.Option value="Grupo B">Grupo B</Select.Option>
+            <Select.Option value="Grupo C">Grupo C</Select.Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="presentacion"
+          label="Presentación"
+          rules={[{ required: true, message: 'Por favor ingrese la presentación del producto' }]}
+        >
+          <Input placeholder="Presentación del Producto" />
+        </Form.Item>
+
+        <Form.Item
+          name="img"
+          label="Imagen (URL)"
+          rules={[{ required: true, message: 'Por favor ingrese la URL de la imagen del producto' }]}
+        >
+          <Input placeholder="URL de la Imagen" />
+        </Form.Item>
+
+        <Form.Item style={{ textAlign: 'center' }}>
+          <Button type="primary" htmlType="submit">
+            Guardar Producto
+          </Button>
+        </Form.Item>
+      </Form>
+
+      {/* Tabla de productos */}
+      <Table
+        columns={columns}
+        dataSource={productos}
+        pagination={false}
+        style={{ width: '80%', maxWidth: '800px' }}
+      />
+    </div>
+  );
+}
+// </script>
