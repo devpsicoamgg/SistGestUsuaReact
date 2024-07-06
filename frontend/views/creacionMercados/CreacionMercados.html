@@ -74,67 +74,72 @@ function CreacionMercados() {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <Form
-        form={form}
-        onFinish={handleSubmit}
-        layout="vertical"
-        style={{ width: '80%', maxWidth: '600px', padding: '20px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '8px', backgroundColor: '#f0f2f5', color: '#333', marginBottom: '20px' }}
-      >
-        <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Registro de Producto</h2>
-
-        {/* Campos del formulario */}
-        <Form.Item
-          name="nombreProducto"
-          label="Nombre del Producto"
-          rules={[{ required: true, message: 'Por favor ingrese el nombre del producto' }]}
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
+      {/* Formulario */}
+      <div style={{ marginRight: '20px', width: '50%' }}>
+        <Form
+          form={form}
+          onFinish={handleSubmit}
+          layout="vertical"
+          style={{ width: '100%', padding: '20px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', borderRadius: '8px', backgroundColor: '#f0f2f5', color: '#333', marginBottom: '20px' }}
         >
-          <Input placeholder="Nombre del Producto" />
-        </Form.Item>
-
-        <Form.Item
-          name="grupoAlimentario"
-          label="Grupo Alimentario"
-          rules={[{ required: true, message: 'Por favor seleccione el grupo alimentario' }]}
-        >
-          <Select placeholder="Seleccione el Grupo Alimentario">
-            <Select.Option value="Grupo A">Grupo A</Select.Option>
-            <Select.Option value="Grupo B">Grupo B</Select.Option>
-            <Select.Option value="Grupo C">Grupo C</Select.Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="presentacion"
-          label="Presentación"
-          rules={[{ required: true, message: 'Por favor ingrese la presentación del producto' }]}
-        >
-          <Input placeholder="Presentación del Producto" />
-        </Form.Item>
-
-        <Form.Item
-          name="img"
-          label="Imagen (URL)"
-          rules={[{ required: true, message: 'Por favor ingrese la URL de la imagen del producto' }]}
-        >
-          <Input placeholder="URL de la Imagen" />
-        </Form.Item>
-
-        <Form.Item style={{ textAlign: 'center' }}>
-          <Button type="primary" htmlType="submit">
-            Guardar Producto
-          </Button>
-        </Form.Item>
-      </Form>
-
+          <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Registro de Producto</h2>
+  
+          {/* Campos del formulario */}
+          <Form.Item
+            name="nombreProducto"
+            label="Nombre del Producto"
+            rules={[{ required: true, message: 'Por favor ingrese el nombre del producto' }]}
+          >
+            <Input placeholder="Nombre del Producto" />
+          </Form.Item>
+  
+          <Form.Item
+            name="grupoAlimentario"
+            label="Grupo Alimentario"
+            rules={[{ required: true, message: 'Por favor seleccione el grupo alimentario' }]}
+          >
+            <Select placeholder="Seleccione el Grupo Alimentario">
+              <Select.Option value="Grupo A">Grupo A</Select.Option>
+              <Select.Option value="Grupo B">Grupo B</Select.Option>
+              <Select.Option value="Grupo C">Grupo C</Select.Option>
+            </Select>
+          </Form.Item>
+  
+          <Form.Item
+            name="presentacion"
+            label="Presentación"
+            rules={[{ required: true, message: 'Por favor ingrese la presentación del producto' }]}
+          >
+            <Input placeholder="Presentación del Producto" />
+          </Form.Item>
+  
+          <Form.Item
+            name="img"
+            label="Imagen (URL)"
+            rules={[{ required: true, message: 'Por favor ingrese la URL de la imagen del producto' }]}
+          >
+            <Input placeholder="URL de la Imagen" />
+          </Form.Item>
+  
+          <Form.Item style={{ textAlign: 'center' }}>
+            <Button type="primary" htmlType="submit">
+              Guardar Producto
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
+  
       {/* Tabla de productos */}
-      <Table
-        columns={columns}
-        dataSource={productos}
-        pagination={false}
-        style={{ width: '80%', maxWidth: '800px' }}
-      />
+      <div style={{ width: '50%' }}>
+        <Table
+          columns={columns}
+          dataSource={productos}
+          pagination={false}
+          style={{ maxWidth: '100%' }}
+        />
+      </div>
     </div>
   );
-}
+}  
 // </script>
