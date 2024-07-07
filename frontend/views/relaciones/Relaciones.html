@@ -194,7 +194,7 @@ const Relaciones = () => {
       notificacionGuardando(notificacionMensaje);
       const datosActualizados = {
         contractId: contratoId,
-        contractName: contrato.nombreDelContrato
+        contratoGrupoMunicipio: `${contrato.contractNumber} - ${contrato.nombreDelContrato}`
       };
       google.script.run.withSuccessHandler(response => {
         console.log('Respuesta del servidor:', response);
