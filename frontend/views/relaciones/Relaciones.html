@@ -144,7 +144,7 @@ const Relaciones = () => {
     }));
   };
   
-  // Actualizar el grupo con el contrato seleccionado (Grupos Vs Contrato)
+  // Actualizar el grupo con el contrato seleccionado (Grupos Vs RRHH)
   const handleActualizarGrupoClick = (grupoId, rrhhId) => {
     const selectedRRHH = rrhhData.find(rrhh => rrhh.id === rrhhId);
     if (!selectedRRHH) {
@@ -177,6 +177,43 @@ const Relaciones = () => {
     })
     .actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
   };
+
+    // Actualizar el grupo con el contrato seleccionado (Grupos Vs Contrato)
+    const handleActualizarContratoClick = (grupoId) => {
+      const contratoId = selectedContracts[grupoId];
+      if (!contratoId) {
+        console.error('Contrato no seleccionado');
+        return;
+      }
+      const contrato = contractData.find(contract => contract.id === contratoId);
+      if (!contrato) {
+        console.error('Contrato no encontrado');
+        return;
+      }
+      const notificacionMensaje = `Guardando el contrato ${contrato.nombreDelContrato}`;
+      notificacionGuardando(notificacionMensaje);
+      const datosActualizados = {
+        contractId: contratoId,
+        contractName: contrato.nombreDelContrato
+      };
+      google.script.run.withSuccessHandler(response => {
+        console.log('Respuesta del servidor:', response);
+        Swal.fire({
+          title: response.titulo,
+          text: response.descripcion,
+          icon: response.icono || 'info',
+          timer: 2000,
+          timerProgressBar: true
+        });
+      }).withFailureHandler(error => {
+        console.error('Error al actualizar grupo:', error);
+        Swal.fire({
+          title: 'Ops ha ocurrido un error!',
+          text: 'Por favor contacte a soporte.',
+          icon: 'error'
+        });
+      }).actualizarGrupo(grupoId, JSON.stringify(datosActualizados));
+    };
 
 
   // Definir las columnas de la tabla de grupos (Grupos Vs Contrato)
@@ -237,7 +274,7 @@ const Relaciones = () => {
                   type="primary"
                   onClick={() => {
                     if (isEditable) {
-                      handleActualizarGrupoClick(record.id, selectedContracts[record.id]);
+                      handleActualizarContratoClick(record.id, selectedContracts[record.id]);
                     } else {
                       setSelectedContracts(prevState => ({
                         ...prevState,
@@ -253,7 +290,7 @@ const Relaciones = () => {
             ) : (
               <Button
                 type="primary"
-                onClick={() => handleActualizarGrupoClick(record.id, selectedContracts[record.id])}
+                onClick={() => handleActualizarContratoClick(record.id, selectedContracts[record.id])}
                 style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
                 disabled={!selectedContracts[record.id]}
               >

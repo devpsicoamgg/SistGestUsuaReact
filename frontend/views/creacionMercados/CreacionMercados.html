@@ -1,58 +1,117 @@
 // <script type="text/jsx">
+
 function CreacionMercados() {
   const [form] = Form.useForm();
-  const history = useHistory();
   const [productos, setProductos] = useState([]);
+  const [imageUrl, setImageUrl] = useState(null);
 
-  // Función para guardar un producto
   const guardarProducto = (producto) => {
+    console.log("Guardando producto:", producto);
+    notificacionGuardando("Guardando el producto");
     google.script.run
       .withSuccessHandler(({ titulo, descripcion }) => {
+        console.log("Producto guardado:", { titulo, descripcion });
         notificacionTareaTerminada(titulo, descripcion);
         form.resetFields();
-        history.push('/welcome'); // Redirigir a la página deseada después de guardar
-        listarProductos(); // Actualizar la lista de productos después de guardar
+        setImageUrl(null);
+        listarProductos();
+        Swal.close();
       })
-      .guardarMercados(JSON.stringify(producto)); // Llamar a la función del backend con el producto JSON stringificado
+      .guardarMercados(JSON.stringify(producto)); 
   };
 
-  // Función para listar productos
   const listarProductos = () => {
+    console.log("Listando productos");
     google.script.run
       .withSuccessHandler((productos) => {
+        console.log("Productos listados:", productos);
         setProductos(JSON.parse(productos));
       })
-      .listarProductosMercados(); // Llamar a la función del backend para obtener productos
+      .listarProductosMercados();
   };
 
   useEffect(() => {
-    listarProductos(); // Cargar productos al montar el componente
+    listarProductos();
   }, []);
 
   const handleSubmit = (values) => {
-    const { nombreProducto, grupoAlimentario, presentacion, img } = values;
+    console.log("Formulario enviado:", values);
+    const { nombreProducto, grupoAlimentario, presentacion } = values;
     const producto = {
-      id: v4(), // Generar un ID único para el producto
-      fechaCreacion: moment().format('YYYY-MM-DD'), // Fecha de creación del producto
-      nombreProducto,
-      grupoAlimentario,
-      presentacion,
-      img,
+      id: v4(), 
+      fechaCreacion: moment().format('YYYY-MM-DD'), 
+      nombreProducto: nombreProducto.toUpperCase(),
+      grupoAlimentario: grupoAlimentario,
+      presentacion: presentacion,
+      img: imageUrl, 
     };
+    console.log("Producto a guardar:", producto);
+    guardarProducto(producto);
+  };
 
-    guardarProducto(producto); // Llamar a la función para guardar el producto
+  const subirImagen = (file) => {
+    console.log("Subiendo imagen:", file);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'ml_default'); 
+
+    fetch('https://api.cloudinary.com/v1_1/dt1aacjqj/image/upload', {
+      method: 'POST',
+      body: formData,
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Respuesta de Cloudinary:", data);
+        if (data.secure_url) {
+          setImageUrl(data.secure_url);
+          form.setFieldsValue({ img: data.secure_url });
+          console.log("URL de la imagen subida:", data.secure_url);
+          notification.success({
+            message: 'Imagen subida con éxito',
+            description: `URL: ${data.secure_url}`,
+          });
+        } else {
+          throw new Error('Error al subir imagen a Cloudinary');
+        }
+      })
+      .catch(error => {
+        console.error("Error al subir imagen:", error);
+        notification.error({
+          message: 'Error',
+          description: `Error al subir imagen: ${error.message}`,
+        });
+      });
+  };
+
+  const handleImageUpload = ({ file }) => {
+    console.log("Manejando subida de imagen:", file);
+    subirImagen(file);
+  };
+
+  const uploadProps = {
+    name: 'file',
+    customRequest: handleImageUpload,
+    showUploadList: false,
   };
 
   const columns = [
     {
+      title: 'No.',
+      dataIndex: 'number',
+      key: 'number',
+      render: (text, record, index) => index + 1,
+    },
+    {
       title: 'Nombre del Producto',
       dataIndex: 'nombreProducto',
       key: 'nombreProducto',
+      sorter: (a, b) => a.nombreProducto.localeCompare(b.nombreProducto),
     },
     {
       title: 'Grupo Alimentario',
       dataIndex: 'grupoAlimentario',
       key: 'grupoAlimentario',
+      sorter: (a, b) => a.grupoAlimentario.localeCompare(b.grupoAlimentario),
     },
     {
       title: 'Presentación',
@@ -60,22 +119,24 @@ function CreacionMercados() {
       key: 'presentacion',
     },
     {
-      title: 'Fecha de Creación',
-      dataIndex: 'fechaCreacion',
-      key: 'fechaCreacion',
+      title: 'Imagen',
+      dataIndex: 'img',
+      key: 'img',
+      render: (text, record) => (
+        <img src={text} alt={record.nombreProducto} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+      ),
     },
     {
       title: 'Acciones',
       key: 'acciones',
       render: (text, record) => (
-        <Button type="link" onClick={() => console.log(record)}>Detalles</Button> // Placeholder para acciones adicionales
+        <Button type="link" onClick={() => console.log("Detalles del producto:", record)}>Detalles</Button>
       ),
     },
   ];
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', marginTop: '6%' }}>
-      {/* Formulario */}
       <div style={{ marginRight: '20px', width: '50%' }}>
         <Form
           form={form}
@@ -93,7 +154,6 @@ function CreacionMercados() {
         >
           <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Registro de Producto</h2>
   
-          {/* Campos del formulario */}
           <Form.Item
             name="nombreProducto"
             label="Nombre del Producto"
@@ -127,10 +187,13 @@ function CreacionMercados() {
   
           <Form.Item
             name="img"
-            label="Imagen (URL)"
-            rules={[{ required: true, message: 'Por favor ingrese la URL de la imagen del producto' }]}
+            label="Imagen"
+            rules={[{ required: true, message: 'Por favor suba una imagen del producto' }]}
           >
-            <Input placeholder="URL de la Imagen" />
+            <Upload {...uploadProps}>
+              <Button icon={<UploadOutlined />}>Seleccionar Imagen</Button>
+            </Upload>
+            {imageUrl && <img src={imageUrl} alt="Imagen del producto" style={{ marginTop: '10px', width: '100px', height: '100px', objectFit: 'cover' }} />}
           </Form.Item>
   
           <Form.Item style={{ textAlign: 'center' }}>
@@ -141,7 +204,6 @@ function CreacionMercados() {
         </Form>
       </div>
   
-      {/* Tabla de productos */}
       <div style={{ width: '50%', backgroundColor: '#66ff66', padding: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
         <Table
           columns={columns}
@@ -155,5 +217,5 @@ function CreacionMercados() {
       </div>
     </div>
   );  
-}  
+}
 // </script>

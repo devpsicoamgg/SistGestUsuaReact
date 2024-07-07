@@ -19,6 +19,7 @@ function FormularioRegistroContrato() {
   }, [])
 
   const guardarFormulario = (datosFormulario) => {
+    notificacionGuardando(`Guardando el contrato No ${datosFormulario.contractNumber} con nombre ${datosFormulario.nombreDelContrato}`);
 
 
     if (id) {
@@ -28,6 +29,7 @@ function FormularioRegistroContrato() {
           setInitialValues(undefined);
           form.resetFields();
           history.push('/welcome');
+          Swal.close();
         }).actualizarContrato(id, JSON.stringify(datosFormulario));
       } else {
         const id = v4();
@@ -36,6 +38,7 @@ function FormularioRegistroContrato() {
           notificacionTareaTerminada(titulo, descripcion);
           form.resetFields();
           history.push('/welcome');
+          Swal.close();
         }).guardarContrato(JSON.stringify({ id, ...datosFormulario }));
     }
 
@@ -75,8 +78,9 @@ function FormularioRegistroContrato() {
                 style={{ marginBottom: '0' }}
               >
                 <Select className="bg-gray-200" style={{ width: '100%' }} placeholder="Área misional">
-                  <Option value="CC">Cédula Ciudadanía</Option>
-                  <Option value="TI">Tarjeta de Identidad</Option>
+                  <Option value="Primera Infancia">Primera Infancia</Option>
+                  <Option value="Adolescencia & Juventud">Adolescencia & Juventud</Option>
+                  <Option value="Nutrición">Nutrición</Option>
                 </Select>
               </Item>
               </div>
@@ -125,11 +129,8 @@ function FormularioRegistroContrato() {
                 <Input />
               </Item>
             </div>
-            </div>
-    
-            {/* Segunda fila */}
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap'}}>
-              <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
+
+            <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
               <Item
                 name="startDate"
                 label="Fecha de inicio"
@@ -140,6 +141,10 @@ function FormularioRegistroContrato() {
               </Item>
               </div>
 
+            </div>
+    
+            {/* Segunda fila */}
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap'}}>
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
               <Item
                 name="endDate"
@@ -156,6 +161,17 @@ function FormularioRegistroContrato() {
                 name="contractNumber"
                 label="Número de contrato"
                 rules={[{ pattern: /^[0-9]*$/, message: 'Por favor ingresa solo números en el campo número de contrato' }]}
+                style={{ marginBottom: '0' }}
+              >
+                <Input />
+              </Item>
+              </div>
+
+              <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
+              <Item
+                name="nombreDelContrato"
+                label="Nombre del contrato"
+                rules={[{ required: true, message: 'Por favor ingresa solo el nombre del contrato' }]}
                 style={{ marginBottom: '0' }}
               >
                 <Input />
