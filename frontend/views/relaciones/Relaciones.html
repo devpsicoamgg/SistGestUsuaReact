@@ -25,31 +25,6 @@ const obtenerContratos = (setContractData) => {
     .listarContratos();
 };
 
-// Función para obtener los grupos del servidor y establecerlos en el estado
-const obtenerGrupos = (setGruposData) => {
-  // Mostrar una notificación mientras se obtienen los datos
-  notificacionObteniendoDatos("Obteniendo lista de grupos desde el servidor");
-  
-  // Llamada a la función de Google Apps Script para obtener la lista de grupos
-  google.script.run
-    .withSuccessHandler(res => {
-      try {
-        // Parsear la respuesta JSON
-        const grupos = JSON.parse(res);
-        // Ordenar los grupos alfabéticamente por nombre
-        grupos.sort((a, b) => (a.nombreGrupo > b.nombreGrupo) ? 1 : -1);
-        // Establecer los grupos en el estado
-        setGruposData(grupos);
-        // Cerrar la notificación de carga
-        Swal.close();
-      } catch (error) {
-        console.error('Error parsing JSON:', error);
-        Swal.close();
-      }
-    })
-    .listarGrupos();
-};
-
 // Función para obtener los recursos humanos del servidor y establecerlos en el estado
 const obtenerRRHH = (setRRHHData) => {
   // Mostrar una notificación mientras se obtienen los datos
@@ -75,16 +50,44 @@ const obtenerRRHH = (setRRHHData) => {
     .listarRRHH();
 };
 
+// Función para obtener los grupos del servidor y establecerlos en el estado
+const obtenerGrupos = (setGruposData) => {
+  // Mostrar una notificación mientras se obtienen los datos
+  notificacionObteniendoDatos("Obteniendo lista de grupos desde el servidor");
+  
+  // Llamada a la función de Google Apps Script para obtener la lista de grupos
+  google.script.run
+    .withSuccessHandler(res => {
+      try {
+        // Parsear la respuesta JSON
+        const grupos = JSON.parse(res);
+        // Ordenar los grupos alfabéticamente por nombre
+        grupos.sort((a, b) => (a.nombreGrupo > b.nombreGrupo) ? 1 : -1);
+        // Establecer los grupos en el estado
+        setGruposData(grupos);
+        // Cerrar la notificación de carga
+        Swal.close();
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+        Swal.close();
+      }
+    })
+    .listarGrupos();
+};
+
+
+
 // Componente principal de Relaciones
 const Relaciones = () => {
   // Definir los estados del componente
   const [contractData, setContractData] = useState([]); // Lista de contratos
   const [gruposData, setGruposData] = useState([]); // Lista de grupos
-  const [rrhhData, setRRHHData] = useState([]); // Lista de recursos humanos
+  const [rrhhData, setRRHHData] = useState([]); // Lista de talento humano
   const [filteredGruposData, setFilteredGruposData] = useState([]); // Lista de grupos filtrados (Grupos Vs Contrato)
   const [selectedContracts, setSelectedContracts] = useState({}); // Contratos seleccionados para cada grupo
   const [searchTextGrupos, setSearchTextGrupos] = useState(''); // Texto de búsqueda para grupos
   const [searchText, setSearchText] = useState(''); // Texto de búsqueda para el cargo seleccionado
+  const [searchTextRRHH, setSearchTextRRHH] = useState(''); // Texto de búsqueda para el cargo talento humano
   const [selectedCargo, setSelectedCargo] = useState('');   
   const Tooltip = window.antd.Tooltip;
   const { Panel } = Collapse;
@@ -120,7 +123,7 @@ const Relaciones = () => {
 
   const cargos = [
     'Coordinador/a',
-    'Aux. Administrativo',
+    'Administrativo',
     'Apoyo psicosocial',
     'Apoyo nutricional',
   ];
@@ -134,6 +137,18 @@ const Relaciones = () => {
         grupo.groupName.toLowerCase().includes(value.toLowerCase())
       );
       setFilteredGruposData(filteredGrupos);
+    }
+  };
+
+  const handleSearchRRHH = (value) => {
+    setSearchTextrrhh(value);
+    if (value === '') {
+      setFilteredGruposDataCoordinador(gruposData);
+    } else {
+      const filteredGruposCoordinador = gruposData.filter(grupo =>
+        grupo.groupName.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredGruposDataCoordinador(filteredGruposCoordinador);
     }
   };
 
