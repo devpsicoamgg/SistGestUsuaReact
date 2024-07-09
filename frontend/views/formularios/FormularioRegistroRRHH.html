@@ -45,8 +45,10 @@ function FormularioRegistroRRHH() {
     
     
     const nombreCompleto = capitalizeFirstLetter(datosFormulario.nombre1) + " " + (datosFormulario.nombre2 ? capitalizeFirstLetter(datosFormulario.nombre2) : "") + " " + capitalizeFirstLetter(datosFormulario.apellido1) + " " + (datosFormulario.apellido2 ? capitalizeFirstLetter(datosFormulario.apellido2) : "");
-        datosFormulario.nombreCompleto = nombreCompleto;
-
+    datosFormulario.nombreCompleto = nombreCompleto;
+    
+    notificacionGuardando(`Guardando el talento humano y haciendo envio de correo a ${datosFormulario.nombreCompleto}`);
+   
     const password = generatePassword(); 
 
     datosFormulario.password = password;
@@ -56,8 +58,9 @@ function FormularioRegistroRRHH() {
           notificacionTareaTerminada(titulo, descripcion);
           setInitialValues(undefined);
           form.resetFields();
-          history.push('/welcome');
           enviarCorreoConClave(datosFormulario.id);
+          history.push('/welcome');
+          Swal.close();
         }).actualizarRRHH(id, JSON.stringify(datosFormulario));
       } else {
         const id = v4();
@@ -65,8 +68,9 @@ function FormularioRegistroRRHH() {
         .withSuccessHandler(({ titulo, descripcion }) => {
           notificacionTareaTerminada(titulo, descripcion);
           form.resetFields();
-          history.push('/welcome');
           enviarCorreoConClave(id);
+          history.push('/welcome');
+          Swal.close();
         }).guardarRRHH(JSON.stringify({ id, ...datosFormulario }));
     }
 
