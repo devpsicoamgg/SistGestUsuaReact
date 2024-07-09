@@ -80,6 +80,16 @@ function FormularioRegistroRRHH() {
 
   const fechaCreacion = moment().format('YYYY-MM-DD'); 
 
+  const customSelectStyle = {
+    width: '100%',
+    transition: 'all 0.3s',
+  };
+  
+  const customSelectHoverStyle = {
+    borderColor: '#1890ff',
+    boxShadow: '0 0 5px rgba(24, 144, 255, 0.5)',
+  };
+
   const Formulario = () => {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', backgroundImage: 'url("https://res.cloudinary.com/dt1aacjqj/image/upload/v1716766791/fondo1_jgbisn.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh' }}>
@@ -152,7 +162,16 @@ function FormularioRegistroRRHH() {
                 rules={[{ required: true, message: "Por favor selecciona el tipo de documento" }]}
                 style={{ marginBottom: '0' }}
               >
-                <Select className="bg-gray-200" style={{ width: '100%' }} placeholder="Tipo de documento 💳">
+                <Select
+                  style={{ ...customSelectStyle }}
+                  placeholder="Tipo de documento 💳"
+                  onMouseEnter={(e) => {
+                    Object.assign(e.currentTarget.style, customSelectHoverStyle);
+                  }}
+                  onMouseLeave={(e) => {
+                    Object.assign(e.currentTarget.style, customSelectStyle);
+                  }}
+                >
                   <Option value="CC">Cédula Ciudadanía</Option>
                   <Option value="TI">Tarjeta de Identidad</Option>
                   <Option value="RC">Registro Civil</Option>
