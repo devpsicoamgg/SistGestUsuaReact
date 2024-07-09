@@ -80,15 +80,7 @@ function FormularioRegistroRRHH() {
 
   const fechaCreacion = moment().format('YYYY-MM-DD'); 
 
-  const customSelectStyle = {
-    width: '100%',
-    transition: 'all 0.3s',
-  };
-  
-  const customSelectHoverStyle = {
-    borderColor: '#1890ff',
-    boxShadow: '0 0 5px rgba(24, 144, 255, 0.5)',
-  };
+
 
   const Formulario = () => {
     return (
@@ -155,34 +147,26 @@ function FormularioRegistroRRHH() {
               </Item>
               </div>
 
-              <div style={{ justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', width: '165px' }}>
-                <Item
-                  name="tipoDocumento"
-                  label="Tipo de Documento"
-                  rules={[{ required: true, message: "Por favor selecciona el tipo de documento" }]}
-                  style={{ marginBottom: '0' }}
-                >
-                  <Select
-                    className="bg-gray-200"
-                    style={{ width: '100%', borderRadius: '5px', transition: 'background-color 0.3s' }}
-                    placeholder="Tipo de documento 💳"
-                    dropdownClassName="custom-dropdown" 
-                    getPopupContainer={triggerNode => triggerNode.parentNode} 
-                    dropdownStyle={{ borderRadius: '5px' }} 
-                  >
-                    <Option value="CC">Cédula Ciudadanía</Option>
-                    <Option value="TI">Tarjeta de Identidad</Option>
-                    <Option value="RC">Registro Civil</Option>
-                    <Option value="SD">Sin Documento de identidad</Option>
-                    <Option value="PPT">PPT</Option>
-                    <Option value="PEP">PEP</Option>
-                    <Option value="Pasaporte">Pasaporte</Option>
-                    <Option value="Visa">Visa</Option>
-                    <Option value="Otro">Otro</Option>
-                  </Select>
-                </Item>
+              <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
+              <Item
+                name="tipoDocumento"
+                label="Tipo de Documento"
+                rules={[{ required: true, message: "Por favor selecciona el tipo de documento" }]}
+                style={{ marginBottom: '0' }}
+              >
+                <Select className="bg-gray-200" style={{ width: '100%' }} placeholder="Tipo de documento 💳">
+                  <Option value="CC">Cédula Ciudadanía</Option>
+                  <Option value="TI">Tarjeta de Identidad</Option>
+                  <Option value="RC">Registro Civil</Option>
+                  <Option value="SD">Sin Documento de identidad</Option>
+                  <Option value="PPT">PPT</Option>
+                  <Option value="PEP">PEP</Option>
+                  <Option value="Pasaporte">Pasaporte</Option>
+                  <Option value="Visa">Visa</Option>
+                  <Option value="Otro">Otro</Option>
+                </Select>
+              </Item>
               </div>
-
 
               <div style={{justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap',  width: '165px'}}>
               <Item

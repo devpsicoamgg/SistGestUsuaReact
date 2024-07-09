@@ -167,9 +167,23 @@ const Relaciones = () => {
   const handleActualizarGrupoClick = (grupoId, rrhhId) => {
     const selectedRRHH = rrhhData.find(rrhh => rrhh.id === rrhhId);
     if (!selectedRRHH) {
-      console.error('RRHH no encontrado');
+      notification.error({
+        message: 'Error',
+        description: 'RRHH no encontrado',
+      });
       return;
     }
+  
+    const contratoId = selectedContracts[grupoId];
+    if (!contratoId) {
+      notification.warning({
+        message: 'Advertencia',
+        description: 'No se puede actualizar el grupo sin un contrato asociado. Por favor selecciona un contrato.',
+      });
+      return;
+    }
+
+
     const notificacionMensaje = `Guardando el ${selectedCargo.toLowerCase()} ${selectedRRHH.nombreCompleto}`;
     notificacionGuardando(notificacionMensaje);
     const datosActualizados = {
