@@ -175,6 +175,7 @@ const Relaciones = () => {
     }
   
     const contratoId = selectedContracts[grupoId];
+
     if (!contratoId) {
       notification.warning({
         message: 'Advertencia',
@@ -407,13 +408,19 @@ const cargoColumns = [
             </Tooltip>
           ) : (
             <Button
-              type="primary"
-              onClick={() => handleActualizarGrupoClick(record.id, selectedContracts[record.id])}
-              style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
-              disabled={!selectedContracts[record.id]}
-            >
-              Actualizar
-            </Button>
+            type="primary"
+            onClick={() => {
+              if (!record.contratoGrupoMunicipio) {
+                message.error('No se puede asociar RRHH porque no hay contrato asociado. Asociar primero el contrato al grupo');
+                return;
+              }
+              handleActualizarGrupoClick(record.id, selectedContracts[record.id]);
+            }}
+            style={{ marginTop: 8, backgroundColor: '#1890ff', color: '#fff' }}
+            disabled={!selectedContracts[record.id]}
+          >
+            Actualizar
+          </Button>
           )}
         </div>
       );
