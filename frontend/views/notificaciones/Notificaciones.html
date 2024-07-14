@@ -1,0 +1,68 @@
+//<script type="text/jsx">
+
+
+
+
+
+    function Notificaciones() {
+      const [message, setMessage] = useState('');
+      const [startDate, setStartDate] = useState(null);
+      const [endDate, setEndDate] = useState(null);
+      const [startTime, setStartTime] = useState(null);
+      const [endTime, setEndTime] = useState(null);
+
+      const handleSubmit = () => {
+        const notificationDetails = {
+          message,
+          startDate: startDate ? startDate.format('YYYY-MM-DD') : '',
+          endDate: endDate ? endDate.format('YYYY-MM-DD') : '',
+          startTime: startTime ? startTime.format('HH:mm') : '',
+          endTime: endTime ? endTime.format('HH:mm') : '',
+        };
+        console.log(notificationDetails);
+        alert(`Notification Details:\nMessage: ${notificationDetails.message}\nStart Date: ${notificationDetails.startDate}\nEnd Date: ${notificationDetails.endDate}\nStart Time: ${notificationDetails.startTime}\nEnd Time: ${notificationDetails.endTime}`);
+      };
+
+      return (
+        <div style={{ padding: '20px' }}>
+          <Space direction="vertical" size="large" style={{ display: 'flex' }}>
+            <Input.TextArea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Ingrese el mensaje de la notificación"
+              rows={4}
+            />
+            <DatePicker
+              value={startDate}
+              onChange={(date) => setStartDate(date)}
+              placeholder="Fecha de inicio"
+              style={{ width: '100%' }}
+            />
+            <DatePicker
+              value={endDate}
+              onChange={(date) => setEndDate(date)}
+              placeholder="Fecha de fin"
+              style={{ width: '100%' }}
+            />
+            <TimePicker
+              value={startTime}
+              onChange={(time) => setStartTime(time)}
+              placeholder="Hora de inicio"
+              style={{ width: '100%' }}
+            />
+            <TimePicker
+              value={endTime}
+              onChange={(time) => setEndTime(time)}
+              placeholder="Hora de fin"
+              style={{ width: '100%' }}
+            />
+            <Button type="primary" onClick={handleSubmit}>
+              Enviar Notificación
+            </Button>
+          </Space>
+        </div>
+      );
+    }
+
+
+  //</script>
