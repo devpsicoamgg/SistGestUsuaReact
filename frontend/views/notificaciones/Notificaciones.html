@@ -20,15 +20,15 @@ function Notificaciones() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 bg-gray-100 min-h-screen">
-      <Space direction="vertical" size="small" style={{ display: 'flex', width: '100%', maxWidth: '500px' }}>
-
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 p-4">
+      <Space direction="vertical" size="small" style={{ display: 'flex', width: '100%', maxWidth: '500px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+        
         <TextArea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Ingrese el mensaje de la notificación"
           rows={4}
-          style={{ width: '100%',  resize: 'none'  }}
+          style={{ width: '100%', resize: 'none', borderColor: '#ccc', borderRadius: '4px' }}
         />
 
         <DatePicker
@@ -36,7 +36,7 @@ function Notificaciones() {
           onChange={(date) => setStartDate(date)}
           placeholder="Fecha de inicio ✔"
           format="DD-MM-YYYY"
-          style={{ width: '100%' }}
+          style={{ width: '100%', borderColor: '#ccc', borderRadius: '4px' }}
         />
 
         <TimePicker
@@ -45,7 +45,7 @@ function Notificaciones() {
           placeholder="Hora de inicio"
           use12Hours
           format="h:mm a"
-          style={{ width: '100%' }}
+          style={{ width: '100%', borderColor: '#ccc', borderRadius: '4px' }}
         />
 
         <DatePicker
@@ -53,7 +53,7 @@ function Notificaciones() {
           onChange={(date) => setEndDate(date)}
           placeholder="Fecha de fin"
           format="DD-MM-YYYY"
-          style={{ width: '100%' }}
+          style={{ width: '100%', borderColor: '#ccc', borderRadius: '4px' }}
         />
 
         <TimePicker
@@ -62,9 +62,10 @@ function Notificaciones() {
           placeholder="Hora de fin"
           use12Hours
           format="h:mm a"
-          style={{ width: '100%' }}
+          style={{ width: '100%', borderColor: '#ccc', borderRadius: '4px' }}
         />
-        <Button type="primary" onClick={handleSubmit}>
+
+        <Button type="primary" onClick={handleSubmit} style={{ width: '100%', borderRadius: '4px' }}>
           Enviar Notificación
         </Button>
       </Space>
@@ -72,4 +73,4 @@ function Notificaciones() {
   );
 }
 
-  //</script>
+//</script>
