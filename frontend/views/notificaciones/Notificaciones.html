@@ -1,28 +1,80 @@
 //<script type="text/jsx">
 
+// Función para obtener los recursos humanos del servidor y establecerlos en el estado
+const obtenerRRHH = (setRRHHData) => {
+  // Mostrar una notificación mientras se obtienen los datos
+  notificacionObteniendoDatos("Obteniendo lista de recursos humanos desde el servidor");
+  
+  // Llamada a la función de Google Apps Script para obtener la lista de recursos humanos
+  google.script.run
+    .withSuccessHandler(res => {
+      try {
+        // Parsear la respuesta JSON
+        const rrhh = JSON.parse(res);
+        // Ordenar los recursos humanos alfabéticamente por nombre
+        rrhh.sort((a, b) => (a.nombre > b.nombre) ? 1 : -1);
+        // Establecer los recursos humanos en el estado
+        setRRHHData(rrhh);
+        // Cerrar la notificación de carga
+        Swal.close();
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+        Swal.close();
+      }
+    })
+    .listarRRHH();
+};
+
 function Notificaciones() {
+  const [rrhhData, setRRHHData] = useState([]);
+  const [selectedCargos, setSelectedCargos] = useState([]);
   const [message, setMessage] = useState('');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
 
+  // useEffect para cargar contratos, grupos y rrhh al montar el componente
+  useEffect(() => {
+    obtenerRRHH(setRRHHData);
+  }, []);
+
   const handleSubmit = () => {
     const notificationDetails = {
       message,
+      cargos: selectedCargos,
       startDate: startDate ? moment(startDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
       endDate: endDate ? moment(endDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
       startTime: startTime ? moment(startTime).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
       endTime: endTime ? moment(endTime).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
     };
     console.log(notificationDetails);
-    alert(`Notification Details:\nMessage: ${notificationDetails.message}\nStart Date: ${notificationDetails.startDate}\nEnd Date: ${notificationDetails.endDate}\nStart Time: ${notificationDetails.startTime}\nEnd Time: ${notificationDetails.endTime}`);
+    alert(`Notification Details:\nMessage: ${notificationDetails.message}\nCargos: ${notificationDetails.cargos}\nStart Date: ${notificationDetails.startDate}\nEnd Date: ${notificationDetails.endDate}\nStart Time: ${notificationDetails.startTime}\nEnd Time: ${notificationDetails.endTime}`);
   };
 
+  const uniqueCargos = [...new Set(rrhhData.map(item => item.cargo))];
+
+
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen  p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4" style={{ backgroundImage: 'url("https://res.cloudinary.com/dt1aacjqj/image/upload/v1721082302/fondo-abstracto-azul-formas-geometricas_qt98ip.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh' }}>
       <Space direction="vertical" size="small" style={{ display: 'flex', width: '100%', maxWidth: '500px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-        
+      
+
+        <Select
+          mode="multiple"
+          placeholder="Seleccione cargo/s"
+          value={selectedCargos}
+          onChange={setSelectedCargos}
+          style={{ width: '100%', borderColor: '#ccc', backgroundColor: '#FFD700', borderRadius: '4px' }}
+        >
+          {uniqueCargos.map(cargo => (
+            <Select.Option key={cargo} value={cargo}>
+              {cargo}
+            </Select.Option>
+          ))}
+        </Select>
+
         <TextArea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
