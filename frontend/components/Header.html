@@ -81,11 +81,11 @@ function Header({ isAuthenticated, handleLogout }) {
         <div className={`flex flex-col md:flex-row w-full md:w-auto ${menuOpen ? 'block' : 'hidden'} md:block`}>
           {isAuthenticated && (
             <div className="flex flex-col md:flex-row justify-center">
-              <Dropdown label="Registros">
+              <Dropdown label="Registros" className="w-full md:w-auto">
                 <NavLink
                   exact
                   activeClassName="bg-blue-500"
-                  className="block px-4 py-2 text-sm text-gray-700"
+                  className="block w-full md:w-auto px-4 py-2 text-sm text-gray-700"
                   to="/formularioRegistroContrato"
                   onClick={() => setMenuOpen(false)}
                 >
@@ -94,7 +94,7 @@ function Header({ isAuthenticated, handleLogout }) {
                 <NavLink
                   exact
                   activeClassName="bg-blue-500"
-                  className="block px-4 py-2 text-sm text-gray-700"
+                  className="block w-full md:w-auto px-4 py-2 text-sm text-gray-700"
                   to="/formularioRegistroRRHH"
                   onClick={() => setMenuOpen(false)}
                 >
@@ -103,7 +103,7 @@ function Header({ isAuthenticated, handleLogout }) {
                 <NavLink
                   exact
                   activeClassName="bg-blue-500"
-                  className="block px-4 py-2 text-sm text-gray-700"
+                  className="block w-full md:w-auto px-4 py-2 text-sm text-gray-700"
                   to="/formularioRegistroGrupo"
                   onClick={() => setMenuOpen(false)}
                 >
