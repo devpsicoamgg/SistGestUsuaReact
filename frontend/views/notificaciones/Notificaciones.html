@@ -53,11 +53,11 @@ function Notificaciones() {
   const enviarCorreo = (notificationDetails) => {
     google.script.run
       .withSuccessHandler(response => {
-        alert('Correos enviados con éxito.');
+        enviarCorreo();
       })
       .withFailureHandler(error => {
         console.error('Error al enviar correos:', error);
-        alert('Hubo un error al enviar los correos.');
+        notificacionError('Hubo un error al enviar los correos.');
       })
       .enviarCorreoACargosSeleccionados(
         notificationDetails.selectedCargos,
