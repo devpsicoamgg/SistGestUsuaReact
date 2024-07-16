@@ -44,10 +44,10 @@ function Notificaciones() {
 
   const handleSubmit = () => {
     // Formatear fechas y horas
-    const formattedStartDate = startDate ? moment(startDate).format('YYYY-MM-DDTHH:mm:ss[Z]') : '';
-    const formattedEndDate = endDate ? moment(endDate).format('YYYY-MM-DDTHH:mm:ss[Z]') : '';
-    const formattedStartTime = startTime ? moment(startTime).format('YYYY-MM-DDTHH:mm:ss[Z]') : '';
-    const formattedEndTime = endTime ? moment(endTime).format('YYYY-MM-DDTHH:mm:ss[Z]') : '';
+    const formattedStartDate = startDate ? moment(startDate).format('YYYY-MM-DD') : '';
+    const formattedEndDate = endDate ? moment(endDate).format('HH:mm:ss') : '';
+    const formattedStartTime = startTime ? moment(startTime).format('YYYY-MM-DD') : '';
+    const formattedEndTime = endTime ? moment(endTime).format('HH:mm:ss') : '';
 
     const notificationDetails = {
       message,

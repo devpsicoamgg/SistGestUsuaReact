@@ -1069,7 +1069,7 @@ function enviarCorreoACargosSeleccionados(cargosSeleccionados, mensaje, titulo, 
       throw new Error('No se encontraron registros para los cargos seleccionados');
     }
 
-    const asunto = titulo;
+    const asunto = "Notificación " + titulo;
 
     const datosCorreo = {
       titulo: titulo,
