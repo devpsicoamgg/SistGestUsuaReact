@@ -1054,37 +1054,50 @@ function enviarCorreoConHTMLTemplateAsignacionPassword(id) {
 
 
 function enviarCorreoACargosSeleccionados(cargosSeleccionados, mensaje, titulo, startDate, endDate, startTime, endTime) {
-  const sheetDataBase = SpreadsheetApp.openById(env_().ID_DATABASE).getSheetByName(env_().SH_REGISTRO_RRHH);
-  const datosRange = sheetDataBase.getDataRange(); 
-  const datosValues = datosRange.getValues();
+  try {
+    const sheetDataBase = SpreadsheetApp.openById(env_().ID_DATABASE).getSheetByName(env_().SH_REGISTRO_RRHH);
+    const datosRange = sheetDataBase.getDataRange();
+    const datosValues = datosRange.getValues();
 
-  const emails = datosValues
-    .filter(row => cargosSeleccionados.includes(row[9]))  
-    .map(row => row[9]);  
+    const emails = datosValues
+      .filter(row => cargosSeleccionados.includes(row[17]))  // Filtro por la columna que contiene los cargos (columna R)
+      .map(row => row[9]);  // Obtener los correos de la columna J
 
-  if (emails.length === 0) {
-    throw new Error('No se encontraron registros para los cargos seleccionados');
-  }
+    console.log("Emails encontrados para los cargos seleccionados:", emails);
 
-  const asunto = titulo;
+    if (emails.length === 0) {
+      throw new Error('No se encontraron registros para los cargos seleccionados');
+    }
 
-  const formattedMessage = `
-    <h2>${titulo}</h2>
-    <p>${mensaje}</p>
-    <p>Fecha de inicio: ${startDate}</p>
-    <p>Fecha de fin: ${endDate}</p>
-    <p>Hora de inicio: ${startTime}</p>
-    <p>Hora de fin: ${endTime}</p>
-  `;
+    const asunto = titulo;
 
-  emails.forEach(email => {
-    GmailApp.sendEmail(email, asunto, '', {
-      htmlBody: formattedMessage,
+    // Cargar el template HTML desde el archivo
+    const template = HtmlService.createTemplateFromFile('templateNotificaciones');
+    template.titulo = titulo;
+    template.mensaje = mensaje;
+    template.startDate = startDate;
+    template.endDate = endDate;
+    template.startTime = startTime;
+    template.endTime = endTime;
+
+    // Evaluar el template para obtener el cuerpo del correo
+    const htmlBody = template.evaluate().getContent();
+
+    emails.forEach(email => {
+      GmailApp.sendEmail(email, asunto, '', {
+        htmlBody: htmlBody,
+      });
+      console.log(`Correo enviado a: ${email}`);
     });
-  });
-  
-  console.log(`Correos enviados a los siguientes destinatarios: ${emails.join(', ')}`);
+
+    console.log(`Correos enviados a los siguientes destinatarios: ${emails.join(', ')}`);
+  } catch (error) {
+    console.error('Error al enviar correos:', error.message);
+    throw error; // Propaga el error para manejarlo desde el lugar donde se llama esta función
+  }
 }
+
+
 
 
 

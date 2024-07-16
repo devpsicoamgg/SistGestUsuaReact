@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bienvenida a la Empresa</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 2em;
+    }
+    .content {
+      padding: 20px;
+    }
+    .content h2 {
+      color: #4CAF50;
+      font-size: 1.5em;
+    }
+    .content p {
+      line-height: 1.6;
+      margin: 10px 0;
+    }
+    .footer {
+      background-color: #f1f1f1;
+      text-align: center;
+      padding: 10px;
+      font-size: 0.9em;
+      color: #777;
+    }
+    .button {
+      display: inline-block;
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 5px;
+      margin: 20px 0;
+      font-size: 1em;
+    }
+    .button:hover {
+      background-color: #45a049;
+    }
+    /* Estilos para la tabla de usuario y contraseña */
+    .user-info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    .user-info-table th, .user-info-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    .user-info-table th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .user-info-table td {
+      background-color: #f9f9f9;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1> NOTIFICACIÓN </h1>
+    </div>
+    <div class="content">
+      <h2>Se ha generado una nueva notificación  </h2>
+      
+      <h2>${titulo}</h2>
+      <p>${mensaje}</p>
+      <p>Fecha de inicio: ${startDate}</p>
+      <p>Fecha de fin: ${endDate}</p>
+      <p>Hora de inicio: ${startTime}</p>
+      <p>Hora de fin: ${endTime}</p>
+
+      <a href="https://www.tuempresa.com" class="button">Inicia sesión</a>
+    </div>
+    <div class="footer">
+      <p>©2024 Empresa - Todos los derechos reservados</p>
+    </div>
+  </div>
+</body>
+</html>
