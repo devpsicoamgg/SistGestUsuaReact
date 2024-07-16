@@ -43,10 +43,10 @@ function Notificaciones() {
   // Formatear fechas y horas
   const formatDatesAndTimes = () => {
     return {
-      formattedStartDate: startDate ? moment(startDate).format('YYYY-MM-DD') : '',
-      formattedEndDate: endDate ? moment(endDate).format('YYYY-MM-DD') : '',
-      formattedStartTime: startTime ? moment(startTime).format('HH:mm:ss') : '',
-      formattedEndTime: endTime ? moment(endTime).format('HH:mm:ss') : '',
+      formattedStartDate: startDate ? moment(startDate).format('DD-MMMM-YYYY') : '',
+      formattedEndDate: endDate ? moment(endDate).format('DD-MMMM-YYYY') : '',
+      formattedStartTime: startTime ? moment(startTime).format('hh:mm A') : '',
+      formattedEndTime: endTime ? moment(endTime).format('hh:mm A') : '',
     };
   };
 
@@ -100,8 +100,6 @@ function Notificaciones() {
     agregarACalendar(notificationDetails);
     guardarEnBaseDeDatos(notificationDetails);
   };
-
-
 
   const uniqueCargos = [...new Set(rrhhData.map(item => item.cargo))];
 
