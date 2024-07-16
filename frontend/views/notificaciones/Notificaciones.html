@@ -43,13 +43,19 @@ function Notificaciones() {
 
 
   const handleSubmit = () => {
+    // Formatear fechas y horas
+    const formattedStartDate = startDate ? moment(startDate).format('YYYY-MM-DDTHH:mm:ss[Z]') : '';
+    const formattedEndDate = endDate ? moment(endDate).format('YYYY-MM-DDTHH:mm:ss[Z]') : '';
+    const formattedStartTime = startTime ? moment(startTime).format('YYYY-MM-DDTHH:mm:ss[Z]') : '';
+    const formattedEndTime = endTime ? moment(endTime).format('YYYY-MM-DDTHH:mm:ss[Z]') : '';
+
     const notificationDetails = {
       message,
       title,
-      startDate: startDate ? moment(startDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
-      endDate: endDate ? moment(endDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
-      startTime: startTime ? moment(startTime).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
-      endTime: endTime ? moment(endTime).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+      startTime: formattedStartTime,
+      endTime: formattedEndTime,
       selectedCargos
     };
 
@@ -76,8 +82,6 @@ function Notificaciones() {
 
 
   const uniqueCargos = [...new Set(rrhhData.map(item => item.cargo))];
-
-
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4" style={{ backgroundImage: 'url("https://res.cloudinary.com/dt1aacjqj/image/upload/v1721082302/fondo-abstracto-azul-formas-geometricas_qt98ip.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh' }}>
