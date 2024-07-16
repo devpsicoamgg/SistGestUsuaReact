@@ -1071,20 +1071,15 @@ function enviarCorreoACargosSeleccionados(cargosSeleccionados, mensaje, titulo, 
 
     const asunto = titulo;
 
-    const emailData = {
-      titulo: titulo,
-      mensaje: mensaje,
-      startDate: startDate,
-      endDate: endDate,
-      startTime: startTime,
-      endTime: endTime
-    };
-
-
     // Cargar el template HTML desde el archivo
     const template = HtmlService.createTemplateFromFile('templateNotificaciones');
-    template.data = emailData;
-    
+    template.titulo = titulo;
+    template.mensaje = mensaje;
+    template.startDate = startDate;
+    template.endDate = endDate;
+    template.startTime = startTime;
+    template.endTime = endTime;
+
     // Evaluar el template para obtener el cuerpo del correo
     const htmlBody = template.evaluate().getContent();
 
