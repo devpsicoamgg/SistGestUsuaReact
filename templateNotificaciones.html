@@ -33,12 +33,17 @@
     .content {
       padding: 20px;
     }
-    .content h2 {
-      color: #4CAF50;
-      font-size: 1.5em;
+    .content .align-right {
+      text-align: right;
     }
-    .content p {
-      line-height: 1.6;
+    .content .title {
+      color: #FF5733; /* Cambia este color al que prefieras */
+    }
+    .content .highlight-box {
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 4px;
       margin: 10px 0;
     }
     .footer {
@@ -90,12 +95,13 @@
       <h1> NOTIFICACIÓN </h1>
     </div>
     <div class="content">
-      <h2>Se ha generado una nueva notificación</h2>
+      <h2 class="align-right">Se ha generado una nueva notificación</h2>
       
-      <h2><?= data.titulo ?></h2>
-      <p><?= data.mensaje ?></p>
-      <p>Fecha inicio: <?= data.startDate ?></p> <p>Hora: <?= data.startTime ?></p>
-      <p>Fecha fin: <?= data.endDate ?></p> <p>Hora fin: <?= data.endTime ?></p>
+      <h2 class="title"><?= data.titulo ?></h2>
+      <p class="highlight-box"><?= data.mensaje ?></p>
+      
+      <p>Inicia el: <?= data.startDate ?> a las <?= data.startTime ?></p>
+      <p>Finaliza el: <?= data.endDate ?> a las <?= data.endTime ?></p>
 
       <a href="https://www.tuempresa.com" class="button">Inicia sesión</a>
     </div>
