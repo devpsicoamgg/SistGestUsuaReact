@@ -45,7 +45,7 @@ function Notificaciones() {
   const handleSubmit = () => {
     const notificationDetails = {
       message,
-      titulo,
+      title,
       startDate: startDate ? moment(startDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
       endDate: endDate ? moment(endDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
       startTime: startTime ? moment(startTime).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
@@ -66,7 +66,7 @@ function Notificaciones() {
       .enviarCorreoACargosSeleccionados(
         notificationDetails.selectedCargos,
         notificationDetails.message,
-        notificationDetails.titulo,
+        notificationDetails.title,
         notificationDetails.startDate,
         notificationDetails.endDate,
         notificationDetails.startTime,
