@@ -28,6 +28,7 @@ const obtenerRRHH = (setRRHHData) => {
 function Notificaciones() {
   const [rrhhData, setRRHHData] = useState([]);
   const [selectedCargos, setSelectedCargos] = useState([]);
+  const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -61,19 +62,33 @@ function Notificaciones() {
       <Space direction="vertical" size="small" style={{ display: 'flex', width: '100%', maxWidth: '500px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
       
 
-        <Select
-          mode="multiple"
-          placeholder="Seleccione cargo/s"
-          value={selectedCargos}
-          onChange={setSelectedCargos}
-          style={{ width: '100%', borderColor: '#ccc', backgroundColor: '#FFD700', borderRadius: '4px' }}
-        >
-          {uniqueCargos.map(cargo => (
-            <Select.Option key={cargo} value={cargo}>
-              {cargo}
-            </Select.Option>
-          ))}
-        </Select>
+      <Select
+        mode="multiple"
+        placeholder="Seleccione cargo/s"
+        value={selectedCargos}
+        onChange={setSelectedCargos}
+        style={{ width: '100%', borderColor: '#ccc', borderRadius: '4px', backgroundColor: '#FFD700' }}
+        dropdownStyle={{ backgroundColor: '#050505' }}
+        dropdownRender={menu => (
+          <div style={{ backgroundColor: '#050505', color: '#fff' }}>
+            {menu}
+          </div>
+        )}
+      >
+        {uniqueCargos.map(cargo => (
+          <Select.Option key={cargo} value={cargo}>
+            {cargo}
+          </Select.Option>
+        ))}
+      </Select>
+
+
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Ingrese el título de la notificación"
+          style={{ width: '100%', borderColor: '#ccc', borderRadius: '4px' }}
+        />
 
         <TextArea
           value={message}
