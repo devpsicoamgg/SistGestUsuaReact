@@ -1053,6 +1053,41 @@ function enviarCorreoConHTMLTemplateAsignacionPassword(id) {
 }
 
 
+function enviarCorreoACargosSeleccionados(cargosSeleccionados, mensaje, titulo, startDate, endDate, startTime, endTime) {
+  const sheetDataBase = SpreadsheetApp.openById(env_().ID_DATABASE).getSheetByName(env_().SH_REGISTRO_RRHH);
+  const datosRange = sheetDataBase.getDataRange(); 
+  const datosValues = datosRange.getValues();
+
+  const emails = datosValues
+    .filter(row => cargosSeleccionados.includes(row[9]))  
+    .map(row => row[9]);  
+
+  if (emails.length === 0) {
+    throw new Error('No se encontraron registros para los cargos seleccionados');
+  }
+
+  const asunto = titulo;
+
+  const formattedMessage = `
+    <h2>${titulo}</h2>
+    <p>${mensaje}</p>
+    <p>Fecha de inicio: ${startDate}</p>
+    <p>Fecha de fin: ${endDate}</p>
+    <p>Hora de inicio: ${startTime}</p>
+    <p>Hora de fin: ${endTime}</p>
+  `;
+
+  emails.forEach(email => {
+    GmailApp.sendEmail(email, asunto, '', {
+      htmlBody: formattedMessage,
+    });
+  });
+  
+  console.log(`Correos enviados a los siguientes destinatarios: ${emails.join(', ')}`);
+}
+
+
+
 function enviarCorreoConHTMLTemplateSesionSeg(id) {
   const datosSheet = SpreadsheetApp.openById(env_().ID_DATABASE).getSheetByName(env_().SH_REGISTRO_SESIONES_SEGUIMIENTO);
   const datosRange = datosSheet.getDataRange();

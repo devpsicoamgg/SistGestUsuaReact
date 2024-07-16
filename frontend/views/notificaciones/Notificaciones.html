@@ -3,7 +3,7 @@
 // Función para obtener los recursos humanos del servidor y establecerlos en el estado
 const obtenerRRHH = (setRRHHData) => {
   // Mostrar una notificación mientras se obtienen los datos
-  notificacionObteniendoDatos("Obteniendo lista de recursos humanos desde el servidor");
+  notificacionObteniendoDatos("Obteniendo lista de cargos desde el servidor");
   
   // Llamada a la función de Google Apps Script para obtener la lista de recursos humanos
   google.script.run
@@ -40,18 +40,40 @@ function Notificaciones() {
     obtenerRRHH(setRRHHData);
   }, []);
 
+
+
   const handleSubmit = () => {
     const notificationDetails = {
       message,
-      cargos: selectedCargos,
+      titulo,
       startDate: startDate ? moment(startDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
       endDate: endDate ? moment(endDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
       startTime: startTime ? moment(startTime).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
       endTime: endTime ? moment(endTime).utc().format('YYYY-MM-DDTHH:mm:ss[Z]') : '',
+      selectedCargos
     };
+
     console.log(notificationDetails);
-    alert(`Notification Details:\nMessage: ${notificationDetails.message}\nCargos: ${notificationDetails.cargos}\nStart Date: ${notificationDetails.startDate}\nEnd Date: ${notificationDetails.endDate}\nStart Time: ${notificationDetails.startTime}\nEnd Time: ${notificationDetails.endTime}`);
+
+    google.script.run
+      .withSuccessHandler(response => {
+        alert('Correos enviados con éxito.');
+      })
+      .withFailureHandler(error => {
+        console.error('Error al enviar correos:', error);
+        alert('Hubo un error al enviar los correos.');
+      })
+      .enviarCorreoACargosSeleccionados(
+        notificationDetails.selectedCargos,
+        notificationDetails.message,
+        notificationDetails.titulo,
+        notificationDetails.startDate,
+        notificationDetails.endDate,
+        notificationDetails.startTime,
+        notificationDetails.endTime
+      );
   };
+
 
   const uniqueCargos = [...new Set(rrhhData.map(item => item.cargo))];
 
