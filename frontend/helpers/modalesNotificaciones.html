@@ -163,6 +163,64 @@ const enviarCorreo = () => {
   });
 };
 
+const enviarNotificaciones = () => {
+  Swal.fire({
+    title: 'Enviando Correo...',
+    html: `
+      <div id="correoStatus" style="text-align: center;">
+        <i class="material-icons" style="font-size: 48px; color: #007bff; animation: bounce 1s infinite;">send</i>
+        <p id="correoMensaje" style="margin-top: 20px;">Por favor, espera mientras se envía el correo.</p>
+      </div>
+      <style>
+        @keyframes bounce {
+          0% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0); }
+        }
+      </style>
+    `,
+    allowOutsideClick: false,
+    didOpen: () => {
+      const modal = Swal.getPopup();
+      modal.style.zIndex = 9999;
+      modal.style.background = '#f8f9fa';
+      const title = modal.querySelector('.swal2-title');
+      title.style.color = '#007bff';
+      title.style.textShadow = '1px 1px 2px rgba(0,0,0,0.4)';
+
+      const messages = [
+        'Conectando con el servidor...',
+        'Autenticando datos...',
+        'Preparando datos de la hoja de calculo...',
+        'Reemplazando marcadores de posición en el documento...',
+        'Realizando conversión a documento tipo pdf...',
+        'Preparando template para correo...',
+        'Configurando envío de correo...',
+        'Enviando correo...',
+        'Verificando configuración de envío de correo...',
+        'Correo enviado exitosamente!'
+      ];
+
+      let currentMessage = 0;
+      const interval = setInterval(() => {
+        const correoMensajeElement = document.getElementById('correoMensaje');
+        if (correoMensajeElement) {
+          if (currentMessage < messages.length) {
+            correoMensajeElement.textContent = messages[currentMessage];
+            currentMessage++;
+          } else {
+            clearInterval(interval);
+            Swal.close();
+          }
+        } else {
+          clearInterval(interval);
+        }
+      }, 1500);
+    },
+    showConfirmButton: false
+  });
+};
+
 const agregandoAMeets = () => {
   Swal.fire({
     title: 'Agregando a meets...',

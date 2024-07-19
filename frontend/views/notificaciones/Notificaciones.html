@@ -51,13 +51,15 @@ function Notificaciones() {
   };
 
   const enviarCorreo = (notificationDetails) => {
+    enviarNotificaciones();
     google.script.run
       .withSuccessHandler(response => {
-        enviarCorreo();
+        Swal.close(); 
       })
       .withFailureHandler(error => {
-        console.error('Error al enviar correos:', error);
         notificacionError('Hubo un error al enviar los correos.');
+        console.error('Error al enviar correos:', error);
+         
       })
       .enviarCorreoACargosSeleccionados(
         notificationDetails.selectedCargos,
