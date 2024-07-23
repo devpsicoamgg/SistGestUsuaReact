@@ -176,6 +176,31 @@ function listarProductosMercados(id = undefined) {
   return JSON.stringify(_read(obtenerSheet(env_().SH_REGISTRO_PRODUCTOS), id));
 }
 
+function editarProducto(id, nuevoProducto) {
+  try {
+    const sheetProductos = obtenerSheet(env_().SH_REGISTRO_PRODUCTOS);
+    const productos = JSON.parse(listarProductosMercados());
+
+    const index = productos.findIndex(producto => producto.id === id);
+    if (index === -1) {
+      throw new Error('Producto no encontrado');
+    }
+
+    productos[index] = { ...productos[index], ...JSON.parse(nuevoProducto) };
+    guardarTodosProductos(productos, sheetProductos);
+
+    return {
+      titulo: "Edición exitosa",
+      descripcion: "El producto ha sido ✏️ editado en la base de datos.",
+    };
+  } catch (error) {
+    return {
+      titulo: "Ops ha ocurrido un error! " + error,
+      descripcion: "Por favor contacte a soporte.",
+    };
+  }
+}
+
 function listarUsuariosSeguimientos(id = undefined) {
   // return obtenerDatos(env_().SH_REGISTRO_SESIONES_SEGUIMIENTO);
   return JSON.stringify(_read(obtenerSheet(env_().SH_REGISTRO_SESIONES_SEGUIMIENTO), id));
@@ -1100,10 +1125,6 @@ function enviarCorreoACargosSeleccionados(cargosSeleccionados, mensaje, titulo, 
     throw error; // Propaga el error para manejarlo desde el lugar donde se llama esta función
   }
 }
-
-
-
-
 
 function enviarCorreoConHTMLTemplateSesionSeg(id) {
   const datosSheet = SpreadsheetApp.openById(env_().ID_DATABASE).getSheetByName(env_().SH_REGISTRO_SESIONES_SEGUIMIENTO);

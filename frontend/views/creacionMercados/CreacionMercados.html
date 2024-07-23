@@ -4,6 +4,8 @@ function CreacionMercados() {
   const [form] = Form.useForm();
   const [productos, setProductos] = useState([]);
   const [imageUrl, setImageUrl] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const guardarProducto = (producto) => {
     console.log("Guardando producto:", producto);
@@ -94,6 +96,16 @@ function CreacionMercados() {
     showUploadList: false,
   };
 
+  const editarProducto = (record) => {
+    console.log("Editando producto:", record);
+    // Lógica para editar el producto
+  };
+
+  const eliminarProducto = (record) => {
+    console.log("Eliminando producto:", record);
+    // Lógica para eliminar el producto
+  };
+
   const columns = [
     {
       title: 'No.',
@@ -130,7 +142,10 @@ function CreacionMercados() {
       title: 'Acciones',
       key: 'acciones',
       render: (text, record) => (
-        <Button type="link" onClick={() => console.log("Detalles del producto:", record)}>Detalles</Button>
+        <div>
+            <Button type="link" onClick={() => editarProducto(record)}>Editar</Button>
+            <Button type="link" onClick={() => eliminarProducto(record)}>Eliminar</Button>
+        </div>
       ),
     },
   ];
