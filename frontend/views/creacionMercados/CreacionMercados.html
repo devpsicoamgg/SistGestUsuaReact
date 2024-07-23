@@ -1,11 +1,26 @@
 // <script type="text/jsx">
 
+// Función para notificaciones
+const notificacionGuardando = (mensaje) => {
+  notification.info({
+    message: 'Información',
+    description: mensaje,
+  });
+};
+
+const notificacionTareaTerminada = (titulo, descripcion) => {
+  notification.success({
+    message: titulo,
+    description: descripcion,
+  });
+};
+
 function CreacionMercados() {
   const [form] = Form.useForm();
   const [productos, setProductos] = useState([]);
   const [imageUrl, setImageUrl] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
   const guardarProducto = (producto) => {
     console.log("Guardando producto:", producto);
@@ -19,7 +34,7 @@ function CreacionMercados() {
         listarProductos();
         Swal.close();
       })
-      .guardarMercados(JSON.stringify(producto)); 
+      .guardarMercados(JSON.stringify(producto));
   };
 
   const listarProductos = () => {
@@ -40,12 +55,12 @@ function CreacionMercados() {
     console.log("Formulario enviado:", values);
     const { nombreProducto, grupoAlimentario, presentacion } = values;
     const producto = {
-      id: v4(), 
-      fechaCreacion: moment().format('YYYY-MM-DD'), 
+      id: v4(),
+      fechaCreacion: moment().format('YYYY-MM-DD'),
       nombreProducto: nombreProducto.toUpperCase(),
       grupoAlimentario: grupoAlimentario,
       presentacion: presentacion,
-      img: imageUrl, 
+      img: imageUrl,
     };
     console.log("Producto a guardar:", producto);
     guardarProducto(producto);
@@ -55,7 +70,7 @@ function CreacionMercados() {
     console.log("Subiendo imagen:", file);
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'ml_default'); 
+    formData.append('upload_preset', 'ml_default');
 
     fetch('https://api.cloudinary.com/v1_1/dt1aacjqj/image/upload', {
       method: 'POST',
@@ -96,14 +111,41 @@ function CreacionMercados() {
     showUploadList: false,
   };
 
-  const editarProducto = (record) => {
-    console.log("Editando producto:", record);
-    // Lógica para editar el producto
+  const handleEditClick = (record) => {
+    setEditingProduct(record);
+    form.setFieldsValue(record); // Carga los datos del producto en el formulario
+    setIsEditModalVisible(true);
   };
 
-  const eliminarProducto = (record) => {
-    console.log("Eliminando producto:", record);
-    // Lógica para eliminar el producto
+  const handleEditSubmit = (values) => {
+    google.script.run
+      .withSuccessHandler(response => {
+        notification.success({
+          message: response.titulo,
+          description: response.descripcion,
+        });
+        setIsEditModalVisible(false);
+        listarProductos(); // Actualiza la lista de productos
+      })
+      .editarProducto(editingProduct.id, JSON.stringify(values));
+  };
+
+  const handleDelete = (record) => {
+    Modal.confirm({
+      title: 'Confirmar Eliminación',
+      content: `¿Está seguro de que desea eliminar el producto ${record.nombreProducto}?`,
+      onOk: () => {
+        google.script.run
+          .withSuccessHandler(response => {
+            notification.success({
+              message: response.titulo,
+              description: response.descripcion,
+            });
+            listarProductos(); // Actualiza la lista de productos
+          })
+          .eliminarProducto(record.id);
+      },
+    });
   };
 
   const columns = [
@@ -143,8 +185,8 @@ function CreacionMercados() {
       key: 'acciones',
       render: (text, record) => (
         <div>
-            <Button type="link" onClick={() => editarProducto(record)}>Editar</Button>
-            <Button type="link" onClick={() => eliminarProducto(record)}>Eliminar</Button>
+          <Button type="link" onClick={() => handleEditClick(record)}>Editar</Button>
+          <Button type="link" onClick={() => handleDelete(record)}>Eliminar</Button>
         </div>
       ),
     },
@@ -157,18 +199,18 @@ function CreacionMercados() {
           form={form}
           onFinish={handleSubmit}
           layout="vertical"
-          style={{ 
-            width: '100%', 
-            padding: '20px', 
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', 
-            borderRadius: '8px', 
-            backgroundColor: '#C497E5', 
-            color: '#333', 
+          style={{
+            width: '100%',
+            padding: '20px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+            borderRadius: '8px',
+            backgroundColor: '#C497E5',
+            color: '#333',
             marginBottom: '20px',
           }}
         >
           <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Registro de Producto</h2>
-  
+
           <Form.Item
             name="nombreProducto"
             label="Nombre del Producto"
@@ -176,7 +218,7 @@ function CreacionMercados() {
           >
             <Input placeholder="Nombre del Producto" />
           </Form.Item>
-  
+
           <Form.Item
             name="grupoAlimentario"
             label="Grupo Alimentario"
@@ -191,7 +233,7 @@ function CreacionMercados() {
               <Select.Option value="LÁCTEOS & DERIVADOS">LÁCTEOS & DERIVADOS</Select.Option>
             </Select>
           </Form.Item>
-  
+
           <Form.Item
             name="presentacion"
             label="Presentación"
@@ -199,7 +241,7 @@ function CreacionMercados() {
           >
             <Input placeholder="Presentación del Producto" />
           </Form.Item>
-  
+
           <Form.Item
             name="img"
             label="Imagen"
@@ -210,7 +252,7 @@ function CreacionMercados() {
             </Upload>
             {imageUrl && <img src={imageUrl} alt="Imagen del producto" style={{ marginTop: '10px', width: '100px', height: '100px', objectFit: 'cover' }} />}
           </Form.Item>
-  
+
           <Form.Item style={{ textAlign: 'center' }}>
             <Button type="primary" htmlType="submit">
               Guardar Producto
@@ -218,19 +260,82 @@ function CreacionMercados() {
           </Form.Item>
         </Form>
       </div>
-  
+
       <div style={{ width: '50%', backgroundColor: '#66ff66', padding: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
         <Table
           columns={columns}
           dataSource={productos.map((producto, index) => ({
             ...producto,
-            key: producto.id 
+            key: producto.id
           }))}
           pagination={false}
           style={{ maxWidth: '100%' }}
         />
       </div>
+
+      <Modal
+        title="Editar Producto"
+        visible={isEditModalVisible}
+        onCancel={() => setIsEditModalVisible(false)}
+        footer={null}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleEditSubmit}
+        >
+          <Form.Item
+            name="nombreProducto"
+            label="Nombre del Producto"
+            rules={[{ required: true, message: 'Por favor ingrese el nombre del producto' }]}
+          >
+            <Input placeholder="Nombre del Producto" />
+          </Form.Item>
+
+          <Form.Item
+            name="grupoAlimentario"
+            label="Grupo Alimentario"
+            rules={[{ required: true, message: 'Por favor seleccione el grupo alimentario' }]}
+          >
+            <Select placeholder="Seleccione el Grupo Alimentario">
+              <Select.Option value="CEREALES">CEREALES</Select.Option>
+              <Select.Option value="RAICES, TUBÉRCULOS Y PLÁTANOS">RAICES, TUBÉRCULOS Y PLÁTANOS</Select.Option>
+              <Select.Option value="FRUTAS & VERDURAS">FRUTAS & VERDURAS</Select.Option>
+              <Select.Option value="CARNES, HUEVOS, PECES">CARNES, HUEVOS, PECES</Select.Option>
+              <Select.Option value="LEGUMINOSAS, MEZCLAS VEGETALES">LEGUMINOSAS, MEZCLAS VEGETALES</Select.Option>
+              <Select.Option value="LÁCTEOS & DERIVADOS">LÁCTEOS & DERIVADOS</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="presentacion"
+            label="Presentación"
+            rules={[{ required: true, message: 'Por favor ingrese la presentación del producto' }]}
+          >
+            <Input placeholder="Presentación del Producto" />
+          </Form.Item>
+
+          <Form.Item
+            name="img"
+            label="Imagen"
+            rules={[{ required: true, message: 'Por favor suba una imagen del producto' }]}
+          >
+            <Upload {...uploadProps}>
+              <Button icon={<UploadOutlined />}>Seleccionar Imagen</Button>
+            </Upload>
+            {imageUrl && <img src={imageUrl} alt="Imagen del producto" style={{ marginTop: '10px', width: '100px', height: '100px', objectFit: 'cover' }} />}
+          </Form.Item>
+
+          <Form.Item style={{ textAlign: 'center' }}>
+            <Button type="primary" htmlType="submit">
+              Guardar Cambios
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
-  );  
+  );
 }
+
+
 // </script>
