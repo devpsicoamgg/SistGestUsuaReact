@@ -452,7 +452,15 @@ const cargoColumns = [
               <div style={{ textAlign: 'center', marginBottom: 16 }}>
                 <Select
                   placeholder="Selecciona Cargo"
-                  style={{ width: 400, backgroundColor: '#f0f5ff', border: '1px solid #91d5ff', borderRadius: 5 }}
+                  style={{ 
+                    width: 400,
+                    backgroundColor: '#f0f5ff',
+                    border: '2px solid #1890ff',
+                    borderRadius: '5px',
+                    boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
+                    color: '#1890ff',
+                    fontWeight: 'bold',
+                   }}
                   onChange={handleCargoChange}
                   value={selectedCargo}
                 >
