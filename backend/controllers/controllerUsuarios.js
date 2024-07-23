@@ -176,6 +176,7 @@ function listarProductosMercados(id = undefined) {
   return JSON.stringify(_read(obtenerSheet(env_().SH_REGISTRO_PRODUCTOS), id));
 }
 
+
 function editarProducto(id, nuevoProducto) {
   try {
     const sheetProductos = obtenerSheet(env_().SH_REGISTRO_PRODUCTOS);
